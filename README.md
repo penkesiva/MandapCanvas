@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MandapCanvas
 
-## Getting Started
+MandapCanvas turns wedding sketches into realistic decor previews. Upload a hand-drawn mandap or backdrop, choose scene options, and generate 1–4 image variations with Gemini image generation.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Next.js (App Router), TypeScript, Tailwind CSS
+- Google Gemini image models via `@google/genai` (server-side only)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm install
+   ```
 
-## Learn More
+2. **Environment**
 
-To learn more about Next.js, take a look at the following resources:
+   Copy `.env.example` to `.env.local` and set `GEMINI_API_KEY` from [Google AI Studio](https://aistudio.google.com/apikey).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   Optionally set `GEMINI_IMAGE_MODEL` to switch models (default: `gemini-2.5-flash-image`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Run**
 
-## Deploy on Vercel
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   Open [http://localhost:3000](http://localhost:3000).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Vercel deployment
+
+1. Push the repository to GitHub.
+2. Import the project in Vercel.
+3. Add `GEMINI_API_KEY` (and optionally `GEMINI_IMAGE_MODEL`) in Project → Settings → Environment Variables.
+4. Deploy.
+
+Generation runs on the server route `POST /api/generate`. For long runs or multiple parallel images, ensure your Vercel plan allows sufficient function duration (`maxDuration` is set to 120 seconds in the API route; lower tiers may cap lower).
+
+## Project layout
+
+- `app/page.tsx` — main flow (upload, options, results)
+- `app/api/generate/route.ts` — multipart upload, prompt build, Gemini calls
+- `lib/promptBuilder.ts` — prompt text from user settings
+- `lib/palettes.ts` — U.S.-oriented floral palette data
+- `lib/geminiImage.ts` — Gemini image generation wrapper
+- `components/*` — UI panels
+
+## License
+
+Private / your choice — add a license file when you publish.
