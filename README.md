@@ -31,10 +31,16 @@ MandapCanvas turns wedding sketches into realistic decor previews. Upload a hand
 
 ## Vercel deployment
 
+This repo includes **`vercel.json`** so Vercel uses the same install/build commands as local production builds (`npm ci` + `npm run build`). GitHub Actions (**`.github/workflows/ci.yml`**) runs the same steps on every push/PR to `main`.
+
 1. Push the repository to GitHub.
-2. Import the project in Vercel.
-3. Add `GEMINI_API_KEY` (and optionally `GEMINI_IMAGE_MODEL`) in Project → Settings → Environment Variables.
-4. Deploy.
+2. In [Vercel](https://vercel.com/new), **Import** the GitHub repo (Next.js is detected automatically).
+3. Under **Environment Variables**, add:
+   - `GEMINI_API_KEY` — required for generation.
+   - `GEMINI_IMAGE_MODEL` — optional (see [Local development](#local-development)).
+4. Deploy. Vercel will run `npm ci` and `npm run build` as configured.
+
+**CLI (optional):** install the [Vercel CLI](https://vercel.com/docs/cli), run `vercel link` in the project root, then `vercel` for a preview or `vercel --prod` for production.
 
 Generation runs on the server route `POST /api/generate`. For long runs or multiple parallel images, ensure your Vercel plan allows sufficient function duration (`maxDuration` is set to 120 seconds in the API route; lower tiers may cap lower).
 
