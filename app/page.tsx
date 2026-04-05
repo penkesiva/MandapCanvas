@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import { UploadPanel } from "@/components/UploadPanel";
 import { GenerationOptions } from "@/components/GenerationOptions";
 import { ResultsGallery } from "@/components/ResultsGallery";
@@ -45,12 +46,12 @@ export default function Home() {
     const okTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     const t = f.type.toLowerCase();
     if (!okTypes.includes(t)) {
-      setUploadError("Please use JPG, PNG, or WEBP.");
+      setUploadError("Use JPG, PNG, or WEBP.");
       setFile(null);
       return;
     }
     if (f.size > 12 * 1024 * 1024) {
-      setUploadError("File is too large (max 12 MB).");
+      setUploadError("Max 12 MB.");
       setFile(null);
       return;
     }
@@ -59,7 +60,7 @@ export default function Home() {
 
   const runGeneration = useCallback(async () => {
     if (!file) {
-      setApiError("Upload a sketch first.");
+      setApiError("Add a sketch first.");
       return;
     }
     setBusy(true);
@@ -97,7 +98,7 @@ export default function Home() {
       setImages(data.images ?? []);
       setWarnings(data.warnings);
     } catch {
-      setApiError("Network error. Check your connection and try again.");
+      setApiError("Network error. Try again.");
     } finally {
       setBusy(false);
     }
@@ -114,24 +115,25 @@ export default function Home() {
   return (
     <div className="min-h-full bg-[var(--mc-bg)]">
       <header className="border-b border-[var(--mc-border)] bg-[var(--mc-surface)]/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-8 sm:gap-4 sm:px-6 sm:py-12 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mc-accent-strong)]">
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+          <h1 className="font-display text-[clamp(2.5rem,8vw,4.75rem)] font-semibold leading-[1.05] tracking-tight text-[var(--mc-ink)]">
             MandapCanvas
-          </p>
-          <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-[var(--mc-ink)] sm:text-4xl md:text-5xl">
-            Wedding sketches into realistic decor previews
           </h1>
-          <p className="max-w-2xl text-base leading-relaxed text-[var(--mc-muted)] sm:text-lg">
-            Upload a hand-drawn mandap or backdrop idea. We keep your composition, symmetry, and flow — then render it as
-            polished, U.S.-style Indian wedding photography you can share with family or vendors.
+          <p className="mt-5 flex items-center gap-3 text-base text-[var(--mc-muted)] sm:text-lg">
+            <Sparkles className="h-6 w-6 shrink-0 text-[var(--mc-accent-strong)] sm:h-7 sm:w-7" strokeWidth={1.85} aria-hidden />
+            <span>Sketch → realistic wedding decor previews</span>
           </p>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:space-y-8 sm:px-6 sm:py-10 lg:px-8">
         {apiError ? (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
-            {apiError}
+          <div
+            className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+            role="alert"
+          >
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+            <span>{apiError}</span>
           </div>
         ) : null}
 
@@ -140,20 +142,17 @@ export default function Home() {
         <GenerationOptions settings={settings} onChange={setSettings} />
 
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm leading-snug text-[var(--mc-muted)] sm:max-w-[min(100%,28rem)]">
-            {!file
-              ? "Add a sketch to enable generation."
-              : busy
-                ? "Rendering previews — your sketch stays the layout blueprint."
-                : "Ready when you are — your sketch is the blueprint."}
+          <p className="text-sm text-[var(--mc-muted)] sm:max-w-[min(100%,24rem)]">
+            {!file ? "Upload a sketch to generate." : busy ? "Generating…" : "Ready to generate."}
           </p>
           <button
             type="button"
             disabled={!canGenerate}
             onClick={runGeneration}
-            className="min-h-11 w-full shrink-0 rounded-md bg-[var(--mc-ink)] px-6 py-2.5 font-display text-sm font-semibold tracking-wide text-[var(--mc-paper)] shadow-md transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:min-w-[12rem] sm:px-8"
+            className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2.5 rounded-md border border-[var(--mc-accent)]/40 bg-[var(--mc-ink)] px-6 py-2.5 font-display text-sm font-semibold tracking-wide text-[var(--mc-accent)] shadow-md transition hover:border-[var(--mc-accent)]/70 hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:min-w-[12rem] sm:px-8"
           >
-            {busy ? "Generating…" : "Generate previews"}
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} aria-hidden />
+            {busy ? "Generating…" : "Generate"}
           </button>
         </div>
 
@@ -167,9 +166,8 @@ export default function Home() {
         />
       </main>
 
-      <footer className="border-t border-[var(--mc-border)] px-4 py-8 text-center text-xs leading-relaxed text-[var(--mc-muted)] sm:px-6">
-        MandapCanvas — modern Indian wedding decor visualization for the U.S. No accounts; images are processed for generation
-        only.
+      <footer className="border-t border-[var(--mc-border)] px-4 py-6 text-center text-xs text-[var(--mc-muted)] sm:px-6">
+        MandapCanvas · sketches processed for preview only
       </footer>
     </div>
   );

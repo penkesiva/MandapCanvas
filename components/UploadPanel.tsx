@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { ImageUp } from "lucide-react";
 
 const ACCEPT = "image/jpeg,image/jpg,image/png,image/webp";
 
@@ -28,11 +29,12 @@ export function UploadPanel({ file, previewUrl, error, onFile }: Props) {
 
   return (
     <section className="rounded-lg border border-[var(--mc-border)] bg-[var(--mc-surface)] p-4 shadow-sm sm:p-6">
-      <div className="mb-3 flex flex-col gap-1 sm:mb-4">
-        <h2 className="font-display text-lg font-semibold text-[var(--mc-ink)]">1. Upload your sketch</h2>
-        <p className="text-sm text-[var(--mc-muted)]">
-          JPG, PNG, or WEBP — your drawing stays visible as you adjust options below.
-        </p>
+      <div className="mb-3 flex items-center gap-2 sm:mb-4">
+        <ImageUp className="h-6 w-6 shrink-0 text-[var(--mc-accent-strong)] sm:h-7 sm:w-7" strokeWidth={1.85} aria-hidden />
+        <div>
+          <h2 className="font-display text-lg font-semibold text-[var(--mc-ink)]">Sketch</h2>
+          <p className="text-xs text-[var(--mc-muted)]">JPG, PNG, WEBP · max 12 MB</p>
+        </div>
       </div>
 
       <input
@@ -80,7 +82,7 @@ export function UploadPanel({ file, previewUrl, error, onFile }: Props) {
               alt="Sketch preview"
               className="max-h-48 w-auto max-w-full rounded-md object-contain shadow-md sm:max-h-56"
             />
-            <p className="text-sm text-[var(--mc-muted)]">{file?.name}</p>
+            <p className="truncate text-sm text-[var(--mc-muted)]">{file?.name}</p>
             <button
               type="button"
               onClick={(e) => {
@@ -89,15 +91,13 @@ export function UploadPanel({ file, previewUrl, error, onFile }: Props) {
               }}
               className="text-sm font-medium text-[var(--mc-accent-strong)] underline-offset-4 hover:underline"
             >
-              Remove and choose another
+              Remove
             </button>
           </div>
         ) : (
           <>
-            <span className="font-display text-base font-medium text-[var(--mc-ink)]">
-              Drop your sketch here or click to browse
-            </span>
-            <span className="mt-2 text-sm text-[var(--mc-muted)]">Up to 12 MB</span>
+            <ImageUp className="mb-3 h-12 w-12 text-[var(--mc-muted)] sm:h-14 sm:w-14" strokeWidth={1.35} aria-hidden />
+            <span className="font-display text-base font-medium text-[var(--mc-ink)]">Drop or tap to upload</span>
           </>
         )}
       </div>

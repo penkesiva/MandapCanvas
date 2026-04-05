@@ -1,5 +1,7 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
+import { Armchair, Building2, Palette, SlidersHorizontal, Users } from "lucide-react";
 import type { AudienceMode, ColorMode, CoupleMode, GenerationSettings, VenueMode } from "@/lib/types";
 import { PalettePicker } from "./PalettePicker";
 
@@ -11,21 +13,26 @@ type Props = {
 function Segmented<T extends string>({
   label,
   helper,
+  icon: Icon,
   value,
   options,
   onChange,
 }: {
   label: string;
-  helper: string;
+  helper?: string;
+  icon: LucideIcon;
   value: T;
   options: { id: T; title: string; hint: string }[];
   onChange: (v: T) => void;
 }) {
   return (
     <div>
-      <div className="mb-2">
-        <p className="font-display text-sm font-semibold text-[var(--mc-ink)]">{label}</p>
-        <p className="text-xs text-[var(--mc-muted)]">{helper}</p>
+      <div className="mb-2 flex items-start gap-2">
+        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--mc-accent-strong)] sm:h-6 sm:w-6" strokeWidth={1.85} aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-sm font-semibold text-[var(--mc-ink)]">{label}</p>
+          {helper ? <p className="text-xs text-[var(--mc-muted)]">{helper}</p> : null}
+        </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {options.map((o) => (
@@ -54,52 +61,53 @@ export function GenerationOptions({ settings, onChange }: Props) {
 
   return (
     <section className="rounded-lg border border-[var(--mc-border)] bg-[var(--mc-surface)] p-4 shadow-sm sm:p-6">
-      <div className="mb-5 flex flex-col gap-1 sm:mb-6">
-        <h2 className="font-display text-lg font-semibold text-[var(--mc-ink)]">2. Scene options</h2>
-        <p className="text-sm text-[var(--mc-muted)]">
-          We promise to treat your sketch as the layout blueprint — symmetry, focal structure, and flow stay intact.
-        </p>
+      <div className="mb-5 flex items-center gap-2 sm:mb-6">
+        <SlidersHorizontal className="h-6 w-6 shrink-0 text-[var(--mc-accent-strong)] sm:h-7 sm:w-7" strokeWidth={1.85} aria-hidden />
+        <div>
+          <h2 className="font-display text-lg font-semibold text-[var(--mc-ink)]">Scene</h2>
+          <p className="text-xs text-[var(--mc-muted)]">Layout follows your sketch</p>
+        </div>
       </div>
 
       <div className="space-y-6 sm:space-y-8">
         <Segmented<CoupleMode>
-          label="Couple in the scene"
-          helper="Who appears in front of the decor (if anyone)."
+          icon={Users}
+          label="Couple"
           value={settings.coupleMode}
           onChange={(coupleMode) => patch({ coupleMode })}
           options={[
-            { id: "none", title: "None", hint: "Backdrop and venue only." },
-            { id: "bride_only", title: "Bride only", hint: "Single subject, modern Indian attire." },
-            { id: "groom_only", title: "Groom only", hint: "Single subject, modern Indian attire." },
-            { id: "bride_and_groom", title: "Bride & groom", hint: "Couple, positioned to show the mandap." },
+            { id: "none", title: "None", hint: "Decor only" },
+            { id: "bride_only", title: "Bride", hint: "Solo" },
+            { id: "groom_only", title: "Groom", hint: "Solo" },
+            { id: "bride_and_groom", title: "Both", hint: "Couple" },
           ]}
         />
 
         <Segmented<AudienceMode>
+          icon={Armchair}
           label="Audience"
-          helper="Whether guest seating appears in the frame."
           value={settings.audienceMode}
           onChange={(audienceMode) => patch({ audienceMode })}
           options={[
-            { id: "no_audience", title: "No audience", hint: "Clean, stage-focused shot." },
-            { id: "audience", title: "Audience included", hint: "Subtle rows in the background." },
+            { id: "no_audience", title: "No audience", hint: "Stage focus" },
+            { id: "audience", title: "Audience", hint: "Seating in frame" },
           ]}
         />
 
         <Segmented<VenueMode>
+          icon={Building2}
           label="Venue"
-          helper="Indoor ballroom vs outdoor garden or tent feel."
           value={settings.venueMode}
           onChange={(venueMode) => patch({ venueMode })}
           options={[
-            { id: "indoor", title: "Indoor", hint: "Ballroom or hall lighting." },
-            { id: "outdoor", title: "Outdoor", hint: "Garden, lawn, or tent." },
+            { id: "indoor", title: "Indoor", hint: "Hall / ballroom" },
+            { id: "outdoor", title: "Outdoor", hint: "Garden / tent" },
           ]}
         />
 
         <Segmented<ColorMode>
-          label="Color approach"
-          helper="Keep your sketch hues or lean on realistic U.S.-sourced floral combos."
+          icon={Palette}
+          label="Color"
           value={settings.colorMode}
           onChange={(colorMode) => {
             if (colorMode === "suggested_palette") {
@@ -109,16 +117,8 @@ export function GenerationOptions({ settings, onChange }: Props) {
             }
           }}
           options={[
-            {
-              id: "preserve_sketch",
-              title: "Preserve sketch colors",
-              hint: "Honor the hues and accents from your drawing.",
-            },
-            {
-              id: "suggested_palette",
-              title: "Suggest U.S. floral palette",
-              hint: "Pick a practical combo below.",
-            },
+            { id: "preserve_sketch", title: "Keep sketch colors", hint: "Match your drawing" },
+            { id: "suggested_palette", title: "U.S. floral palette", hint: "Pick below" },
           ]}
         />
 
@@ -131,22 +131,20 @@ export function GenerationOptions({ settings, onChange }: Props) {
 
         <div>
           <label className="mb-2 block font-display text-sm font-semibold text-[var(--mc-ink)]">
-            Extra styling notes <span className="font-normal text-[var(--mc-muted)]">(optional)</span>
+            Notes <span className="font-normal text-[var(--mc-muted)]">(optional)</span>
           </label>
           <textarea
             value={settings.customNotes}
             onChange={(e) => patch({ customNotes: e.target.value })}
-            placeholder="e.g. softer lighting, more greenery on the sides, minimalist mandap…"
-            rows={3}
+            placeholder="Lighting, style tweaks…"
+            rows={2}
             className="w-full resize-y rounded-md border border-[var(--mc-border)] bg-[var(--mc-paper)] px-3 py-2.5 text-base text-[var(--mc-ink)] placeholder:text-[var(--mc-muted)] focus:border-[var(--mc-accent-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--mc-accent)]/25 sm:text-sm"
           />
         </div>
 
         <div>
-          <label className="mb-2 block font-display text-sm font-semibold text-[var(--mc-ink)]">
-            Number of variations
-          </label>
-          <p className="mb-2 text-xs text-[var(--mc-muted)]">Generate 1–4 previews per run to compare options.</p>
+          <label className="mb-2 block font-display text-sm font-semibold text-[var(--mc-ink)]">Variations</label>
+          <p className="mb-2 text-xs text-[var(--mc-muted)]">1–4 images per run</p>
           <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
             {[1, 2, 3, 4].map((n) => (
               <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { Flower2 } from "lucide-react";
 import { FLORAL_PALETTES, PALETTE_DISCLAIMER } from "@/lib/palettes";
 
 type Props = {
@@ -9,10 +10,13 @@ type Props = {
 
 export function PalettePicker({ selectedId, onSelect }: Props) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="font-display text-base font-semibold text-[var(--mc-ink)]">U.S.-practical floral palettes</h3>
-        <p className="mt-1 text-sm text-[var(--mc-muted)]">{PALETTE_DISCLAIMER}</p>
+    <div className="space-y-3">
+      <div className="flex items-start gap-2">
+        <Flower2 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--mc-accent-strong)] sm:h-6 sm:w-6" strokeWidth={1.85} aria-hidden />
+        <div>
+          <h3 className="font-display text-base font-semibold text-[var(--mc-ink)]">U.S. palettes</h3>
+          <p className="mt-0.5 text-xs text-[var(--mc-muted)]">{PALETTE_DISCLAIMER}</p>
+        </div>
       </div>
       <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3">
         {FLORAL_PALETTES.map((p) => {
@@ -32,7 +36,7 @@ export function PalettePicker({ selectedId, onSelect }: Props) {
                 <span className="font-display font-semibold text-[var(--mc-ink)]">{p.name}</span>
                 <p className="mt-1 text-xs text-[var(--mc-muted)]">{p.description}</p>
                 <p className="mt-2 text-xs text-[var(--mc-ink)]">
-                  <span className="text-[var(--mc-muted)]">Likely blooms: </span>
+                  <span className="text-[var(--mc-muted)]">Blooms: </span>
                   {p.flowers.join(" · ")}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">

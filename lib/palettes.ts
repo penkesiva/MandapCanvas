@@ -7,47 +7,41 @@ export interface FloralPalette {
   tags: string[];
 }
 
-export const PALETTE_DISCLAIMER =
-  "Flower availability and exact shades vary by season, region, and vendor; treat this as a planning guide.";
+export const PALETTE_DISCLAIMER = "Availability varies by season and vendor.";
 
 export const FLORAL_PALETTES: FloralPalette[] = [
   {
     id: "blush-ivory-sage",
     name: "Blush Pink + Ivory + Sage Green",
-    description:
-      "Soft romantic balance: warm blush against clean ivory with cool sage greenery for a fresh, modern mandap.",
+    description: "Soft blush, ivory, and sage greenery.",
     flowers: ["roses", "spray roses", "carnations", "lisianthus", "eucalyptus"],
     tags: ["romantic", "soft contrast", "greenery-forward"],
   },
   {
     id: "peach-cream-green",
     name: "Peach + Cream + Soft Green",
-    description:
-      "Warm peach tones with creamy whites and structured green lines—bright but still refined for ballroom or tent setups.",
+    description: "Warm peach, cream, and structured greens.",
     flowers: ["garden roses", "ranunculus", "mums", "stock", "Italian ruscus"],
     tags: ["warm", "garden", "layered"],
   },
   {
     id: "white-green-classic",
     name: "White + Green Classic",
-    description:
-      "Timeless high-contrast palette: abundant white blooms with varied eucalyptus and ruscus for crisp, editorial realism.",
+    description: "Classic white blooms and eucalyptus.",
     flowers: ["white roses", "hydrangea", "carnations", "baby's breath", "eucalyptus"],
     tags: ["classic", "bright", "timeless"],
   },
   {
     id: "dusty-mauve-cream",
     name: "Dusty Rose + Mauve + Cream",
-    description:
-      "Muted vintage romance with smoky mauves and dusty rose—photographs beautifully in mixed indoor lighting.",
+    description: "Dusty rose, mauve, and cream.",
     flowers: ["roses", "chrysanthemums", "lisianthus", "carnations", "seeded eucalyptus"],
     tags: ["muted", "moody", "elegant"],
   },
   {
     id: "marigold-us-substitute",
     name: "Marigold-inspired U.S. substitute",
-    description:
-      "Evokes festive marigold warmth using U.S.-sourced oranges and yellows with crisp accents—great for fusion or haldi-adjacent energy without relying on hard-to-source blooms.",
+    description: "Festive orange and yellow tones (U.S.-sourced).",
     flowers: ["orange roses", "yellow mums", "carnations", "craspedia accents", "greenery"],
     tags: ["festive", "warm citrus", "fusion"],
   },
