@@ -157,6 +157,7 @@ export default function Home() {
         </div>
 
         <ResultsGallery
+          key={prompt ?? "no-prompt"}
           prompt={prompt}
           images={images}
           warnings={warnings}

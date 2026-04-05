@@ -1,6 +1,17 @@
 "use client";
 
-import { AlertTriangle, Download, ImageIcon, Loader2, RefreshCw } from "lucide-react";
+import { useCallback, useState } from "react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Download,
+  ImageIcon,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import type { GeneratedImageResult } from "@/lib/types";
 
 type Props = {
@@ -12,13 +23,21 @@ type Props = {
   onDownload: (img: GeneratedImageResult) => void;
 };
 
-function summarySnippet(prompt: string, max = 200) {
-  const t = prompt.trim();
-  if (t.length <= max) return t;
-  return `${t.slice(0, max)}…`;
-}
-
 export function ResultsGallery({ prompt, images, warnings, busy, onRegenerate, onDownload }: Props) {
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyPrompt = useCallback(async () => {
+    if (!prompt?.trim()) return;
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }, [prompt]);
+
   return (
     <section className="rounded-lg border border-[var(--mc-border)] bg-[var(--mc-surface)] p-4 shadow-sm sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
@@ -55,11 +74,49 @@ export function ResultsGallery({ prompt, images, warnings, busy, onRegenerate, o
       ) : null}
 
       {prompt ? (
-        <div className="mb-6 rounded-md border border-[var(--mc-border)] bg-[var(--mc-paper)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--mc-muted)]">Prompt</p>
-          <p className="mt-2 whitespace-pre-wrap font-mono text-xs leading-relaxed text-[var(--mc-ink)]">
-            {summarySnippet(prompt)}
-          </p>
+        <div className="mb-6 rounded-md border border-[var(--mc-border)] bg-[var(--mc-paper)]">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--mc-border)] px-3 py-2.5 sm:px-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--mc-muted)]">Prompt</span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={copyPrompt}
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[var(--mc-ink)] hover:bg-[var(--mc-accent-soft)]"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-700" strokeWidth={2} aria-hidden />
+                ) : (
+                  <Copy className="h-4 w-4" strokeWidth={1.85} aria-hidden />
+                )}
+                {copied ? "Copied" : "Copy"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPromptOpen((o) => !o)}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-[var(--mc-ink)] hover:bg-[var(--mc-accent-soft)]"
+                aria-expanded={promptOpen}
+              >
+                {promptOpen ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" strokeWidth={2} aria-hidden />
+                    Hide
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" strokeWidth={2} aria-hidden />
+                    Show
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          {promptOpen ? (
+            <p className="max-h-[min(50vh,24rem)] overflow-y-auto whitespace-pre-wrap px-3 py-3 font-mono text-xs leading-relaxed text-[var(--mc-ink)] sm:px-4">
+              {prompt}
+            </p>
+          ) : (
+            <p className="px-3 py-2.5 text-xs text-[var(--mc-muted)] sm:px-4">Collapsed — use Show to read the full prompt.</p>
+          )}
         </div>
       ) : null}
 

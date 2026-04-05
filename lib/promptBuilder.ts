@@ -13,8 +13,12 @@ const COUPLE_COPY: Record<GenerationSettings["coupleMode"], string> = {
 
 const AUDIENCE_COPY: Record<GenerationSettings["audienceMode"], string> = {
   no_audience: "No audience seating or crowd—keep sightlines clean toward the stage/backdrop.",
-  audience:
-    "Include subtle audience seating in the mid-ground or background (chairs/rows), believable for a U.S. venue, without stealing focus from the decor.",
+  audience: [
+    "AUDIENCE (REQUIRED): Show a populated wedding audience in the mid-ground or background—guests seated in rows, as at a real U.S. Indian wedding ceremony.",
+    "Chairs and rows must appear OCCUPIED: visible guests (backs, shoulders, silhouettes, or soft partial faces are fine). Do NOT render empty chairs, bare rows, or vacant seating.",
+    "Crowd density should feel natural (moderately filled rows), softly out of focus if needed so the mandap/backdrop remains the hero. Attire: believable Indian wedding guest clothing.",
+    "If seating appears in frame, it must read as a living audience, not an empty venue.",
+  ].join(" "),
 };
 
 const VENUE_COPY: Record<GenerationSettings["venueMode"], string> = {
