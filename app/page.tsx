@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, Sparkles } from "lucide-react";
 import { UploadPanel } from "@/components/UploadPanel";
 import { GenerationOptions } from "@/components/GenerationOptions";
@@ -27,6 +27,7 @@ export default function Home() {
   const [prompt, setPrompt] = useState<string | null>(null);
   const [images, setImages] = useState<GeneratedImageResult[]>([]);
   const [warnings, setWarnings] = useState<string[] | undefined>();
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!file) {
@@ -37,8 +38,6 @@ export default function Home() {
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [file]);
-
-  const canGenerate = useMemo(() => !!file && !busy, [file, busy]);
 
   const validateFile = useCallback((f: File | null) => {
     setUploadError(null);
@@ -60,11 +59,16 @@ export default function Home() {
 
   const runGeneration = useCallback(async () => {
     if (!file) {
-      setApiError("Add a sketch first.");
+      setApiError(null);
+      setUploadError("Upload a sketch image to generate.");
+      queueMicrotask(() => {
+        uploadSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
       return;
     }
     setBusy(true);
     setApiError(null);
+    setUploadError(null);
     setWarnings(undefined);
     try {
       const form = new FormData();
@@ -137,7 +141,9 @@ export default function Home() {
           </div>
         ) : null}
 
-        <UploadPanel file={file} previewUrl={previewUrl} error={uploadError} onFile={validateFile} />
+        <div ref={uploadSectionRef} id="sketch-upload" className="scroll-mt-4">
+          <UploadPanel file={file} previewUrl={previewUrl} error={uploadError} onFile={validateFile} />
+        </div>
 
         <GenerationOptions settings={settings} onChange={setSettings} />
 
@@ -147,7 +153,7 @@ export default function Home() {
           </p>
           <button
             type="button"
-            disabled={!canGenerate}
+            disabled={busy}
             onClick={runGeneration}
             className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2.5 rounded-md border border-[var(--mc-accent)]/40 bg-[var(--mc-ink)] px-6 py-2.5 font-display text-sm font-semibold tracking-wide text-[var(--mc-accent)] shadow-md transition hover:border-[var(--mc-accent)]/70 hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:min-w-[12rem] sm:px-8"
           >
