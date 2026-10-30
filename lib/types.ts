@@ -1,41 +1,128 @@
-export type CoupleMode = "none" | "bride_only" | "groom_only" | "bride_and_groom";
+import type { PackId, PlanId } from "./config";
 
-export type AudienceMode = "no_audience" | "audience";
+export type TraditionId =
+  | "hindu_north"
+  | "hindu_south"
+  | "gujarati"
+  | "bengali"
+  | "marathi"
+  | "sikh"
+  | "muslim"
+  | "christian"
+  | "fusion";
 
-export type VenueMode = "indoor" | "outdoor";
+export type EventId = "haldi" | "mehndi" | "sangeet" | "garba" | "ceremony" | "reception";
 
-export type ColorMode = "preserve_sketch" | "suggested_palette";
+export type ShotCategory = "decor" | "decor_detail" | "bride" | "groom" | "couple" | "couple_stage" | "family";
 
-export interface GenerationSettings {
-  coupleMode: CoupleMode;
-  audienceMode: AudienceMode;
-  venueMode: VenueMode;
-  colorMode: ColorMode;
-  paletteId: string | null;
-  customNotes: string;
-  /** Number of images to generate (1–4). */
-  variationCount: number;
+export type VenueMode = "indoor" | "outdoor" | "mixed";
+export type LightingMode = "day" | "evening" | "mixed";
+export type DecorSource = "sketch" | "upload" | "preset";
+export type PeopleMode = "silhouette" | "likeness";
+
+export type ShotMix = Record<ShotCategory, number>;
+
+export interface AlbumConfig {
+  tradition: TraditionId;
+  events: EventId[];
+  palettes: string[];
+  venue: VenueMode;
+  lighting: LightingMode;
+  decor: {
+    source: DecorSource;
+    imageUrl?: string;
+    presetId?: string;
+    /** When true, the sketch/photo guides decor for every event, not just the ceremony. */
+    applyToAllEvents: boolean;
+  };
+  people: {
+    mode: PeopleMode;
+    brideUrl?: string;
+    groomUrl?: string;
+    consentAt?: number;
+  };
+  mix: ShotMix;
+  notes: string;
+  /** Pro accounts: style reference photos of the vendor's own inventory. */
+  inventoryUrls?: string[];
 }
 
-export interface GeneratedImageResult {
-  /** Base64-encoded image bytes (no data URL prefix). */
-  data: string;
-  mimeType: string;
-  /** 1-based variation index when multiple were requested. */
-  variationIndex: number;
+export type ShotStatus = "pending" | "running" | "done" | "failed";
+
+export interface Shot {
+  id: string;
+  event: EventId;
+  category: ShotCategory;
+  paletteId: string;
+  lighting: "day" | "evening";
+  venue: "indoor" | "outdoor";
+  status: ShotStatus;
+  url?: string;
+  error?: string;
+  favorite?: boolean;
+  attempts: number;
+  watermarked?: boolean;
+  doneAt?: number;
 }
 
-export interface GenerateApiSuccess {
-  ok: true;
-  prompt: string;
-  images: GeneratedImageResult[];
-  warnings?: string[];
+export type AlbumStatus = "draft" | "queued" | "generating" | "complete";
+
+export interface Brand {
+  businessName: string;
+  logoUrl?: string;
+  accent: string;
+  website?: string;
+  phone?: string;
 }
 
-export interface GenerateApiError {
+export interface Album {
+  id: string;
+  kind: "couple" | "proposal";
+  createdAt: number;
+  updatedAt: number;
+  ownerUserId?: string;
+  ownerAnonId?: string;
+  title: string;
+  clientName?: string;
+  status: AlbumStatus;
+  /** Pack the customer intends to buy (or bought). */
+  packId: PackId;
+  /** Images paid for and allocated to this album. */
+  imageQuota: number;
+  regensLeft: number;
+  paid: boolean;
+  config: AlbumConfig;
+  shots: Shot[];
+  previews: Shot[];
+  shareToken?: string;
+  brand?: Brand;
+  completedNotifiedAt?: number;
+  /** Cost tracking (estimated model spend in cents, x100 for precision). */
+  costMilliCents?: number;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  createdAt: number;
+  plan: PlanId | null;
+  planStatus?: "active" | "past_due" | "canceled";
+  stripeCustomerId?: string;
+  subscriptionId?: string;
+  brand?: Brand;
+  inventory?: { id: string; url: string; label: string }[];
+}
+
+export interface LedgerEntry {
+  at: number;
+  delta: number;
+  reason: "purchase" | "subscription" | "album_allocation" | "refund" | "admin" | "regen";
+  ref?: string;
+  amountCents?: number;
+}
+
+export interface ApiError {
   ok: false;
   error: string;
   code?: string;
 }
-
-export type GenerateApiResponse = GenerateApiSuccess | GenerateApiError;

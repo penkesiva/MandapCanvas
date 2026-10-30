@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { PageShell } from "@/components/SiteChrome";
+import { CreateWizard } from "@/components/create/CreateWizard";
+import { currentUser } from "@/lib/auth";
+import { getCredits } from "@/lib/albums";
+import { parsePackId } from "@/lib/validate";
+
+export const metadata: Metadata = {
+  title: "Create your album",
+  description: "Sketch, upload or pick a style and see a free photo-real preview of your Desi wedding decor.",
+};
+
+export default async function CreatePage(props: { searchParams: Promise<{ pack?: string; mode?: string }> }) {
+  const sp = await props.searchParams;
+  const user = await currentUser();
+  const mode = sp.mode === "proposal" ? "proposal" : "couple";
+  if (mode === "proposal" && !user) redirect("/signin?next=/create?mode=proposal");
+  if (mode === "proposal" && !user?.plan) redirect("/pro");
+  const credits = user ? await getCredits(user.id) : 0;
+  return (
+    <PageShell>
+      <CreateWizard initialPack={parsePackId(sp.pack) ?? "signature"} mode={mode} credits={credits} plan={user?.plan ?? null} inventory={user?.plan === "studio" ? user.inventory ?? [] : []} />
+    </PageShell>
+  );
+}

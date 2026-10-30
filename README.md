@@ -1,58 +1,72 @@
 # MandapCanvas
 
-MandapCanvas turns wedding sketches into realistic decor previews. Upload a hand-drawn mandap or backdrop, choose scene options, and generate 1–4 image variations with Gemini image generation.
+Photo-real preview albums for Desi weddings in the U.S. Couples (or their decorator) sketch a mandap, upload a photo, or
+pick a style; MandapCanvas renders a full album across every event — Haldi, Mehndi, Sangeet/Garba, the ceremony and the
+reception — in the palettes they're deciding between, with matching outfits and, optionally, their own likeness.
+
+- **Couples** pay once per album: Starter 25 images $29 · Signature 50 $49 · Grand 100 $79 · +10 images $9.
+- **Decorators** subscribe: Pro $99/mo (300 images, branded proposals) · Studio $199/mo (1,000 images, inventory references, 3 seats).
+- Every album starts with **2 free watermarked previews** (no account).
+
+See `docs/PLAN.md` for positioning and pricing, `docs/AUDIT.md` for the technical audit and unit economics, and
+`docs/LAUNCH.md` for the first-10-customers plan.
 
 ## Stack
 
-- Next.js (App Router), TypeScript, Tailwind CSS
-- Google Gemini image models via `@google/genai` (server-side only)
+- Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4
+- Gemini image generation via `@google/genai` (server-only)
+- Upstash Redis (data, credits, locks, stats) · Vercel Blob (images) · Stripe Checkout + Billing · Resend (email)
+- Every external service has a local fallback, so the whole app runs with **zero accounts** in development.
 
-## Local development
+## Run it locally
 
-1. **Install dependencies**
+```bash
+npm install
+npm run fetch-samples      # downloads the marketing images into public/samples (one time, then commit them)
+cp .env.example .env.local # optional — everything works with it empty
+npm run dev
+```
 
-   ```bash
-   npm install
-   ```
+With no keys set, development uses:
 
-2. **Environment**
+| Service | Local fallback |
+| --- | --- |
+| Gemini | placeholder images (`MOCK_GENERATION=1` forces this even with a key) |
+| Redis | JSON file at `.data/kv.json` |
+| Blob | files in `.data/blob`, served by `/api/dev-blob` |
+| Stripe | a test checkout page at `/checkout/dev` |
+| Resend | magic links printed in the terminal and shown on the sign-in page |
 
-   Copy `.env.example` to `.env.local` and set `GEMINI_API_KEY` from [Google AI Studio](https://aistudio.google.com/apikey).
+Delete `.data/` to reset.
 
-   Optionally set `GEMINI_IMAGE_MODEL` to switch models (default: `gemini-2.5-flash-image`).
+## Deploy (Vercel)
 
-3. **Run**
+1. Import the repo in Vercel.
+2. Add storage from the Vercel dashboard: **Upstash for Redis** (Marketplace) and a **Blob** store. Both set their env vars.
+3. Set the remaining env vars from `.env.example`: `GEMINI_API_KEY`, `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`,
+   `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `CRON_SECRET`, `ADMIN_EMAILS`.
+4. In Stripe, add a webhook to `https://YOUR_DOMAIN/api/stripe/webhook` with the five events listed in `.env.example`.
+   No products need to be created — prices live in `lib/config.ts`.
+5. In Resend, verify your sending domain.
+6. Open `/admin` (signed in with an `ADMIN_EMAILS` address) — the setup panel shows anything still missing.
 
-   ```bash
-   npm run dev
-   ```
+Production refuses to run without `AUTH_SECRET`, never shows the test checkout, and never falls back to placeholder images.
 
-   Open [http://localhost:3000](http://localhost:3000).
+**Crons** (`vercel.json`): `/api/cron/cleanup` deletes face photos older than 7 days; `/api/cron/advance` finishes any
+paid album whose owner closed the tab. Both are daily so they deploy on the Hobby plan; on Vercel Pro change the advance
+schedule to `*/10 * * * *`.
 
-## Vercel deployment
+## How it works
 
-This repo includes **`vercel.json`** so Vercel uses the same install/build commands as local production builds (`npm ci` + `npm run build`). GitHub Actions (**`.github/workflows/ci.yml`**) runs the same steps on every push/PR to `main`.
+- `lib/catalog.ts` — traditions, events, palettes, decor presets, shot categories. Edit here to add a tradition or palette.
+- `lib/prompts.ts` — the prompt for every shot (framing, blueprint, palette, outfits, people rules, respect guardrails).
+- `lib/albums.ts` — album lifecycle: plan shots, free preview, fund, batch generation with locks and retries, sharing.
+- `lib/billing.ts` — Stripe checkout, subscriptions, idempotent fulfillment, credits.
+- `lib/config.ts` — packs, plans, limits, feature flags.
+- Generation is driven by the open album page (`/api/albums/[id]/advance`, 3 images per call) with the cron as a safety net.
+- Spend is capped per day (`DAILY_COST_CAP_CENTS`); `/admin` shows revenue, image cost and margin.
 
-1. Push the repository to GitHub.
-2. In [Vercel](https://vercel.com/new), **Import** the GitHub repo (Next.js is detected automatically).
-3. Under **Environment Variables**, add:
-   - `GEMINI_API_KEY` — required for generation.
-   - `GEMINI_IMAGE_MODEL` — optional (see [Local development](#local-development)).
-4. Deploy. Vercel will run `npm ci` and `npm run build` as configured.
+## Privacy
 
-**CLI (optional):** install the [Vercel CLI](https://vercel.com/docs/cli), run `vercel link` in the project root, then `vercel` for a preview or `vercel --prod` for production.
-
-Generation runs on the server route `POST /api/generate`. For long runs or multiple parallel images, ensure your Vercel plan allows sufficient function duration (`maxDuration` is set to 120 seconds in the API route; lower tiers may cap lower).
-
-## Project layout
-
-- `app/page.tsx` — main flow (upload, options, results)
-- `app/api/generate/route.ts` — multipart upload, prompt build, Gemini calls
-- `lib/promptBuilder.ts` — prompt text from user settings
-- `lib/palettes.ts` — U.S.-oriented floral palette data
-- `lib/geminiImage.ts` — Gemini image generation wrapper
-- `components/*` — UI panels
-
-## License
-
-Private / your choice — add a license file when you publish.
+Face photos are optional, stripped of EXIF/GPS on upload, never shown on share links, and deleted after 7 days.
+Albums are private until the owner creates a share link.
