@@ -312,55 +312,132 @@ export interface DecorPreset {
   description: string;
   prompt: string;
   image: string;
+  tier: StyleTier;
 }
 
+export type StyleTier = "simple" | "elegant" | "classic" | "royal";
+
+export const STYLE_TIERS: { id: StyleTier; name: string; note: string }[] = [
+  { id: "simple", name: "Simple & airy", note: "Light frames, soft fabric, a few flowers" },
+  { id: "elegant", name: "Elegant", note: "Refined shapes, considered florals" },
+  { id: "classic", name: "Classic & vibrant", note: "Traditional pillars, garlands, color" },
+  { id: "royal", name: "Royal", note: "Carved, layered, abundant" },
+];
+
+/** Decor styles, ordered from simple to grand. Old ids are kept so saved drafts still resolve. */
 export const DECOR_PRESETS: DecorPreset[] = [
   {
-    id: "floral_classic",
-    name: "Classic floral mandap",
-    description: "Four pillars, domed canopy, roses and garlands.",
-    prompt: "a classic four-pillar floral mandap with a softly domed canopy, roses on every pillar and hanging garlands",
-    image: "/samples/hero-after.jpg",
+    id: "garden_minimal",
+    tier: "simple",
+    name: "Garden minimal",
+    description: "Four wooden posts, sheer ivory drapes, white roses.",
+    prompt: "a minimal open-frame mandap of four slim natural-wood posts, loosely draped sheer ivory fabric and small clusters of white flowers, lots of negative space",
+    image: "/samples/style-garden-minimal.jpg",
   },
   {
-    id: "royal_palace",
-    name: "Royal palace",
-    description: "Carved arches, chandeliers, velvet and gold.",
-    prompt: "a royal palace-style setting with carved ivory-and-gold arches, chandeliers, velvet drapes and lush florals",
-    image: "/samples/nikah.jpg",
+    id: "jasmine_brass",
+    tier: "simple",
+    name: "Jasmine & brass",
+    description: "Slim brass pillars with hanging jasmine strands.",
+    prompt: "an understated mandap of four slender brushed-brass pillars and a thin canopy frame hung with long strands of jasmine and small orchids",
+    image: "/samples/style-jasmine-brass.jpg",
+  },
+  {
+    id: "ocean_bluff",
+    tier: "simple",
+    name: "Flowing fabric",
+    description: "White pillars, long drapes moving in the breeze.",
+    prompt: "an airy mandap of four white pillars with long flowing fabric, roses and greenery at the base and lanterns along the aisle",
+    image: "/samples/style-ocean-bluff.jpg",
+  },
+  {
+    id: "garden_boho",
+    tier: "elegant",
+    name: "Boho pampas",
+    description: "Round hoop, pampas grass, cushions and lanterns.",
+    prompt: "a boho circular hoop mandap with pampas grass, garden roses, eucalyptus, floor cushions, rugs and brass lanterns",
+    image: "/samples/style-boho-pampas.jpg",
   },
   {
     id: "minimal_modern",
-    name: "Minimal modern",
-    description: "Clean lines, an open frame, restrained florals.",
-    prompt: "a minimal modern structure with clean geometric lines, an open metal frame and restrained, sculptural florals",
-    image: "/samples/reception.jpg",
+    tier: "elegant",
+    name: "Modern geometric",
+    description: "Gold hexagon frame, cascading orchids, mirror floor.",
+    prompt: "a modern geometric mandap with a polished gold hexagonal frame, cascading white orchids and hydrangeas and a mirrored platform",
+    image: "/samples/style-modern-hexagon.jpg",
+  },
+  {
+    id: "bengali_shola",
+    tier: "elegant",
+    name: "Shola & banana leaf",
+    description: "Banana-plant pillars, white shola, red and white garlands.",
+    prompt: "a Bengali-style mandap with banana-plant pillars, intricate white shola-pith decorations, red and white garlands and an alpana floor pattern",
+    image: "/samples/style-bengali-shola.jpg",
   },
   {
     id: "temple_south",
+    tier: "classic",
     name: "Temple mandapam",
-    description: "Carved pillars, jasmine, banana leaves, brass lamps.",
-    prompt: "a South Indian temple-style mandapam with carved wooden pillars, brass bells, jasmine strings and banana leaves",
-    image: "/samples/south-indian.jpg",
+    description: "Carved teak pillars, marigold, banana leaves, oil lamps.",
+    prompt: "a South Indian temple-style mandapam with carved wooden pillars, marigold and jasmine garlands, banana plants, a mango-leaf toran and brass lamps",
+    image: "/samples/style-temple-south.jpg",
   },
   {
+    id: "floral_classic",
+    tier: "classic",
+    name: "Rose dome",
+    description: "Domed canopy covered in roses, a curtain of flowers.",
+    prompt: "a round domed mandap canopy covered in roses, hydrangeas and peonies, with strands of flowers hanging like a curtain and a chandelier in the center",
+    image: "/samples/style-rose-dome.jpg",
+  },
+  {
+    id: "gujarati_mirror",
+    tier: "classic",
+    name: "Mirror-work & marigold",
+    description: "Bandhani canopy, painted pillars, toran, brass pots.",
+    prompt: "a vibrant mandap with a mirror-work and bandhani fabric canopy, painted carved pillars, marigold garlands, a mirrored toran and stacked brass pots",
+    image: "/samples/style-gujarati-mirror.jpg",
+  },
+  {
+    id: "royal_palace",
+    tier: "royal",
+    name: "Mughal arches",
+    description: "Gold filigree arches, velvet drapes, hundreds of candles.",
+    prompt: "a grand stage of tall scalloped Mughal arches in gold filigree jaali, velvet drapes, orchids and roses in tall stands and hundreds of candles",
+    image: "/samples/style-mughal-emerald.jpg",
+  },
+  {
+    id: "rajasthani_royal",
+    tier: "royal",
+    name: "Rajasthani palace",
+    description: "Carved jharokha pillars, velvet and zari, chandeliers.",
+    prompt: "an opulent Rajasthani palace mandap with carved jharokha-style pillars, velvet and zari drapes, cascades of roses and marigolds, brass bells and chandeliers",
+    image: "/samples/style-rajasthani-royal.jpg",
+  },
+  {
+    id: "floral_ceiling",
+    tier: "royal",
+    name: "Floral ceiling",
+    description: "Thousands of hanging flowers over a mirrored stage.",
+    prompt: "an extravagant mandap beneath a full suspended floral ceiling of thousands of hanging roses and orchids, gilded flower-wrapped pillars and a mirrored stage",
+    image: "/samples/style-floral-ceiling.jpg",
+  },
+];
+
+/** Presets retired from the picker but still valid for saved albums. */
+const LEGACY_PRESETS: DecorPreset[] = [
+  {
     id: "marigold_rustic",
+    tier: "classic",
     name: "Marigold & brass",
     description: "Marigold strings, brass urlis, warm and earthy.",
     prompt: "an earthy setting of dense marigold strings, brass urlis, hand-block printed fabrics and terracotta pots",
     image: "/samples/haldi.jpg",
   },
-  {
-    id: "garden_boho",
-    name: "Garden & boho",
-    description: "Open air, swings, umbrellas, soft drapes.",
-    prompt: "an open-air garden setting with a floral swing, soft sheer drapes, hanging umbrellas and rugs",
-    image: "/samples/mehndi.jpg",
-  },
 ];
 
 export function getPreset(id: string | undefined): DecorPreset {
-  return DECOR_PRESETS.find((p) => p.id === id) ?? DECOR_PRESETS[0];
+  return DECOR_PRESETS.find((p) => p.id === id) ?? LEGACY_PRESETS.find((p) => p.id === id) ?? DECOR_PRESETS[7];
 }
 
 /* ---------------------------------------------------------------- Shot categories */

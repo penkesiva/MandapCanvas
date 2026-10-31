@@ -15,6 +15,9 @@
   --color-mehndi: #4a5a2e;
   --color-line: #ead6cf;
   --color-gold: #b8923a;
+  --color-gold-light: #ecd08a;
+  --color-maroon: #4a0d1a;
+  --color-maroon-deep: #320811;
 
   --font-display: "Rozha One", "Georgia", serif;
   --font-sans: "Hind", ui-sans-serif, system-ui, sans-serif;
@@ -34,6 +37,7 @@ html {
 
 body {
   font-family: var(--font-sans);
+  min-height: 100vh;
   font-size: 1.0625rem;
   line-height: 1.6;
   background: var(--color-milk);
@@ -60,18 +64,22 @@ p {
 }
 
 @layer components {
+  /* Buttons are dressed like invitation cards: a jewel-toned fill, a gold double rule and
+     small gold diamonds either side of the label. */
   .btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-height: 2.875rem;
-    padding: 0.625rem 1.375rem;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.7rem 1.6rem;
     border-radius: var(--radius-pill);
     font-weight: 600;
     font-size: 1rem;
     line-height: 1;
-    transition: background-color 150ms, color 150ms, border-color 150ms;
+    letter-spacing: 0.01em;
+    transition: background-color 160ms, color 160ms, border-color 160ms, box-shadow 200ms, transform 160ms;
     cursor: pointer;
     white-space: nowrap;
   }
@@ -79,20 +87,101 @@ p {
     opacity: 0.55;
     cursor: not-allowed;
   }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn-primary,
+  .btn-gold,
+  .btn-ghost {
+    padding-inline: 2.1rem;
+  }
+  .btn-primary::before,
+  .btn-primary::after,
+  .btn-gold::before,
+  .btn-gold::after,
+  .btn-ghost::before,
+  .btn-ghost::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    transform: translateY(-50%) rotate(45deg);
+    background: var(--color-gold-light);
+  }
+  .btn-primary::before,
+  .btn-gold::before,
+  .btn-ghost::before {
+    left: 0.95rem;
+  }
+  .btn-primary::after,
+  .btn-gold::after,
+  .btn-ghost::after {
+    right: 0.95rem;
+  }
   .btn-primary {
-    background: var(--color-kumkum);
-    color: #fff;
+    background: linear-gradient(180deg, #b52440 0%, var(--color-kumkum) 45%, #7d1328 100%);
+    color: #fff8ef;
+    box-shadow:
+      inset 0 0 0 2px #8a1529,
+      inset 0 0 0 3px var(--color-gold-light),
+      0 10px 22px -12px rgb(110 16 34 / 0.7);
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-kumkum-deep);
+    background: linear-gradient(180deg, #a01c36 0%, var(--color-kumkum-deep) 100%);
+    box-shadow:
+      inset 0 0 0 2px #6e1022,
+      inset 0 0 0 3px #f6dc98,
+      0 0 0 3px rgb(236 208 138 / 0.35),
+      0 14px 26px -12px rgb(110 16 34 / 0.75);
+  }
+  .btn-gold {
+    background: linear-gradient(180deg, #f6dfa0 0%, #e2b85c 55%, #c99a3d 100%);
+    color: var(--color-maroon-deep);
+    box-shadow:
+      inset 0 0 0 2px #c99a3d,
+      inset 0 0 0 3px #fff3cf,
+      0 10px 22px -12px rgb(0 0 0 / 0.6);
+  }
+  .btn-gold::before,
+  .btn-gold::after {
+    background: var(--color-maroon);
+  }
+  .btn-gold:hover:not(:disabled) {
+    background: linear-gradient(180deg, #fbe9b8 0%, #e9c26b 100%);
+    box-shadow:
+      inset 0 0 0 2px #c99a3d,
+      inset 0 0 0 3px #fff3cf,
+      0 0 0 3px rgb(236 208 138 / 0.35);
   }
   .btn-ghost {
-    background: transparent;
-    color: var(--color-ink);
-    border: 1.5px solid var(--color-line);
+    background: var(--color-silk);
+    color: var(--color-kumkum-deep);
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-gold),
+      inset 0 0 0 4px var(--color-silk),
+      inset 0 0 0 5px rgb(184 146 58 / 0.45);
+  }
+  .btn-ghost::before,
+  .btn-ghost::after {
+    background: var(--color-gold);
   }
   .btn-ghost:hover:not(:disabled) {
-    border-color: var(--color-ink);
+    background: #fff;
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-kumkum),
+      inset 0 0 0 4px #fff,
+      inset 0 0 0 5px rgb(158 27 50 / 0.35);
+  }
+  /* Compact buttons (header, toolbars) drop the diamonds. */
+  .btn-sm {
+    min-height: 2.5rem;
+    padding: 0.5rem 1.1rem !important;
+    font-size: 0.95rem;
+  }
+  .btn-sm::before,
+  .btn-sm::after {
+    display: none;
   }
   .field {
     width: 100%;
@@ -142,6 +231,46 @@ p {
     list-style: disc;
     padding-left: 1.25rem;
   }
+}
+
+/* Jaali: a quatrefoil lattice, the pattern of carved palace screens. */
+.bg-jaali {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23b8923a' stroke-opacity='.22' stroke-width='1'%3E%3Ccircle cx='0' cy='24' r='24'/%3E%3Ccircle cx='48' cy='24' r='24'/%3E%3Ccircle cx='24' cy='0' r='24'/%3E%3Ccircle cx='24' cy='48' r='24'/%3E%3C/g%3E%3Cpath d='M24 20l4 4-4 4-4-4z' fill='%23b8923a' fill-opacity='.28'/%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+.bg-jaali-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ecd08a' stroke-opacity='.13' stroke-width='1'%3E%3Ccircle cx='0' cy='24' r='24'/%3E%3Ccircle cx='48' cy='24' r='24'/%3E%3Ccircle cx='24' cy='0' r='24'/%3E%3Ccircle cx='24' cy='48' r='24'/%3E%3C/g%3E%3Cpath d='M24 20l4 4-4 4-4-4z' fill='%23ecd08a' fill-opacity='.2'/%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+/* Toran: the strand of mango leaves and marigolds hung over a doorway. */
+.toran {
+  height: 26px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='26' viewBox='0 0 72 26'%3E%3Cpath d='M0 2.5Q18 7 36 2.5T72 2.5' fill='none' stroke='%23b8923a' stroke-width='1.4'/%3E%3Cpath d='M18 5c4.5 5 4.5 12 0 18-4.5-6-4.5-13 0-18z' fill='%234a5a2e'/%3E%3Cpath d='M18 7v14' stroke='%236f8247' stroke-width='.8'/%3E%3Ccircle cx='54' cy='9' r='4.6' fill='%23e9a23b'/%3E%3Ccircle cx='54' cy='9' r='2' fill='%23f5c565'/%3E%3Ccircle cx='54' cy='17.5' r='3.8' fill='%23d9771a'/%3E%3C/svg%3E");
+  background-size: 72px 26px;
+  background-repeat: repeat-x;
+}
+
+/* A gold double-rule frame for feature images. */
+.frame-gold {
+  position: relative;
+  padding: 10px;
+  border-radius: 34px;
+  background: linear-gradient(135deg, #f3dc9c, #b8923a 40%, #f0d38a 60%, #9c7628);
+  box-shadow: 0 30px 60px -30px rgb(74 13 26 / 0.55);
+}
+.frame-gold::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 30px;
+  border: 1px solid rgb(255 248 230 / 0.8);
+  pointer-events: none;
+}
+
+/* Arch-topped image, like a Mughal doorway. */
+.arch {
+  border-radius: 50% 50% 16px 16px / 38% 38% 16px 16px;
 }
 
 /* The marigold garland that forms the before/after divider. */

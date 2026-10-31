@@ -1,5 +1,6 @@
 // Downloads the marketing sample images into public/samples and builds public/og.jpg.
-// Run once from the project root:  npm run fetch-samples
+// The images are committed to the repo; this only fills in any that are missing.
+// Run from the project root:  npm run fetch-samples
 import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
@@ -23,6 +24,18 @@ const FILES = {
   groom: "hf_20261030_082805_53cc094a-aadb-44f4-9799-bc12f1660ec2.png",
   family: "hf_20261030_082804_c30ef59a-cce8-4184-8d36-82ad2e606683.png",
   "mandap-classic": "hf_20261030_082805_4381cb98-0907-4635-bc64-0974357d8367.png",
+  "style-garden-minimal": "hf_20261030_145741_25acd5ca-a21a-46c0-a685-d3913e082be8.png",
+  "style-jasmine-brass": "hf_20261030_145743_728b1c8e-152c-4b4b-9fab-ff0d6a7d86bd.png",
+  "style-boho-pampas": "hf_20261030_145741_2978010f-68cf-4dfe-8237-32f0febd4bfc.png",
+  "style-modern-hexagon": "hf_20261030_145741_de7afd98-94c7-4737-9bdf-6024c2924bf2.png",
+  "style-temple-south": "hf_20261030_145738_80e99594-70c2-4903-a03b-f6a13d34f717.png",
+  "style-rose-dome": "hf_20261030_145742_a91ebba4-f32e-42a5-9992-02cc9334f510.png",
+  "style-rajasthani-royal": "hf_20261030_145739_2bdc6871-8d80-41d9-93a5-96e0d30b8bc0.png",
+  "style-mughal-emerald": "hf_20261030_145740_e108061d-1ab3-4804-8f8e-db5c29fad7d3.png",
+  "style-floral-ceiling": "hf_20261030_145738_c2475dc3-f172-42bf-a30a-e51fc0d177d2.png",
+  "style-ocean-bluff": "hf_20261030_145741_8182843d-0985-494f-9b40-bcfdedb653f7.png",
+  "style-gujarati-mirror": "hf_20261030_145738_5ffd1e49-d2aa-448a-aec1-10556854f6ef.png",
+  "style-bengali-shola": "hf_20261030_145739_eb199d24-80c5-4af5-a88b-c2a581c569d8.png",
 };
 
 const outDir = path.join(process.cwd(), "public", "samples");
@@ -30,6 +43,8 @@ await fs.mkdir(outDir, { recursive: true });
 
 const cache = new Map();
 for (const [name, file] of Object.entries(FILES)) {
+  const existing = path.join(outDir, `${name}.jpg`);
+  if (await fs.stat(existing).then(() => true, () => false)) continue; // already committed
   let buf = cache.get(file);
   if (!buf) {
     const res = await fetch(BASE + file);

@@ -7,7 +7,7 @@ import { track } from "@vercel/analytics";
 import { AlertCircle, Check, ImagePlus, Loader2, Minus, Plus, Sparkles, Upload } from "lucide-react";
 import { SketchCanvas, type SketchCanvasHandle } from "./SketchCanvas";
 import { ALBUM_PACKS, PACKS, AI_LABEL, formatUSD, type PackId } from "@/lib/config";
-import { CATEGORIES, DECOR_PRESETS, PALETTES, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
+import { CATEGORIES, DECOR_PRESETS, PALETTES, STYLE_TIERS, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
 import type { DecorSource, EventId, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
 
 type PreviewShot = { id: string; url?: string; status: string; category: string; event: EventId };
@@ -37,10 +37,12 @@ interface WizardState {
 const STEPS = ["Decor", "Wedding", "People", "Album", "Preview"] as const;
 const STORAGE_KEY = "mc:wizard:v1";
 
-function initialState(pack: PackId): WizardState {
+const DEFAULT_PRESET = "floral_classic";
+
+function initialState(pack: PackId, style?: string): WizardState {
   return {
-    decorSource: "sketch",
-    presetId: DECOR_PRESETS[0].id,
+    decorSource: style ? "preset" : "sketch",
+    presetId: style ?? DEFAULT_PRESET,
     applyToAllEvents: false,
     tradition: "hindu_north",
     events: ["mehndi", "sangeet", "ceremony", "reception"],
@@ -70,12 +72,14 @@ async function uploadFile(file: Blob, kind: string): Promise<string> {
 
 export function CreateWizard({
   initialPack,
+  initialStyle,
   mode,
   credits,
   plan,
   inventory = [],
 }: {
   initialPack: PackId;
+  initialStyle?: string;
   mode: "couple" | "proposal";
   credits: number;
   plan: string | null;
@@ -83,7 +87,7 @@ export function CreateWizard({
 }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [s, setS] = useState<WizardState>(() => initialState(initialPack));
+  const [s, setS] = useState<WizardState>(() => initialState(initialPack, initialStyle));
   const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -100,13 +104,19 @@ export function CreateWizard({
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Partial<WizardState>;
-        setS((cur) => ({ ...cur, ...saved, packId: saved.packId ?? cur.packId }));
+        // A style picked on the home page wins over the saved draft's decor choice.
+        setS((cur) => ({
+          ...cur,
+          ...saved,
+          packId: saved.packId ?? cur.packId,
+          ...(initialStyle ? { decorSource: "preset" as const, presetId: initialStyle } : {}),
+        }));
       }
     } catch {
       /* storage unavailable */
     }
     setHydrated(true);
-  }, []);
+  }, [initialStyle]);
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -370,15 +380,22 @@ export function CreateWizard({
               />
             )}
             {s.decorSource === "preset" && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Decor style">
-                {DECOR_PRESETS.map((p) => (
+              <div role="radiogroup" aria-label="Decor style" className="space-y-7">
+                {STYLE_TIERS.map((t) => (
+                <div key={t.id}>
+                  <p className="mb-3 flex items-baseline gap-3">
+                    <span className="font-display text-xl">{t.name}</span>
+                    <span className="text-sm text-ink-soft">{t.note}</span>
+                  </p>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {DECOR_PRESETS.filter((p) => p.tier === t.id).map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     role="radio"
                     aria-checked={s.presetId === p.id}
                     onClick={() => update("presetId", p.id)}
-                    className={`overflow-hidden rounded-[18px] border-2 bg-white text-left transition ${s.presetId === p.id ? "border-kumkum" : "border-transparent"}`}
+                    className={`overflow-hidden rounded-[18px] border-2 bg-white text-left transition ${s.presetId === p.id ? "border-kumkum ring-4 ring-kumkum/15" : "border-line hover:border-gold"}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.image} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
@@ -387,6 +404,9 @@ export function CreateWizard({
                       <span className="block text-sm text-ink-soft">{p.description}</span>
                     </span>
                   </button>
+                ))}
+                </div>
+                </div>
                 ))}
               </div>
             )}

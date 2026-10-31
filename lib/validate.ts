@@ -45,7 +45,7 @@ export function parseConfig(raw: unknown, packId: PackId): { config: AlbumConfig
   const source = ["sketch", "upload", "preset"].includes(d.source as string) ? (d.source as AlbumConfig["decor"]["source"]) : "preset";
   const decor: AlbumConfig["decor"] = { source, applyToAllEvents: d.applyToAllEvents === true };
   if (source === "preset") {
-    decor.presetId = DECOR_PRESETS.some((p) => p.id === d.presetId) ? (d.presetId as string) : DECOR_PRESETS[0].id;
+    decor.presetId = DECOR_PRESETS.some((p) => p.id === d.presetId) ? (d.presetId as string) : "floral_classic";
   } else {
     if (!isOurImageUrl(d.imageUrl)) return { error: "Add your sketch or decor photo first." };
     decor.imageUrl = d.imageUrl;

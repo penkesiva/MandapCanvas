@@ -32,7 +32,7 @@ export function BeforeAfter({
   return (
     <div
       ref={box}
-      className="relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-[28px] bg-silk shadow-[0_30px_60px_-30px_rgba(110,16,34,0.45)]"
+      className="relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-[24px] bg-silk"
       onPointerDown={(e) => {
         dragging.current = true;
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
