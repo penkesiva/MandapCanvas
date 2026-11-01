@@ -315,7 +315,30 @@ p {
   pointer-events: none;
 }
 
+/* Confetti in the bride-and-groom scenes: a slow fall with a gentle side-to-side sway. */
+@keyframes mc-fall {
+  from { transform: translateY(-16px); }
+  to { transform: translateY(var(--fall, 280px)); }
+}
+@keyframes mc-sway {
+  0%, 100% { transform: translateX(-7px) rotate(-35deg); }
+  50% { transform: translateX(7px) rotate(35deg); }
+}
+.mc-fall {
+  animation: mc-fall 12s linear infinite;
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+.mc-sway {
+  animation: mc-sway 3.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .mc-fall {
+    display: none;
+  }
   *,
   *::before,
   *::after {

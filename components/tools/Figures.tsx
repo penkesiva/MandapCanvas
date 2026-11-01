@@ -4,6 +4,8 @@
  * Chibi proportions: big heads, big shiny eyes, rosy cheeks.
  */
 
+import { useId } from "react";
+
 const SKIN = "#E0A47E";
 const SKIN_SHADE = "#C98962";
 const HAIR = "#2B1B17";
@@ -235,7 +237,51 @@ export function Family({ a, b, className = "" }: { a: string; b: string; classNa
   );
 }
 
-/** Bride and groom under a simple arch in the decor colors. */
+/** Small deterministic pseudo-random numbers, so server and browser render the same confetti. */
+function rand(i: number, salt: number): number {
+  const x = Math.sin(i * 12.9898 + salt * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Slow, endless falling confetti and flower petals. Pure SVG + CSS (see .mc-fall / .mc-sway in globals.css):
+ * negative delays mean the sky is already full on first paint. Hidden for people who prefer reduced motion.
+ */
+function Confetti({ colors, count = 22, seed = 0, width = 320, height = 260 }: { colors: string[]; count?: number; seed?: number; width?: number; height?: number }) {
+  return (
+    <g aria-hidden="true">
+      {Array.from({ length: count }, (_, n) => {
+        const i = n + seed;
+        const x = 8 + rand(i, 1) * (width - 16);
+        const dur = 9 + rand(i, 2) * 7; // 9–16 s per fall: slow and calm
+        const delay = -rand(i, 3) * dur;
+        const sway = 2.6 + rand(i, 4) * 2.4;
+        const color = colors[i % colors.length];
+        const kind = i % 3; // 0 petal, 1 paper strip, 2 round sequin
+        const size = 0.8 + rand(i, 5) * 0.6;
+        return (
+          <g key={i} transform={`translate(${x.toFixed(1)} 0)`}>
+            <g className="mc-fall" style={{ animationDuration: `${dur.toFixed(1)}s`, animationDelay: `${delay.toFixed(1)}s`, ["--fall" as string]: `${height + 24}px` }}>
+              <g className="mc-sway" style={{ animationDuration: `${sway.toFixed(1)}s`, animationDelay: `${(-rand(i, 6) * sway).toFixed(1)}s` }}>
+                <g transform={`scale(${size.toFixed(2)})`}>
+                  {kind === 0 ? (
+                    <path d="M0 -4.5 Q3.6 -1 0 4.5 Q-3.6 -1 0 -4.5 Z" fill={color} opacity="0.92" />
+                  ) : kind === 1 ? (
+                    <rect x="-1.6" y="-3.6" width="3.2" height="7.2" rx="0.8" fill={color} opacity="0.9" />
+                  ) : (
+                    <circle r="2.1" fill={color} opacity="0.9" />
+                  )}
+                </g>
+              </g>
+            </g>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** Bride and groom under a simple arch in the decor colors, with confetti drifting down. */
 export function CoupleScene({
   bride,
   dupatta,
@@ -243,6 +289,7 @@ export function CoupleScene({
   safa,
   decor,
   trim = "#C9A24B",
+  confetti = true,
   className = "",
 }: {
   bride: string;
@@ -251,11 +298,19 @@ export function CoupleScene({
   safa: string;
   decor: string[];
   trim?: string;
+  confetti?: boolean;
   className?: string;
 }) {
   const [d1, d2, d3] = [decor[0], decor[1] ?? decor[0], decor[2] ?? decor[1] ?? decor[0]];
+  const clip = `mc-scene-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg viewBox="0 0 320 260" width="320" height="260" className={className} role="img" aria-label="Bride and groom in these colors">
+      <defs>
+        <clipPath id={clip}>
+          <rect width="320" height="260" rx="18" />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${clip})`}>
       <rect width="320" height="260" rx="18" fill={shade(d3, 0.04)} />
       <path d="M40 250 L40 110 Q40 30 160 30 Q280 30 280 110 L280 250" fill="none" stroke={d1} strokeWidth="16" />
       <path d="M58 250 L58 112 Q58 50 160 50 Q262 50 262 112 L262 250" fill="none" stroke={d2} strokeWidth="5" />
@@ -269,11 +324,14 @@ export function CoupleScene({
       ))}
       <rect x="0" y="236" width="320" height="24" fill={shade(d3, -0.08)} />
       <ellipse cx="160" cy="240" rx="92" ry="6" fill="#000" opacity="0.08" />
+      {confetti ? <Confetti colors={[trim, "#F2A33A", "#E7849B", d1, "#FFF6E5", d2]} count={16} /> : null}
       <g transform="translate(70 22) scale(0.95)">
         <Groom outfit={groom} safa={safa} trim={trim} />
       </g>
       <g transform="translate(136 22) scale(0.95)">
         <Bride outfit={bride} dupatta={dupatta} trim={trim} />
+      </g>
+      {confetti ? <Confetti colors={[trim, "#F2A33A", "#E7849B", "#FFF6E5"]} count={6} seed={100} /> : null}
       </g>
     </svg>
   );
