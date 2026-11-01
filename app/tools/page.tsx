@@ -9,12 +9,12 @@ import { SITE } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Free Desi Wedding Planning Tools",
   description:
-    "Free tools for Indian and Desi weddings: match outfit colors for the bride, groom and family, and generate wedding hashtags for every event from Haldi to the reception.",
+    "Free tools for Indian and Desi weddings: find color palettes by event and season, match outfit colors for the bride, groom and family, and generate wedding hashtags for every event.",
   alternates: { canonical: "/tools" },
-  keywords: ["free wedding planning tools", "Indian wedding tools", "Desi wedding planner", "wedding hashtag generator", "outfit color combination"],
+  keywords: ["free wedding planning tools", "Indian wedding tools", "Desi wedding planner", "Indian wedding color palette", "wedding hashtag generator", "outfit color combination"],
   openGraph: {
     title: "Free Desi Wedding Planning Tools · MandapCanvas",
-    description: "Outfit color matcher and wedding hashtag generator for Desi weddings. Free, no sign-up.",
+    description: "Color palette finder, outfit color matcher and wedding hashtag generator for Desi weddings. Free, no sign-up.",
     url: "/tools",
   },
 };
@@ -36,7 +36,7 @@ export default function ToolsPage() {
             intro="Small, useful tools for the decisions every family argues about. Free, instant, no sign-up."
           />
         </div>
-        <ul className="mt-12 grid gap-6 md:grid-cols-2">
+        <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {FREE_TOOLS.map((t) => (
             <li key={t.slug}>
               <Link href={`/tools/${t.slug}`} className="group block overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">

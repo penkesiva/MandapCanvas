@@ -13,6 +13,23 @@ export interface FreeTool {
 
 export const FREE_TOOLS: FreeTool[] = [
   {
+    slug: "wedding-color-palette-finder",
+    name: "Wedding color palette finder",
+    blurb: "Pick the event, the season and the time of day. Get the three palettes that suit it best, with in-season flowers.",
+    title: "Indian Wedding Color Palette Finder: Colors by Event and Season",
+    description:
+      "Free Desi wedding color palette finder. Choose Haldi, Mehndi, Sangeet, the ceremony or the reception, plus the season, time of day and outfit color, and get the best decor palettes with flowers in season.",
+    keywords: [
+      "Indian wedding color palette",
+      "Indian wedding color schemes",
+      "mehndi color theme",
+      "sangeet color theme",
+      "fall Indian wedding colors",
+      "mandap decor colors",
+    ],
+    image: "/samples/palette-emerald.jpg",
+  },
+  {
     slug: "outfit-color-matcher",
     name: "Outfit color matcher",
     blurb: "Pick the bride's outfit color. Get the groom's colors, the family's colors and a decor palette that won't swallow her.",
