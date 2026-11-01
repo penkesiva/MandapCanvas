@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { track } from "@vercel/analytics";
+import { engage as track } from "@/lib/engage";
 import { Check, Copy, Download, ImagePlus, Pipette, ShieldCheck, Sparkles } from "lucide-react";
 import { colorDistance, extractColors, hexToRgb, mainOutfitColor, nameColor, sampleAt, toHex, type ExtractedColor } from "@/lib/colorExtract";
 import { nearestOutfit } from "@/lib/outfitColors";
 import { PALETTES, getPalette } from "@/lib/catalog";
+import { CoupleScene, Family } from "./Figures";
 
 const EXAMPLES = [
   { src: "/samples/bride.jpg", label: "Emerald lehenga" },
@@ -273,6 +274,15 @@ export function PhotoPalette() {
                     </p>
                   </div>
                 </div>
+                <CoupleScene
+                  className="mt-5 h-auto w-full max-w-md"
+                  bride={main.hex}
+                  dupatta={match.family[0].hex}
+                  groom={match.groom[0].hex}
+                  safa={main.hex}
+                  trim={metal?.metal === "silver" ? "#C0C6D0" : "#C9A24B"}
+                  decor={(decor[0] ?? getPalette(match.decorPalette)).swatches}
+                />
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
                   <div>
                     <p className="font-semibold">Groom</p>
@@ -286,6 +296,7 @@ export function PhotoPalette() {
                   </div>
                   <div>
                     <p className="font-semibold">Family and bridal party</p>
+                    <Family a={match.family[0].hex} b={match.family[2]?.hex ?? match.family[1].hex} className="mt-2 h-auto w-24" />
                     <ul className="mt-2 space-y-2">
                       {match.family.map((s) => (
                         <li key={s.name} className="flex items-center gap-2 text-sm">

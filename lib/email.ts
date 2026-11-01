@@ -1,5 +1,5 @@
 import "server-only";
-import { SITE } from "./config";
+import { SITE, FOUNDING_OFFER } from "./config";
 import type { Album } from "./types";
 
 /**
@@ -28,14 +28,18 @@ function shell(body: string): string {
   <p style="font-size:12px;color:#7a6470;margin-top:32px">AI concept previews for Desi weddings in the U.S.</p></div>`;
 }
 
-export async function sendLoginEmail(to: string, link: string) {
+export async function sendLoginEmail(to: string, link: string, opts?: { offer?: boolean }) {
+  const offer = opts?.offer
+    ? `<p style="font-size:15px;background:#fbf1ee;border-radius:12px;padding:12px 14px">Welcome! As a founding couple you get <strong>${FOUNDING_OFFER.text}</strong>: use code <strong>${FOUNDING_OFFER.code}</strong> at checkout.</p>`
+    : "";
   return send(
     to,
-    "Your MandapCanvas sign-in link",
+    opts?.offer ? "Welcome to MandapCanvas: your sign-in link" : "Your MandapCanvas sign-in link",
     shell(`<p style="font-size:16px">Use this link to sign in. It works for 30 minutes.</p>
       <p><a href="${link}" style="display:inline-block;background:#9E1B32;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif">Sign in to MandapCanvas</a></p>
+      ${offer}
       <p style="font-size:13px;color:#7a6470">If you didn't ask for this, you can ignore this email.</p>`),
-    `Sign in to MandapCanvas: ${link}\nThis link works for 30 minutes.`,
+    `Sign in to MandapCanvas: ${link}\nThis link works for 30 minutes.${opts?.offer ? `\nFounding offer: ${FOUNDING_OFFER.text} with code ${FOUNDING_OFFER.code}.` : ""}`,
   );
 }
 

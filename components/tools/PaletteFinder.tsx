@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { track } from "@vercel/analytics";
+import { engage as track } from "@/lib/engage";
 import { FINDER_EVENTS, SEASONS, SEASON_FLOWERS, findPalettes, type FinderEvent, type Season, type TimeOfDay } from "@/lib/paletteFinder";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
+import { CoupleScene } from "./Figures";
 
 export function PaletteFinder() {
   const [event, setEvent] = useState<FinderEvent>("ceremony");
@@ -83,11 +84,14 @@ export function PaletteFinder() {
         <ol className="mt-4 grid gap-4 lg:grid-cols-3">
           {results.map((r, i) => (
             <li key={r.palette.id} className={`flex flex-col overflow-hidden rounded-2xl border ${i === 0 ? "border-kumkum shadow-[0_20px_40px_-30px_rgba(110,16,34,0.6)]" : "border-line"}`}>
-              <div className="flex h-24" aria-hidden="true">
-                {r.palette.swatches.map((c, j) => (
-                  <span key={c} className={j === 0 ? "flex-[2]" : "flex-1"} style={{ background: c }} />
-                ))}
-              </div>
+              <CoupleScene
+                className="h-auto w-full"
+                bride={OUTFIT_COLORS.find((o) => o.id === outfit)?.hex ?? r.palette.swatches[0]}
+                groom={r.palette.swatches[2]}
+                safa={r.palette.swatches[0]}
+                dupatta={r.palette.swatches[1]}
+                decor={r.palette.swatches}
+              />
               <div className="flex flex-1 flex-col p-4">
                 <div className="flex items-baseline justify-between gap-2">
                   <p className="font-display text-xl">

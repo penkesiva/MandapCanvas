@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { currentUser } from "@/lib/auth";
-import { SITE } from "@/lib/config";
+import { FOUNDING_OFFER, SITE } from "@/lib/config";
+import { SignupNudge } from "./SignupNudge";
 
 export async function SiteHeader() {
   const user = await currentUser();
   return (
+    <>
     <header className="no-print sticky top-0 z-40 border-b border-gold/40 bg-milk/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-display text-[1.6rem] leading-none text-kumkum" aria-label="MandapCanvas home">
@@ -43,6 +45,8 @@ export async function SiteHeader() {
         <Link href={user ? "/account" : "/signin"}>{user ? "My albums" : "Sign in"}</Link>
       </nav>
     </header>
+    <SignupNudge signedIn={!!user} offer={FOUNDING_OFFER} />
+    </>
   );
 }
 

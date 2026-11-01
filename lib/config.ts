@@ -129,6 +129,12 @@ export const PLANS: Record<PlanId, Plan> = {
   },
 };
 
+/** Offer shown to people who sign up from the site (a Stripe promotion code you create in the dashboard). */
+export const FOUNDING_OFFER = {
+  code: process.env.NEXT_PUBLIC_FOUNDING_CODE || "FOUNDING",
+  text: "$20 off your first album",
+};
+
 /** Free preview limits (no account needed). */
 export const FREE_PREVIEW = {
   imagesPerAlbum: 2,

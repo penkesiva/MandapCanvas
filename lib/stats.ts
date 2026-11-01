@@ -13,6 +13,7 @@ export async function recordStat(s: {
   revenueCents?: number;
   orders?: number;
   subscriptions?: number;
+  leads?: number;
 }): Promise<void> {
   const ops: Promise<number>[] = [];
   for (const [field, value] of Object.entries(s)) {

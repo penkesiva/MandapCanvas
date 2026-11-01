@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { track } from "@vercel/analytics";
+import { engage as track } from "@/lib/engage";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { generateHashtags } from "@/lib/hashtags";
+import { CoupleScene } from "./Figures";
 
 export function HashtagGenerator() {
   const [f, setF] = useState({ name1: "", name2: "", last1: "", last2: "", year: "", place: "" });
@@ -57,7 +58,18 @@ export function HashtagGenerator() {
                 {copied === "all" ? <Check size={16} /> : <Copy size={16} />} {copied === "all" ? "Copied" : "Copy all"}
               </button>
             </div>
-            <div className="mt-4 space-y-5">
+            <figure className="mt-4 grid items-center gap-4 overflow-hidden rounded-2xl bg-silk p-4 sm:grid-cols-[220px_1fr]">
+              <CoupleScene className="h-auto w-full" bride="#B3131B" dupatta="#C2185B" groom="#F6EFE2" safa="#B3131B" decor={["#C9A24B", "#F2C4C0", "#FFF8EE"]} />
+              <figcaption className="text-center sm:text-left">
+                <span className="block text-sm text-ink-soft">On your welcome sign</span>
+                <span className="mt-1 block font-display text-2xl text-maroon">
+                  {f.name1.trim() || "Priya"} &amp; {f.name2.trim() || "Arjun"}
+                </span>
+                <span className="mt-1 block text-lg font-semibold text-kumkum">{groups[1]?.tags[2] ?? all[0]}</span>
+                <span className="mt-1 block text-xs text-ink-soft">Share your photos with this hashtag</span>
+              </figcaption>
+            </figure>
+            <div className="mt-5 space-y-5">
               {groups.map((g) => (
                 <div key={g.id}>
                   <p className="mb-2 text-sm font-semibold text-ink-soft">{g.title}</p>

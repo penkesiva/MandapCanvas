@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { track } from "@vercel/analytics";
+import { engage as track } from "@/lib/engage";
 import { MATCHER_EVENTS, OUTFIT_COLORS, nearestOutfit, type Swatch } from "@/lib/outfitColors";
 import { getPalette } from "@/lib/catalog";
+import { CoupleScene, Family } from "./Figures";
 
 function Chip({ s }: { s: Swatch }) {
   return (
@@ -88,6 +89,16 @@ export function OutfitMatcher() {
             </div>
           </div>
 
+          <CoupleScene
+            className="mt-5 h-auto w-full max-w-md"
+            bride={custom ?? match.hex}
+            dupatta={match.family[0].hex}
+            groom={match.groom[0].hex}
+            safa={custom ?? match.hex}
+            trim={match.metal === "silver" ? "#C0C6D0" : "#C9A24B"}
+            decor={palette.swatches}
+          />
+          <p className="mt-2 text-xs text-ink-soft">Groom in {match.groom[0].name.toLowerCase()} with a safa that picks up her color; decor in {palette.name}.</p>
           <div className="mt-5 grid gap-6 sm:grid-cols-2">
             <div>
               <p className="font-semibold">Groom</p>
@@ -95,6 +106,7 @@ export function OutfitMatcher() {
             </div>
             <div>
               <p className="font-semibold">Family and bridal party</p>
+              <Family a={match.family[0].hex} b={match.family[2]?.hex ?? match.family[1].hex} className="mt-2 h-auto w-28" />
               <ul className="mt-3 space-y-3">{match.family.map((s) => <Chip key={s.name} s={s} />)}</ul>
             </div>
           </div>

@@ -20,6 +20,15 @@ export default async function Admin() {
   const ids = (await listAlbumIds("albums:all")).slice(0, 25);
   const albums = (await Promise.all(ids.map(getAlbum))).filter(Boolean);
   const users = (await kv().lrange("users:all", 0, -1)).length;
+  const leads = (await kv().lrange("leads", 0, 49))
+    .map((l) => {
+      try {
+        return JSON.parse(l) as { email: string; source: string; path: string; at: number };
+      } catch {
+        return null;
+      }
+    })
+    .filter((l) => l !== null);
   const revenue = total.revenueCents ?? 0;
   const cost = Math.round((total.costMilliCents ?? 0) / 1000);
 
@@ -42,6 +51,7 @@ export default async function Admin() {
             ["Gross margin", revenue ? `${Math.round(((revenue - cost) / revenue) * 100)}%` : "—"],
             ["Orders + subs", String((total.orders ?? 0) + (total.subscriptions ?? 0))],
             ["Users", String(users)],
+            ["Sign-up leads", String(total.leads ?? 0)],
             ["Images", String(total.images ?? 0)],
             ["Free previews", String(total.previews ?? 0)],
             ["Failures", String(total.failures ?? 0)],
@@ -64,6 +74,23 @@ export default async function Admin() {
             ))}
           </tbody>
         </table>
+
+        <h2 className="mt-12 text-2xl">Recent sign-up leads</h2>
+        {leads.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-soft">None yet. The sign-up prompt appears after someone spends a minute or two on the site.</p>
+        ) : (
+          <table className="mt-3 w-full text-left text-sm">
+            <tbody>
+              {leads.map((l) => (
+                <tr key={`${l.email}-${l.at}`} className="border-b border-line">
+                  <td className="py-2 pr-4">{l.email}</td>
+                  <td className="py-2 pr-4 text-ink-soft">{l.source}</td>
+                  <td className="py-2 text-ink-soft">{new Date(l.at).toLocaleString("en-US")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
         <h2 className="mt-12 text-2xl">Last 14 days</h2>
         <div className="mt-3 overflow-x-auto">
