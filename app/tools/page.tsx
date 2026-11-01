@@ -4,6 +4,7 @@ import { PageShell } from "@/components/SiteChrome";
 import { SectionTitle } from "@/components/Ornaments";
 import { Breadcrumbs, JsonLd, breadcrumbLd } from "@/components/tools/ToolPage";
 import { FREE_TOOLS } from "@/lib/tools";
+import { ToolArt } from "@/components/tools/ToolArt";
 import { SITE } from "@/lib/config";
 
 export const metadata: Metadata = {
@@ -40,8 +41,7 @@ export default function ToolsPage() {
           {FREE_TOOLS.map((t) => (
             <li key={t.slug}>
               <Link href={`/tools/${t.slug}`} className="group block overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={t.image} alt="" className="aspect-[16/9] w-full object-cover" loading="lazy" />
+                <ToolArt slug={t.slug} />
                 <span className="block p-6">
                   <span className="block font-display text-2xl text-maroon group-hover:text-kumkum">{t.name}</span>
                   <span className="mt-2 block text-ink-soft">{t.blurb}</span>
