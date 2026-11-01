@@ -196,3 +196,158 @@ export function buildLookPrompt(req: LookRequest): string {
     "FINAL CHECK: the face is the same person as in the PHOTO.",
   ].join("\n\n");
 }
+
+/* ------------------------------------------------------------ Look Packs: portraits at every event */
+
+export type LookEvent = "haldi" | "mehndi" | "sangeet" | "garba" | "ceremony" | "reception";
+type Person = "bride" | "groom" | "couple";
+
+/** What each event usually looks like: outfits that differ from the ceremony, and the scene. */
+const EVENT_LOOK: Record<LookEvent, { bride: string; groom: string; scene: string; couple: string }> = {
+  haldi: {
+    bride: "a light yellow or marigold cotton-silk lehenga, sharara or simple saree with fresh-flower jewelry (marigold and jasmine earrings, maang tikka and bracelets made of flowers)",
+    groom: "a yellow or white cotton kurta with white pajama, simple and comfortable",
+    scene: "a joyful daytime Haldi ceremony with marigold garlands, brass urlis of turmeric paste and bright natural light; a little haldi paste smudged playfully on the cheeks and arms",
+    couple: "laughing as family hands apply haldi to their cheeks",
+  },
+  mehndi: {
+    bride: "a vibrant green, pink or multicolor lehenga with mirror and gota work, floral jewelry, and intricate dark mehndi on both hands and forearms",
+    groom: "a pastel or printed kurta with a light Nehru jacket",
+    scene: "an evening Mehndi with colorful umbrellas, floor cushions, marigold strings and warm fairy lights",
+    couple: "sitting together while the bride shows off her mehndi",
+  },
+  sangeet: {
+    bride: "a glamorous sequinned or embellished lehenga or pre-draped saree with statement earrings",
+    groom: "an embroidered bandhgala or an Indo-western sherwani with subtle sparkle",
+    scene: "a Sangeet night with stage lights, a dance floor and sparkling string lights",
+    couple: "dancing together mid-twirl on the stage",
+  },
+  garba: {
+    bride: "a mirror-work chaniya choli with oxidised silver jewelry",
+    groom: "a mirror-work kediyu with a dhoti or churidar",
+    scene: "a Garba night with dandiya sticks, colorful lanterns and a festive crowd softly blurred in the background",
+    couple: "playing dandiya together",
+  },
+  ceremony: {
+    bride: "",
+    groom: "",
+    scene: "the wedding ceremony at a beautifully decorated mandap with flowers, drapes and the sacred fire",
+    couple: "at the mandap during the ceremony, exchanging garlands (varmala) or seated for the rituals",
+  },
+  reception: {
+    bride: "a modern couture lehenga or a heavily embellished saree in a jewel or metallic tone, with diamond and polki jewelry",
+    groom: "a tailored tuxedo-style bandhgala or a sharp sherwani-style jacket",
+    scene: "a grand evening reception with chandeliers, a floral stage and soft glowing lights",
+    couple: "standing together on the reception stage, elegant and glowing",
+  },
+};
+
+const POSES: Record<Person, string[]> = {
+  bride: [
+    "a classic waist-up portrait looking at the camera with a soft smile",
+    "a full-length shot that shows the whole outfit",
+    "a candid laugh, looking slightly away from the camera",
+    "a close-up portrait focused on the face, jewelry and makeup",
+    "a graceful walking shot, as if making her entrance",
+    "a seated portrait with the outfit spread beautifully",
+  ],
+  groom: [
+    "a classic waist-up portrait looking at the camera with a confident smile",
+    "a full-length shot that shows the whole outfit",
+    "a candid laugh, looking slightly away from the camera",
+    "a close-up portrait focused on the face and the turban or collar details",
+    "a relaxed shot adjusting his cufflinks or stole",
+    "a seated portrait on a carved chair",
+  ],
+  couple: [
+    "standing side by side, smiling at the camera",
+    "a candid moment laughing together",
+    "holding hands and walking toward the camera",
+    "the groom looking at the bride while she smiles at the camera",
+    "foreheads close together, eyes closed, a tender moment",
+    "a playful moment, the bride leaning on the groom's shoulder",
+  ],
+};
+
+/** The album's tradition for event names (Muhurtham, Pheras, Nikah…). */
+export const LOOK_TO_ALBUM_TRADITION: Record<string, string> = {
+  north: "hindu_north",
+  south: "hindu_south",
+  bengali: "bengali",
+  punjabi: "hindu_north",
+  gujarati: "gujarati",
+  marathi: "marathi",
+  nikah: "muslim",
+  modern: "fusion",
+};
+
+/** Default events for a tradition's Look Pack. */
+export function defaultLookEvents(tradition: string): LookEvent[] {
+  if (tradition === "gujarati") return ["haldi", "mehndi", "garba", "ceremony", "reception"];
+  return ["haldi", "mehndi", "sangeet", "ceremony", "reception"];
+}
+
+/** Bride-only, groom-only or a couple's mix of portraits. */
+export function lookMix(who: Person, total: number): { bride: number; groom: number; couple: number } {
+  if (who === "bride") return { bride: total, groom: 0, couple: 0 };
+  if (who === "groom") return { bride: 0, groom: total, couple: 0 };
+  const couple = Math.round(total * 0.5);
+  const bride = Math.round((total - couple) / 2);
+  return { bride, groom: total - couple - bride, couple };
+}
+
+/**
+ * Prompt for one Look Pack portrait. `refs` says which labeled photos are attached:
+ * BRIDE PHOTO n, GROOM PHOTO n, or COUPLE PHOTO n (the two of them together).
+ */
+export function buildEventLookPrompt(opts: {
+  look: { who: Person; tradition: string; color: string; jewelry: LookJewelry };
+  event: LookEvent;
+  eventName: string;
+  person: Person;
+  variant: number;
+  refs: { bride: number; groom: number; couple: number };
+}): string {
+  const t = getTradition(opts.look.tradition);
+  const ev = EVENT_LOOK[opts.event];
+  const outfit = OUTFIT_COLORS.find((o) => o.id === opts.look.color);
+  const jewelry = LOOK_JEWELRY.find((j) => j.id === opts.look.jewelry)!.text;
+  const brideOutfit =
+    opts.event === "ceremony"
+      ? `${t.bride}${outfit ? `, in ${outfit.name.toLowerCase()} (${outfit.hex}) as the main color` : ""}`
+      : `${ev.bride}, in the ${t.name} style`;
+  const groomOutfit =
+    opts.event === "ceremony"
+      ? `${t.groom}${outfit ? `, in colors that complement the bride's ${outfit.name.toLowerCase()}: ${outfit.groom.map((g) => g.name.toLowerCase()).join(", ")}` : ""}`
+      : ev.groom;
+  const pose = POSES[opts.person][opts.variant % POSES[opts.person].length];
+
+  const photos = (who: "bride" | "groom" | "couple", n: number) => (n ? `${n} photo${n > 1 ? "s" : ""} labeled ${who.toUpperCase()} PHOTO` : "");
+  const refLine =
+    opts.person === "couple"
+      ? opts.refs.couple
+        ? `The ${photos("couple", opts.refs.couple)} show the real couple together; the woman is the bride and the man is the groom.`
+        : `The ${photos("bride", opts.refs.bride)} show the real bride; the ${photos("groom", opts.refs.groom)} show the real groom.`
+      : opts.refs[opts.person]
+        ? `The ${photos(opts.person, opts.refs[opts.person])} show the real ${opts.person}. Study every photo to understand the face from different angles.`
+        : `The ${photos("couple", opts.refs.couple)} show the real couple; the ${opts.person} is the ${opts.person === "bride" ? "woman" : "man"} in them. Show only the ${opts.person}.`;
+
+  const who =
+    opts.person === "couple"
+      ? `the bride and groom together, ${ev.couple}. Pose: ${pose}`
+      : `the ${opts.person} alone. Pose: ${pose}`;
+
+  return [
+    `Create a photo-real ${opts.eventName} portrait from an Indian wedding, showing ${who}.`,
+    refLine,
+    "IDENTITY (MUST FOLLOW): the people must be unmistakably the same real people, recognizable to their families. Keep each face exactly: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone, age, ethnicity, body type, and any beard or moles. Do not slim, lighten, smooth or beautify the faces, and do not swap them for models.",
+    opts.person !== "groom" ? `BRIDE OUTFIT: ${brideOutfit}. Jewelry: ${jewelry}. Natural, elegant makeup that suits her own skin tone.` : "",
+    opts.person !== "bride" ? `GROOM OUTFIT: ${groomOutfit}.` : "",
+    `SCENE: ${ev.scene}.`,
+    "Photography: a top Indian wedding photographer, 85mm portrait lens, natural skin texture, flattering light, shallow depth of field, rich fabric detail, faces in sharp focus, tasteful and dignified, vertical 3:4 framing.",
+    "No text, logos, watermarks or borders. No extra people in focus.",
+    "FINAL CHECK: every face matches the PHOTOS.",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}

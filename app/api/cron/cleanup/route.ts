@@ -38,9 +38,14 @@ export async function GET(request: Request) {
       const a = await getAlbum(id);
       if (!a) continue;
       const p = a.config.people;
-      if ((p.brideUrl && expired.has(p.brideUrl)) || (p.groomUrl && expired.has(p.groomUrl))) {
+      const lists = [p.brideUrls, p.groomUrls, p.coupleUrls];
+      const listHit = lists.some((l) => l?.some((u) => expired.has(u)));
+      if ((p.brideUrl && expired.has(p.brideUrl)) || (p.groomUrl && expired.has(p.groomUrl)) || listHit) {
         if (p.brideUrl && expired.has(p.brideUrl)) p.brideUrl = undefined;
         if (p.groomUrl && expired.has(p.groomUrl)) p.groomUrl = undefined;
+        if (p.brideUrls) p.brideUrls = p.brideUrls.filter((u) => !expired.has(u));
+        if (p.groomUrls) p.groomUrls = p.groomUrls.filter((u) => !expired.has(u));
+        if (p.coupleUrls) p.coupleUrls = p.coupleUrls.filter((u) => !expired.has(u));
         await saveAlbum(a);
       }
     }

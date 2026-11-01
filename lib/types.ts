@@ -56,7 +56,20 @@ export interface AlbumConfig {
     mode: PeopleMode;
     brideUrl?: string;
     groomUrl?: string;
+    /** Look Packs: up to 5 photos per person (or of the two together) so faces stay consistent. */
+    brideUrls?: string[];
+    groomUrls?: string[];
+    coupleUrls?: string[];
     consentAt?: number;
+  };
+  /** Set for Wedding Look Pack albums: portraits at every event instead of decor. */
+  look?: {
+    who: "bride" | "groom" | "couple";
+    /** A lib/bridalLooks tradition id. */
+    tradition: string;
+    /** An outfit color id for the main ceremony, or "". */
+    color: string;
+    jewelry: "delicate" | "classic" | "royal";
   };
   mix: ShotMix;
   /** Per-event palettes, venue and light. When set for an event, it overrides the album-wide values. */

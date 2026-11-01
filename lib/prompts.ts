@@ -152,10 +152,14 @@ export function buildEditPrompt(config: AlbumConfig, shot: Shot, instruction: st
   const palette = getPalette(shot.paletteId);
   const label = eventLabel(shot.event, config.tradition);
   return [
-    "TASK: Edit the attached CURRENT IMAGE, a photo-real preview of a South Asian wedding decor design in the United States.",
+    config.look
+      ? "TASK: Edit the attached CURRENT IMAGE, a photo-real wedding portrait of real people. Their faces must stay exactly the same."
+      : "TASK: Edit the attached CURRENT IMAGE, a photo-real preview of a South Asian wedding decor design in the United States.",
     `CHANGE REQUESTED: ${instruction.trim().slice(0, 300)}`,
     "KEEP EVERYTHING ELSE THE SAME: the same layout and structure, camera angle and framing, venue, time of day and lighting, people (faces, poses, outfits) and every element the request does not mention. Do not redesign, re-crop or restage the scene.",
-    `CONTEXT: ${getTradition(config.tradition).name} wedding, ${label}. Palette in use: ${palette.name} (${palette.colors}). Only depart from it if the request asks.`,
+    config.look
+      ? `CONTEXT: ${getTradition(config.tradition).name} wedding, ${label}.`
+      : `CONTEXT: ${getTradition(config.tradition).name} wedding, ${label}. Palette in use: ${palette.name} (${palette.colors}). Only depart from it if the request asks.`,
     getTradition(config.tradition).guardrails ? `RESPECT: ${getTradition(config.tradition).guardrails}` : "",
     "QUALITY: Photorealistic, editorial wedding photography. No text, logos, watermarks or captions.",
   ]

@@ -3,6 +3,7 @@ import { ADVANCE_BATCH, FREE_PREVIEW, PACKS, type PackId } from "./config";
 import { EVENTS, CATEGORIES, getTradition, eventLabel, getPalette } from "./catalog";
 import { acquireLock, getJSON, kv, setJSON } from "./kv";
 import { buildEditPrompt, buildShotPrompt, type PromptRefs } from "./prompts";
+import { buildEventLookPrompt } from "./bridalLooks";
 import { generateImage, watermark, type RefImage } from "./imagegen";
 import { loadImage, saveImage, deleteImage } from "./blob";
 import { recordStat, todayCostCents } from "./stats";
@@ -179,11 +180,32 @@ export function designFor(c: AlbumConfig, event: EventId): EventDesign | null {
   return applies && c.decor.imageUrl ? { source: c.decor.source, imageUrl: c.decor.imageUrl } : null;
 }
 
-type Refs = { decor: Map<string, RefImage>; bride?: RefImage; groom?: RefImage; inventory: RefImage[] };
+type Refs = {
+  decor: Map<string, RefImage>;
+  bride?: RefImage;
+  groom?: RefImage;
+  inventory: RefImage[];
+  /** Look Packs: every photo of each person. */
+  people: { bride: RefImage[]; groom: RefImage[]; couple: RefImage[] };
+};
 
 async function loadRefs(album: Album, events: EventId[] = album.config.events): Promise<Refs> {
   const c = album.config;
-  const out: Refs = { decor: new Map(), inventory: [] };
+  const out: Refs = { decor: new Map(), inventory: [], people: { bride: [], groom: [], couple: [] } };
+  if (c.look && c.people.consentAt) {
+    const sets = { bride: c.people.brideUrls ?? [], groom: c.people.groomUrls ?? [], couple: c.people.coupleUrls ?? [] };
+    await Promise.allSettled(
+      (Object.keys(sets) as (keyof typeof sets)[]).flatMap((who) =>
+        sets[who].slice(0, 5).map((url, i) =>
+          loadImage(url).then((img) => {
+            out.people[who][i] = { label: `${who.toUpperCase()} PHOTO`, ...img };
+          }),
+        ),
+      ),
+    );
+    for (const k of ["bride", "groom", "couple"] as const) out.people[k] = out.people[k].filter(Boolean);
+    return out;
+  }
   const tasks: Promise<void>[] = [];
   const urls = new Set(events.map((e) => designFor(c, e)).filter((d) => d && d.source !== "preset" && d.imageUrl).map((d) => d!.imageUrl!));
   for (const url of urls) tasks.push(loadImage(url).then((i) => void out.decor.set(url, { label: "DECOR", ...i })));
@@ -197,8 +219,49 @@ async function loadRefs(album: Album, events: EventId[] = album.config.events): 
   return out;
 }
 
-function aspectFor(shot: Shot): "4:3" | "3:4" {
+function aspectFor(shot: Shot, album?: Album): "4:3" | "3:4" {
+  if (album?.config.look) return "3:4";
   return shot.category === "bride" || shot.category === "groom" ? "3:4" : "4:3";
+}
+
+/** Up to `n` photos, rotating the starting photo per shot so every upload gets used. */
+function pick(list: RefImage[], n: number, offset: number): RefImage[] {
+  if (list.length <= n) return list;
+  return Array.from({ length: n }, (_, i) => list[(offset + i) % list.length]);
+}
+
+/** Look Pack portrait: the person's photos plus the per-event outfit and scene. */
+async function renderLookShot(album: Album, shot: Shot, refs: Refs): Promise<{ url: string; cost: number }> {
+  const c = album.config;
+  const look = c.look!;
+  const person = shot.category === "groom" ? "groom" : shot.category === "couple" ? "couple" : "bride";
+  const variant = album.shots.filter((s) => s.event === shot.event && s.category === shot.category).findIndex((s) => s.id === shot.id);
+  const offset = Math.max(0, variant) + album.shots.findIndex((s) => s.id === shot.id);
+  let attached: RefImage[] = [];
+  if (person === "couple") {
+    attached = refs.people.couple.length
+      ? pick(refs.people.couple, 3, offset)
+      : [...pick(refs.people.bride, 2, offset), ...pick(refs.people.groom, 2, offset)];
+  } else {
+    attached = refs.people[person].length ? pick(refs.people[person], 3, offset) : pick(refs.people.couple, 2, offset);
+  }
+  const count = (label: string) => attached.filter((r) => r.label === label).length;
+  const prompt = buildEventLookPrompt({
+    look,
+    event: shot.event,
+    eventName: eventLabel(shot.event, c.tradition),
+    person,
+    variant: Math.max(0, variant),
+    refs: { bride: count("BRIDE PHOTO"), groom: count("GROOM PHOTO"), couple: count("COUPLE PHOTO") },
+  });
+  const result = await generateImage({
+    prompt,
+    refs: attached,
+    aspectRatio: "3:4",
+    mockLabel: { title: `${eventLabel(shot.event, c.tradition)} · ${person}`, subtitle: look.tradition, paletteId: "red_gold" },
+  });
+  const saved = await saveImage(`albums/${album.id}/${shot.id}`, result.data, result.mimeType);
+  return { url: saved.url, cost: result.costMilliCents };
 }
 
 async function renderShot(
@@ -221,13 +284,14 @@ async function renderShot(
     const result = await generateImage({
       prompt: buildEditPrompt(c, shot, shot.edit),
       refs: [{ label: "CURRENT IMAGE", ...current }],
-      aspectRatio: aspectFor(shot),
+      aspectRatio: aspectFor(shot, album),
       hd: PACKS[album.packId]?.hd,
       mockLabel: { ...mockLabel, subtitle: `Changed: ${shot.edit.slice(0, 60)}` },
     });
     const saved = await saveImage(`albums/${album.id}/${shot.id}`, result.data, result.mimeType);
     return { url: saved.url, cost: result.costMilliCents };
   }
+  if (c.look) return renderLookShot(album, shot, refs);
 
   const isPeople = !["decor", "decor_detail"].includes(shot.category);
   const design = designFor(c, shot.event);

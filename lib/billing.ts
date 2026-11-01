@@ -1,6 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
-import { PACKS, PLANS, SITE, type PackId, type PlanId } from "./config";
+import { LOOK_PACKS, PACKS, PLANS, SITE, type PackId, type PlanId } from "./config";
 import { kv } from "./kv";
 import { findOrCreateUser, getUserById, saveUser } from "./auth";
 import { addCredits, attachAlbumToUser, fundAlbum, getAlbum, saveAlbum, spendCredits } from "./albums";
@@ -28,8 +28,8 @@ export async function packCheckoutUrl(opts: { packId: PackId; albumId: string; u
           currency: "usd",
           unit_amount: pack.priceCents,
           product_data: {
-            name: `MandapCanvas ${pack.name}${pack.id === "topup" ? "" : " album"}`,
-            description: `${pack.images} AI wedding concept images`,
+            name: LOOK_PACKS.includes(pack.id) ? `MandapCanvas Wedding Look Pack, ${pack.images} portraits` : `MandapCanvas ${pack.name}${pack.id === "topup" ? "" : " album"}`,
+            description: LOOK_PACKS.includes(pack.id) ? `${pack.images} AI wedding portraits from your photos` : `${pack.images} AI wedding concept images`,
           },
         },
       },

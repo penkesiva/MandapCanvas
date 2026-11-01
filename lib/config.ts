@@ -10,7 +10,7 @@ export const SITE = {
   supportEmail: process.env.SUPPORT_EMAIL || "hello@mandapcanvas.com",
 } as const;
 
-export type PackId = "starter" | "signature" | "grand" | "topup";
+export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30";
 
 export interface Pack {
   id: PackId;
@@ -25,6 +25,8 @@ export interface Pack {
   maxPalettes: number;
   hd: boolean;
   highlight?: boolean;
+  /** Regular price, shown struck through while a launch price is on. */
+  listCents?: number;
 }
 
 export const PACKS: Record<PackId, Pack> = {
@@ -65,6 +67,33 @@ export const PACKS: Record<PackId, Pack> = {
     maxPalettes: 6,
     hd: true,
   },
+  look12: {
+    id: "look12",
+    name: "Look Pack 12",
+    images: 12,
+    priceCents: 1000,
+    listCents: 1500,
+    freeRegens: 2,
+    blurb: "Two or three portraits for each event.",
+    includes: ["12 portraits", "Every event you choose", "No watermark", "2 free redos"],
+    maxEvents: 6,
+    maxPalettes: 6,
+    hd: false,
+  },
+  look30: {
+    id: "look30",
+    name: "Look Pack 30",
+    images: 30,
+    priceCents: 2400,
+    listCents: 2900,
+    freeRegens: 5,
+    blurb: "Five or more portraits for every event, in different poses.",
+    includes: ["30 portraits", "Every event you choose", "Close-ups, full looks and candids", "No watermark", "5 free redos"],
+    maxEvents: 6,
+    maxPalettes: 6,
+    hd: false,
+    highlight: true,
+  },
   topup: {
     id: "topup",
     name: "Add 10 images",
@@ -80,6 +109,9 @@ export const PACKS: Record<PackId, Pack> = {
 };
 
 export const ALBUM_PACKS: PackId[] = ["starter", "signature", "grand"];
+
+/** Wedding Look Packs: portraits of the bride, the groom or the couple at every event, from their own photos. */
+export const LOOK_PACKS: PackId[] = ["look12", "look30"];
 
 export type PlanId = "pro" | "studio";
 

@@ -4,6 +4,7 @@ import { BridalLook } from "@/components/tools/BridalLook";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
 import { LOOK_TRADITIONS } from "@/lib/bridalLooks";
+import { PACKS, formatUSD } from "@/lib/config";
 
 const tool = getTool("ai-bridal-look");
 const path = `/tools/${tool.slug}`;
@@ -39,8 +40,12 @@ const FAQ = [
     a: "Yes. Choose “Us as a couple” and upload a photo of you both. You'll get a wedding portrait of the two of you, side by side, in matching outfits.",
   },
   {
+    q: "Can I get portraits for every event?",
+    a: `Yes. The Wedding Look Pack turns your photos into portraits at the Haldi, Mehndi, Sangeet, the wedding and the reception, in outfits made for each event. ${PACKS.look12.images} portraits for ${formatUSD(PACKS.look12.priceCents)} or ${PACKS.look30.images} for ${formatUSD(PACKS.look30.priceCents)}, with no watermark. Upload up to 5 photos per person for the closest likeness.`,
+  },
+  {
     q: "Why is there a MandapCanvas mark on the picture?",
-    a: "Free looks carry a small mark so friends know where to make their own. Your full MandapCanvas album comes without it.",
+    a: "Free looks carry a small mark so friends know where to make their own. Look Pack portraits and full albums come without it.",
   },
 ];
 

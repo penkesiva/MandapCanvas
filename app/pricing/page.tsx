@@ -6,7 +6,7 @@ import { PACKS, PLANS, formatUSD } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "One-time album packs for couples from $29. Monthly plans for decorators from $99. Two free previews before you pay.",
+  description: "Wedding Look Packs from $10. One-time album packs for couples from $29. Monthly plans for decorators from $99. Two free previews before you pay.",
 };
 
 export default function Pricing() {
@@ -19,6 +19,18 @@ export default function Pricing() {
         </p>
         <div className="mt-10">
           <PricingCards />
+        </div>
+        <div className="mt-8 flex flex-col gap-4 rounded-[22px] bg-maroon p-6 text-[#fff8ef] sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-2xl text-gold-light">Wedding Look Pack: portraits of you at every event</p>
+            <p className="mt-1 text-[#f3e3d3]">
+              Upload your photos and get yourself, or the two of you, at the Haldi, Mehndi, Sangeet, wedding and reception.{" "}
+              {PACKS.look12.images} portraits for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}. Try one free first.
+            </p>
+          </div>
+          <Link href="/tools/ai-bridal-look" className="btn btn-gold flex-none">
+            Try it free
+          </Link>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="rounded-[22px] border border-line bg-silk p-6">

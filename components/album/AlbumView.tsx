@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { track } from "@vercel/analytics";
 import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
-import { AI_LABEL, PACKS, ALBUM_PACKS, formatUSD, type PackId } from "@/lib/config";
+import { AI_LABEL, PACKS, ALBUM_PACKS, LOOK_PACKS, formatUSD, type PackId } from "@/lib/config";
 import { CATEGORIES, eventLabel, getPalette } from "@/lib/catalog";
 import type { PublicAlbum } from "@/lib/albums";
 import type { Shot } from "@/lib/types";
@@ -222,10 +222,52 @@ export function AlbumView({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, viewable.length]);
 
+  const isLook = !!album.config.look;
   const caption = (s: Shot) =>
-    `${eventLabel(s.event, tradition)}, ${CATEGORIES.find((c) => c.id === s.category)?.name.toLowerCase()}, ${getPalette(s.paletteId).name}`;
+    isLook
+      ? `${eventLabel(s.event, tradition)}, ${s.category === "couple" ? "the two of you" : s.category}`
+      : `${eventLabel(s.event, tradition)}, ${CATEGORIES.find((c) => c.id === s.category)?.name.toLowerCase()}, ${getPalette(s.paletteId).name}`;
 
   /* -------- unpaid draft */
+  if (!album.paid && isLook) {
+    const pack = PACKS[album.packId];
+    return (
+      <div className="mx-auto max-w-3xl px-4 pb-24 pt-8 sm:px-6">
+        <h1 className="text-[2.2rem]">{album.title}</h1>
+        <p className="mt-1 text-ink-soft">
+          Your photos and choices are saved. Pick a pack: we&apos;ll create your portraits for{" "}
+          {album.config.events.map((e) => eventLabel(e, tradition)).join(", ")} without watermarks.
+        </p>
+        {error ? <ErrorBox msg={error} /> : null}
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {LOOK_PACKS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => (id === album.packId ? undefined : changePack(id))}
+              aria-pressed={id === album.packId}
+              className={`rounded-2xl border-2 bg-white p-4 text-left ${id === album.packId ? "border-kumkum" : "border-line"}`}
+            >
+              <span className="flex items-baseline justify-between gap-2">
+                <span className="font-semibold">{PACKS[id].images} portraits</span>
+                <span>
+                  {PACKS[id].listCents ? <s className="mr-1.5 text-sm text-ink-soft">{formatUSD(PACKS[id].listCents!)}</s> : null}
+                  <span className="font-display text-2xl">{formatUSD(PACKS[id].priceCents)}</span>
+                </span>
+              </span>
+              <span className="text-sm text-ink-soft">{PACKS[id].blurb}</span>
+            </button>
+          ))}
+        </div>
+        <button type="button" className="btn btn-primary mt-6" onClick={() => checkout(album.packId)} disabled={checkingOut}>
+          {checkingOut ? <Loader2 size={18} className="animate-spin" /> : null}
+          Create my {pack.images} portraits, {formatUSD(pack.priceCents)}
+        </button>
+        <p className="mt-2 text-xs text-ink-soft">{AI_LABEL}</p>
+      </div>
+    );
+  }
+
   if (!album.paid) {
     const pack = PACKS[album.packId];
     return (
@@ -346,12 +388,12 @@ export function AlbumView({
           options={CATEGORIES.filter((c) => album.shots.some((s) => s.category === c.id)).map((c) => [c.id, c.name])}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <FilterRow
+          {isLook ? null : <FilterRow
             label="Palette"
             value={filters.palette}
             onChange={(v) => setFilters((f) => ({ ...f, palette: v }))}
             options={usedPalettes.map((p) => [p, getPalette(p).name])}
-          />
+          />}
           <button type="button" className="chip" aria-pressed={filters.favorites} onClick={() => setFilters((f) => ({ ...f, favorites: !f.favorites }))}>
             <Heart size={15} className={filters.favorites ? "fill-kumkum text-kumkum" : ""} /> Favorites
           </button>
@@ -367,7 +409,7 @@ export function AlbumView({
       <ul className="mt-6 columns-2 gap-3 sm:gap-4 md:columns-3 lg:columns-4">
         {shots.map((s) => {
           const idx = viewable.findIndex((v) => v.id === s.id);
-          const portrait = s.category === "bride" || s.category === "groom";
+          const portrait = isLook || s.category === "bride" || s.category === "groom";
           return (
             <li key={s.id} className="group relative mb-4 break-inside-avoid">
               <div className={`relative overflow-hidden rounded-[16px] bg-white ${portrait ? "aspect-[3/4]" : "aspect-[4/3]"}`}>

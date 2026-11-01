@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Check, Download, ImageUp, Loader2, RefreshCw, Share2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
-import { FOUNDING_OFFER } from "@/lib/config";
+import { FOUNDING_OFFER, PACKS, formatUSD } from "@/lib/config";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
 import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
 import { Bride, CoupleScene, Groom } from "./Figures";
 import { FreeTrySignup } from "./FreeTrySignup";
+import { LookPack } from "./LookPack";
 
 const WHO: { id: LookWho; label: string }[] = [
   { id: "bride", label: "Me as a bride" },
@@ -147,6 +147,7 @@ export function BridalLook({ example }: { example?: LookExample }) {
   }
 
   return (
+    <>
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
       {/* controls */}
       <div className="min-w-0 rounded-[26px] border border-gold/40 bg-white p-4 shadow-[0_30px_60px_-44px_rgba(74,13,26,0.6)] sm:p-7">
@@ -396,6 +397,8 @@ export function BridalLook({ example }: { example?: LookExample }) {
         {(outOfTries && quota?.signedIn) || (result && !busy) ? <AlbumUpsell who={who} /> : null}
       </div>
     </div>
+    <LookPack who={who} tradition={tradition} color={color} jewelry={jewelry} firstPhoto={photo} consented={consent} />
+    </>
   );
 }
 
@@ -414,14 +417,14 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 function AlbumUpsell({ who }: { who: LookWho }) {
   return (
     <div className="mt-4 rounded-[22px] border border-gold/50 bg-white p-5">
-      <p className="font-display text-xl text-maroon">Now see the whole wedding</p>
+      <p className="font-display text-xl text-maroon">Love it? Get every event</p>
       <p className="mt-1 text-sm text-ink-soft">
-        A MandapCanvas album puts {who === "couple" ? "you both" : "you"} at your own mandap for every event, from Haldi to the reception, with your colors and decor.
-        Two previews are free.
+        Turn the same photo into a full set: {who === "couple" ? "the two of you" : "you"} at the Haldi, Mehndi, Sangeet, the wedding and the reception, in outfits made
+        for each. From {formatUSD(PACKS.look12.priceCents)}.
       </p>
-      <Link href="/create" className="btn btn-primary btn-sm mt-3" onClick={() => track("tool_look_cta")}>
-        Make a free preview
-      </Link>
+      <a href="#look-pack" className="btn btn-primary btn-sm mt-3" onClick={() => track("tool_look_cta")}>
+        See the Look Pack
+      </a>
     </div>
   );
 }

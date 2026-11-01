@@ -3,7 +3,8 @@ import { anonId, currentUser } from "@/lib/auth";
 import { canEdit, getAlbum, publicAlbum, saveAlbum } from "@/lib/albums";
 import { parseConfig, parsePackId } from "@/lib/validate";
 import { jsonError } from "@/lib/http";
-import { PACKS } from "@/lib/config";
+import { LOOK_PACKS, PACKS, type PackId } from "@/lib/config";
+import { lookMix } from "@/lib/bridalLooks";
 import { defaultMix, normalizeEventSettings } from "@/lib/catalog";
 
 export const runtime = "nodejs";
@@ -37,7 +38,16 @@ export async function PATCH(request: Request, ctx: Ctx) {
   if (typeof body.title === "string") album.title = body.title.slice(0, 80) || album.title;
   if (typeof body.clientName === "string") album.clientName = body.clientName.slice(0, 80);
 
-  if (body.packId && !body.config) {
+  if (body.packId && album.config.look) {
+    // Look Pack albums only switch between Look Packs.
+    if (album.paid) return jsonError("This album is already paid for.", 409);
+    if (!LOOK_PACKS.includes(body.packId as PackId)) return jsonError("Unknown pack.");
+    album.packId = body.packId as PackId;
+    album.config = {
+      ...album.config,
+      mix: { decor: 0, decor_detail: 0, couple_stage: 0, family: 0, ...lookMix(album.config.look.who, PACKS[album.packId].images) },
+    };
+  } else if (body.packId && !body.config) {
     // Pack change only: keep every setting, resize the mix and trim to the pack's limits.
     if (album.paid) return jsonError("This album is already paid for.", 409);
     const packId = parsePackId(body.packId);
