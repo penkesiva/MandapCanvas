@@ -187,13 +187,15 @@ export function buildLookPrompt(req: LookRequest): string {
 
   return [
     `Create a photo-real ${t.name} wedding portrait of ${subject}.`,
-    "IDENTITY (MUST FOLLOW): this must be unmistakably the same real person, recognizable to their family. Keep the exact face: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard, moles or glasses. Do not slim, lighten, smooth or beautify the face, and do not swap it for a model's face.",
+    req.who === "couple"
+      ? "IDENTITY (MUST FOLLOW): these must be unmistakably the same two real people, recognizable to their families. Keep each face exactly: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard, moles or glasses. Do not slim, lighten, smooth or beautify the faces, and do not swap them for models' faces."
+      : "IDENTITY (MUST FOLLOW): this must be unmistakably the same real person, recognizable to their family. Keep the exact face: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard, moles or glasses. Do not slim, lighten, smooth or beautify the face, and do not swap it for a model's face.",
     outfits,
     styling,
     `Setting: ${setting}.`,
     "Photography: a professional Indian wedding photographer's portrait, 85mm lens, natural skin texture, soft flattering light, shallow depth of field, rich fabric detail, three-quarter or waist-up framing with the face clearly visible and in sharp focus, tasteful and dignified.",
     "Do not add any text, logos, watermarks, borders or extra people.",
-    "FINAL CHECK: the face is the same person as in the PHOTO.",
+    req.who === "couple" ? "FINAL CHECK: both faces are the same people as in the PHOTO." : "FINAL CHECK: the face is the same person as in the PHOTO.",
   ].join("\n\n");
 }
 

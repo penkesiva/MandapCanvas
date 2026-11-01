@@ -1,225 +1,216 @@
 import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { BeforeAfter } from "@/components/BeforeAfter";
-import { PricingCards } from "@/components/PricingCards";
-import { Corner, Divider, Mandala, SectionTitle } from "@/components/Ornaments";
+import { Divider, Mandala, SectionTitle } from "@/components/Ornaments";
+import { LookExamples } from "@/components/looks/LookExamples";
+import { Bride, Groom } from "@/components/tools/Figures";
+import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
-import { DECOR_PRESETS, PALETTES, STYLE_TIERS } from "@/lib/catalog";
+import { ALBUM_PACKS, LOOK_PACKS, PACKS, formatUSD } from "@/lib/config";
+import { DECOR_PRESETS } from "@/lib/catalog";
+import { FREE_TOOLS, toolHref } from "@/lib/tools";
 
-const EVENTS_STRIP = [
-  { src: "/samples/haldi.jpg", name: "Haldi", note: "Marigold strings, brass urlis, morning light" },
-  { src: "/samples/mehndi.jpg", name: "Mehndi", note: "Floral swing, jewel-tone lounge, umbrellas" },
-  { src: "/samples/sangeet.jpg", name: "Sangeet", note: "Dance floor, draping, warm uplighting" },
-  { src: "/samples/south-indian.jpg", name: "Muhurtham", note: "Temple pillars, jasmine, banana leaves" },
-  { src: "/samples/sikh.jpg", name: "Anand Karaj", note: "Ivory and peach, a calm, bright hall" },
-  { src: "/samples/nikah.jpg", name: "Nikah", note: "Mughal arches, orchids, antique gold" },
-  { src: "/samples/reception.jpg", name: "Reception", note: "Floral wall, chandeliers, couple's sofa" },
+const LOOK_EVENTS = [
+  { name: "Haldi", bride: "#F2C14E", dupatta: "#F2A33A", groom: "#FFF3C4", safa: "#F2A33A", bg: "#FFF4D6" },
+  { name: "Mehndi", bride: "#3E8E41", dupatta: "#E7849B", groom: "#F4E3B5", safa: "#3E8E41", bg: "#E9F4E4" },
+  { name: "Sangeet", bride: "#B03A84", dupatta: "#E5B8D6", groom: "#22335E", safa: "#B03A84", bg: "#F6E6F1" },
+  { name: "Wedding", bride: "#B3131B", dupatta: "#C2185B", groom: "#F6EFE2", safa: "#B3131B", bg: "#FBE7E1" },
+  { name: "Reception", bride: "#1F3A6B", dupatta: "#C9A24B", groom: "#1E1E2A", safa: "#1E1E2A", bg: "#E5EAF4" },
 ];
 
-const PALETTE_COMPARE = [
-  { src: "/samples/palette-blush.jpg", id: "blush_ivory" },
-  { src: "/samples/palette-emerald.jpg", id: "emerald_gold" },
-  { src: "/samples/palette-red.jpg", id: "red_gold" },
+const MANDAP_EVENTS = [
+  { src: "/samples/haldi.jpg", name: "Haldi" },
+  { src: "/samples/mehndi.jpg", name: "Mehndi" },
+  { src: "/samples/sangeet.jpg", name: "Sangeet" },
+  { src: "/samples/reception.jpg", name: "Reception" },
 ];
 
 export default function Home() {
+  const freeTools = FREE_TOOLS.filter((t) => t.slug !== "ai-bridal-look");
   return (
     <PageShell>
-      {/* Hero */}
+      {/* Hero: two front doors */}
       <section className="relative overflow-hidden">
-        <div className="bg-jaali absolute inset-0 [mask-image:linear-gradient(180deg,#000_0%,transparent_85%)]" aria-hidden="true" />
-        <Mandala className="absolute -right-48 -top-40 hidden h-[760px] w-[760px] md:block" opacity={0.28} />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-[0.9fr_1.1fr] md:pt-20">
-          <div>
-            <h1 className="text-[2.7rem] text-maroon sm:text-[3.5rem] md:text-[4rem]">See your wedding before the first flower is ordered.</h1>
-            <Divider className="mt-6 !justify-start" />
-            <p className="mt-5 max-w-[34rem] text-lg text-ink-soft">
-              Sketch your mandap, upload a photo you love, or pick a style. MandapCanvas turns it into a photo-real album of every
-              event — decor, outfits and the two of you — in the colors you&apos;re choosing between.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-4">
-              <Link href="/create" className="btn btn-primary">Make a free preview</Link>
-              <Link href="/gallery" className="btn btn-ghost">See sample albums</Link>
-            </div>
-            <p className="mt-6 text-sm text-ink-soft">Two free images, no account needed. Albums from $29.</p>
+        <div className="bg-jaali absolute inset-0 [mask-image:linear-gradient(180deg,#000_0%,transparent_80%)]" aria-hidden="true" />
+        <Mandala className="absolute -right-56 -top-48 hidden h-[760px] w-[760px] md:block" opacity={0.22} />
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 md:pt-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-[2.6rem] text-maroon sm:text-[3.4rem] md:text-[4rem]">See your Desi wedding before it happens.</h1>
+            <Divider className="mt-5" />
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-ink-soft">Two ways to start. Both free to try, no account needed.</p>
           </div>
-          <div className="relative">
-            <div className="frame-gold">
-              <BeforeAfter
-                before="/samples/hero-before.jpg"
-                after="/samples/hero-after.jpg"
-                beforeAlt="A decorator's hand-drawn sketch of a four-pillar mandap with a jaali backdrop"
-                afterAlt="The same mandap as a photo-real preview in blush and ivory roses"
-                priority
-              />
-            </div>
-            <Corner className="absolute -left-5 -top-5 hidden sm:block" />
-            <Corner className="absolute -bottom-5 -right-5 hidden rotate-180 sm:block" />
-            <p className="mt-5 text-center text-sm text-ink-soft">Drag the garland. This preview was made from the sketch on the left.</p>
-          </div>
-        </div>
-      </section>
 
-      {/* From simple to grand */}
-      <section className="relative border-y border-gold/30 bg-silk">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <SectionTitle
-            title="From simple to grand"
-            intro="Twelve starting styles, from a garden frame with a few white roses to a ceiling of hanging flowers. Pick one, or start from your own sketch."
-          />
-          <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-            {STYLE_TIERS.map((t, ti) => (
-              <div key={t.id}>
-                <div className="mb-5 flex items-center gap-3">
-                  <span className="flex gap-1" aria-label={`${ti + 1} of 4 on the scale from simple to grand`}>
-                    {STYLE_TIERS.map((_, i) => (
-                      <span key={i} className={`h-2 w-2 rotate-45 ${i <= ti ? "bg-gold" : "border border-gold/60"}`} />
-                    ))}
-                  </span>
-                  <span className="font-display text-xl text-maroon">{t.name}</span>
-                </div>
-                <ul className="grid grid-cols-3 gap-3 sm:grid-cols-1 sm:gap-6">
-                  {DECOR_PRESETS.filter((p) => p.tier === t.id).map((p) => (
-                    <li key={p.id}>
-                      <Link href={`/create?style=${p.id}`} className="group block">
-                        <span className="block overflow-hidden border border-gold/40 bg-white p-1.5 arch transition group-hover:border-gold">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={p.image} alt={`${p.name} mandap`} className="arch aspect-[4/5] w-full object-cover" loading="lazy" />
-                        </span>
-                        <span className="mt-3 block text-center">
-                          <span className="block text-sm font-semibold leading-tight text-ink group-hover:text-kumkum sm:text-base">{p.name}</span>
-                          <span className="hidden text-sm text-ink-soft sm:block">{p.description}</span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <Door
+              href="/looks"
+              title="See yourself"
+              text="Upload a selfie. See yourself as a bride or groom, or the two of you, at every event from the Haldi to the reception."
+              meta={`First look free · Look Packs from ${formatUSD(PACKS.look12.priceCents)}`}
+              cta="Try your look free"
+              more={{ href: "/looks", label: "How it works" }}
+            >
+              <div className="grid h-full grid-cols-[0.8fr_1fr] items-center gap-2 p-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/samples/look-before.jpg" alt="An everyday selfie" className="aspect-[3/4] w-full -rotate-2 rounded-lg border-4 border-white object-cover shadow-md" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/samples/look-after.jpg" alt="The same woman as a bride" className="aspect-[3/4] w-full rotate-1 rounded-xl border-4 border-gold-light object-cover shadow-lg" />
               </div>
+            </Door>
+            <Door
+              href="/create"
+              title="See your mandap"
+              text="Sketch it, upload a photo you love, or pick a style. See your decor photo-real for every event, with the two of you in it."
+              meta={`Two previews free · Albums from ${formatUSD(PACKS.starter.priceCents)}`}
+              cta="Design my mandap free"
+              more={{ href: "/mandap", label: "How it works" }}
+            >
+              <div className="grid h-full grid-cols-[0.8fr_1fr] items-center gap-2 p-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/samples/hero-before.jpg" alt="A hand-drawn mandap sketch" className="aspect-[3/4] w-full -rotate-2 rounded-lg border-4 border-white object-cover shadow-md" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/samples/hero-after.jpg" alt="The same mandap as a photo-real preview" className="aspect-[3/4] w-full rotate-1 rounded-xl border-4 border-gold-light object-cover shadow-lg" />
+              </div>
+            </Door>
+          </div>
+
+          <ul className="mx-auto mt-10 grid max-w-5xl gap-4 text-center text-sm text-ink-soft sm:grid-cols-4">
+            {[
+              ["Made for Desi weddings", "in the U.S."],
+              ["Every tradition", "Pheras, Muhurtham, Nikah, Anand Karaj"],
+              ["Try it free", "no account, no card"],
+              ["Private", "your photos are deleted after 7 days"],
+            ].map(([a, b]) => (
+              <li key={a}>
+                <span className="block font-semibold text-ink">{a}</span>
+                {b}
+              </li>
             ))}
-          </div>
-          <div className="mt-14 text-center">
-            <Link href="/create" className="btn btn-primary">Start from your own idea</Link>
-          </div>
+          </ul>
         </div>
       </section>
 
-      {/* One sketch, every palette */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <SectionTitle
-          title="One design. Every palette you're torn between."
-          intro="Families debate colors for months. Put the options side by side on your actual mandap, then send the link to everyone who has an opinion."
-        />
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {PALETTE_COMPARE.map(({ src, id }) => {
-            const p = PALETTES.find((x) => x.id === id)!;
-            return (
-              <figure key={id} className="rounded-[22px] border border-gold/40 bg-white p-2 shadow-[0_24px_40px_-30px_rgba(74,13,26,0.5)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={src} alt={`The mandap in ${p.name}`} className="aspect-[4/3] w-full rounded-[16px] object-cover" loading="lazy" />
-                <figcaption className="flex items-center justify-center gap-3 px-3 py-3">
-                  <span className="flex">
-                    {p.swatches.map((c) => (
-                      <span key={c} className="-ml-1 h-5 w-5 rounded-full border-2 border-white ring-1 ring-ink/10 first:ml-0" style={{ background: c }} />
-                    ))}
-                  </span>
-                  <span className="font-medium">{p.name}</span>
-                </figcaption>
-              </figure>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Every event */}
-      <section className="relative overflow-hidden bg-maroon text-[#fff8ef]">
-        <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
-        <div className="toran absolute inset-x-0 top-0 opacity-90" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 pt-20 sm:px-6">
-          <SectionTitle
-            tone="light"
-            title="The whole week, not just the mandap"
-            intro="Named and styled the way your family does it — Pheras or Muhurtham, Anand Karaj or Nikah, Garba or Sangeet."
-          />
-        </div>
-        <div className="relative mx-auto mt-10 flex max-w-6xl snap-x scroll-px-4 gap-5 overflow-x-auto px-4 pb-20 sm:scroll-px-6 sm:px-6">
-          {EVENTS_STRIP.map((e) => (
-            <figure key={e.name} className="w-[78%] flex-none snap-start sm:w-[42%] md:w-[30%]">
-              <div className="rounded-[20px] bg-gradient-to-br from-[#f3dc9c] via-gold to-[#9c7628] p-[3px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={e.src} alt={`${e.name} decor preview`} className="aspect-[4/3] w-full rounded-[17px] object-cover" loading="lazy" />
-              </div>
-              <figcaption className="mt-3 text-center">
-                <span className="font-display text-2xl text-gold-light">{e.name}</span>
-                <span className="block text-sm text-[#f3e3d3]">{e.note}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <SectionTitle title="How it works" />
-        <ol className="mt-12 grid gap-10 md:grid-cols-3">
-          {[
-            ["Start from your idea", "Draw on screen, upload a sketch or a photo from Instagram, or pick one of our twelve styles. No drawing skills needed."],
-            ["Tell us about your wedding", "Your tradition, the events you're having, up to six palettes, indoor or outdoor — and, if you like, photos of the two of you."],
-            ["Get your album", "See two free previews in about a minute. Choose a pack and your full album fills in while you watch."],
-          ].map(([t, d], i) => (
-            <li key={t} className="text-center">
-              <span className="relative mx-auto grid h-16 w-16 place-items-center">
-                <span className="absolute inset-0 rotate-45 rounded-[14px] border border-gold bg-silk" />
-                <span className="absolute inset-[5px] rotate-45 rounded-[10px] bg-kumkum" />
-                <span className="relative font-display text-2xl text-[#fff8ef]">{i + 1}</span>
-              </span>
-              <h3 className="mt-6 text-2xl">{t}</h3>
-              <p className="mx-auto mt-2 max-w-xs text-ink-soft">{d}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Outfits */}
-      <section className="border-y border-gold/30 bg-silk">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 md:grid-cols-2">
-          <div className="grid grid-cols-2 gap-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/samples/bride.jpg" alt="Bride in an emerald lehenga for the Sangeet" className="arch aspect-[3/4] w-full border-4 border-white object-cover shadow-[0_24px_40px_-24px_rgba(74,13,26,0.55)]" loading="lazy" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/samples/groom.jpg" alt="Groom in an ivory and gold sherwani" className="arch mt-12 aspect-[3/4] w-full border-4 border-white object-cover shadow-[0_24px_40px_-24px_rgba(74,13,26,0.55)]" loading="lazy" />
-          </div>
+      {/* Product 1: Looks */}
+      <section className="relative border-y border-gold/30 bg-silk">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]">
           <div>
-            <Divider className="!justify-start" />
-            <h2 className="mt-4 text-[2.2rem] sm:text-[2.8rem]">Outfits that belong in the room</h2>
+            <p className="font-semibold text-kumkum">Bridal looks</p>
+            <h2 className="mt-2 text-[2.2rem] sm:text-[2.8rem]">You, at every event. Still unmistakably you.</h2>
             <p className="mt-4 text-ink-soft">
-              Every look is matched to the decor palette of its event: a lehenga that doesn&apos;t disappear into the backdrop, a safa
-              that picks up the florals, a bridal party that photographs as one family.
+              One photo becomes portraits of you in your wedding look: yellow and flowers for the Haldi, mehndi on your hands, sparkle for the Sangeet, your
+              tradition&apos;s finest for the wedding, couture for the reception. For the bride, the groom, or the two of you.
             </p>
-            <ul className="mt-6 space-y-3">
-              {[
-                "Lehenga, saree, Kanjeevaram, sharara, gharara, anarkali",
-                "Sherwani, achkan, bandhgala, veshti, kurta and safa",
-                "Optional likeness from your own photos, deleted within 7 days",
-              ].map((x) => (
-                <li key={x} className="flex gap-3">
-                  <span className="mt-2.5 h-2 w-2 flex-none rotate-45 bg-gold" aria-hidden="true" />
-                  {x}
+            <ul className="mt-6 grid grid-cols-5 gap-2" aria-label="Events in a Look Pack">
+              {LOOK_EVENTS.map((e) => (
+                <li key={e.name} className="flex flex-col items-center rounded-2xl pb-2 pt-2 text-xs font-semibold" style={{ background: e.bg }}>
+                  <span className="flex h-16 items-end" aria-hidden="true">
+                    <Groom outfit={e.groom} safa={e.safa} className="-mr-2.5 h-16 w-8" />
+                    <Bride outfit={e.bride} dupatta={e.dupatta} className="h-16 w-8" />
+                  </span>
+                  {e.name}
                 </li>
               ))}
             </ul>
-            <Link href="/create" className="btn btn-primary mt-9">Make a free preview</Link>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/looks" className="btn btn-primary">
+                Try your look free
+              </Link>
+              <span className="text-sm text-ink-soft">
+                Then {PACKS.look12.images} portraits for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
+              </span>
+            </div>
+          </div>
+          <LookExamples />
+        </div>
+      </section>
+
+      {/* Product 2: Mandap designs */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr]">
+          <div className="frame-gold">
+            <BeforeAfter
+              before="/samples/hero-before.jpg"
+              after="/samples/hero-after.jpg"
+              beforeAlt="A decorator's hand-drawn sketch of a four-pillar mandap with a jaali backdrop"
+              afterAlt="The same mandap as a photo-real preview in blush and ivory roses"
+            />
+          </div>
+          <div>
+            <p className="font-semibold text-kumkum">Mandap designs</p>
+            <h2 className="mt-2 text-[2.2rem] sm:text-[2.8rem]">See your mandap before the first flower is ordered.</h2>
+            <p className="mt-4 text-ink-soft">
+              Draw it, upload an Instagram photo, or start from one of {DECOR_PRESETS.length} styles from simple to grand. Get a photo-real album of every event,
+              in the palettes you&apos;re torn between, with the two of you in it. Then send the link to everyone with an opinion.
+            </p>
+            <ul className="mt-6 grid grid-cols-4 gap-2">
+              {MANDAP_EVENTS.map((e) => (
+                <li key={e.name}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={e.src} alt={`${e.name} decor preview`} className="aspect-square w-full rounded-xl object-cover" loading="lazy" />
+                  <span className="mt-1 block text-center text-xs font-semibold">{e.name}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/create" className="btn btn-primary">
+                Design my mandap free
+              </Link>
+              <Link href="/mandap" className="btn btn-ghost">
+                See the {DECOR_PRESETS.length} styles
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="relative" id="pricing">
-        <div className="bg-jaali absolute inset-0 opacity-70 [mask-image:linear-gradient(180deg,transparent,#000_30%,#000_70%,transparent)]" aria-hidden="true" />
+      {/* Pricing at a glance */}
+      <section className="relative overflow-hidden bg-maroon text-[#fff8ef]">
+        <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <SectionTitle title="Simple, one-time pricing" intro="Less than a single decor consultation. Try two images free before you choose." />
-          <div className="mt-14">
-            <PricingCards />
+          <SectionTitle tone="light" title="Try free. Pay once if you love it." intro="No subscriptions for couples. Every pack is a one-time price." />
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            <PriceColumn
+              title="Bridal looks"
+              note="Portraits of you at every event"
+              rows={LOOK_PACKS.map((id) => [`${PACKS[id].images} portraits`, PACKS[id].priceCents, PACKS[id].listCents])}
+              href="/looks"
+              cta="Try your look free"
+            />
+            <PriceColumn
+              title="Mandap designs"
+              note="Your decor at every event, with you in it"
+              rows={ALBUM_PACKS.map((id) => [`${PACKS[id].name}, ${PACKS[id].images} images`, PACKS[id].priceCents, undefined])}
+              href="/create"
+              cta="Design my mandap free"
+            />
           </div>
+          <p className="mt-8 text-center">
+            <Link href="/pricing" className="font-semibold text-gold-light underline underline-offset-4">
+              Compare everything on the pricing page
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* Free tools */}
+      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <SectionTitle title="Free planning tools" intro="For the decisions every family argues about. Free, instant, and most need no sign-up." />
+        <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {freeTools.map((t) => (
+            <li key={t.slug}>
+              <Link href={toolHref(t)} className="group block overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
+                <ToolArt slug={t.slug} />
+                <span className="block p-4">
+                  <span className="block font-display text-xl text-maroon group-hover:text-kumkum">{t.name}</span>
+                  <span className="mt-1 line-clamp-2 block text-sm text-ink-soft">{t.blurb}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 text-center">
+          <Link href="/tools" className="btn btn-ghost">
+            All free tools
+          </Link>
         </div>
       </section>
 
@@ -233,12 +224,13 @@ export default function Home() {
               <div>
                 <h2 className="text-[2rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
                 <p className="mt-4 text-[#f3e3d3]">
-                  Sketch while the couple talks, show them a photo-real mandap before they leave, and send a proposal with your logo.
-                  Plans from $99 a month.
+                  Sketch while the couple talks, show them a photo-real mandap before they leave, and send a proposal with your logo. Plans from $99 a month.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
-                <Link href="/pro" className="btn btn-gold">See MandapCanvas Pro</Link>
+                <Link href="/pro" className="btn btn-gold">
+                  See MandapCanvas Pro
+                </Link>
               </div>
             </div>
           </div>
@@ -249,7 +241,7 @@ export default function Home() {
       <section className="mx-auto max-w-3xl px-4 pb-24 sm:px-6">
         <SectionTitle title="Questions couples ask" />
         <div className="mt-8 divide-y divide-gold/30 border-y border-gold/40">
-          {FAQ.slice(0, 6).map((f) => (
+          {FAQ.slice(0, 5).map((f) => (
             <details key={f.q} className="group py-4">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-medium">
                 {f.q}
@@ -262,9 +254,85 @@ export default function Home() {
           ))}
         </div>
         <div className="mt-8 text-center">
-          <Link href="/faq" className="btn btn-ghost">All questions</Link>
+          <Link href="/faq" className="btn btn-ghost">
+            All questions
+          </Link>
         </div>
       </section>
     </PageShell>
+  );
+}
+
+function Door({
+  href,
+  title,
+  text,
+  meta,
+  cta,
+  more,
+  children,
+}: {
+  href: string;
+  title: string;
+  text: string;
+  meta: string;
+  cta: string;
+  more: { href: string; label: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-[28px] border border-gold/50 bg-white shadow-[0_30px_60px_-40px_rgba(74,13,26,0.55)]">
+      <Link href={href} className="block bg-[linear-gradient(135deg,#fbf1ee,#f6e7c8)]" tabIndex={-1} aria-hidden="true">
+        {children}
+      </Link>
+      <div className="flex flex-1 flex-col p-6 sm:p-7">
+        <h2 className="text-[2rem] text-maroon">{title}</h2>
+        <p className="mt-2 text-ink-soft">{text}</p>
+        <p className="mt-3 text-sm font-semibold text-mehndi">{meta}</p>
+        <div className="mt-auto flex flex-wrap items-center gap-4 pt-5">
+          <Link href={href} className="btn btn-primary">
+            {cta}
+          </Link>
+          <Link href={more.href} className="font-semibold text-kumkum underline underline-offset-4">
+            {more.label}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PriceColumn({
+  title,
+  note,
+  rows,
+  href,
+  cta,
+}: {
+  title: string;
+  note: string;
+  rows: [string, number, number | undefined][];
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="flex flex-col rounded-[24px] border border-gold-light/40 bg-white/5 p-6 backdrop-blur-sm">
+      <p className="font-display text-2xl text-gold-light">{title}</p>
+      <p className="text-sm text-[#f3e3d3]">{note}</p>
+      <ul className="mt-4 divide-y divide-gold-light/20">
+        {rows.map(([label, price, list]) => (
+          <li key={label} className="flex items-baseline justify-between gap-3 py-2.5">
+            <span>{label}</span>
+            <span className="flex-none">
+              {list ? <s className="mr-1.5 text-sm text-[#d9c3b3]">{formatUSD(list)}</s> : null}
+              <span className="font-display text-xl text-gold-light">{formatUSD(price)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <Link href={href} className="btn btn-gold mt-5 self-start">
+        {cta}
+      </Link>
+    </div>
   );
 }

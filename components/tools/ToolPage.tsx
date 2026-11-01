@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/config";
-import { FREE_TOOLS, type FreeTool } from "@/lib/tools";
+import { FREE_TOOLS, type FreeTool, toolHref } from "@/lib/tools";
 import { Divider } from "@/components/Ornaments";
 
 /** JSON-LD script tag. */
@@ -29,7 +29,7 @@ export function appLd(tool: FreeTool) {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: tool.name,
-    url: `${SITE.url}/tools/${tool.slug}`,
+    url: `${SITE.url}${toolHref(tool)}`,
     description: tool.description,
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Any",
@@ -92,7 +92,7 @@ export function MoreTools({ current }: { current: string }) {
       <ul className="mt-4 grid gap-4 sm:grid-cols-2">
         {others.map((t) => (
           <li key={t.slug}>
-            <Link href={`/tools/${t.slug}`} className="block rounded-2xl border border-line bg-white p-5 hover:border-gold">
+            <Link href={toolHref(t)} className="block rounded-2xl border border-line bg-white p-5 hover:border-gold">
               <span className="font-display text-xl text-maroon">{t.name}</span>
               <span className="mt-1 block text-sm text-ink-soft">{t.blurb}</span>
             </Link>

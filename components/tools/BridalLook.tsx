@@ -20,13 +20,7 @@ const WAITING = ["Draping the dupatta…", "Pinning the safa…", "Choosing the 
 
 type Quota = { signedIn: boolean; remaining: number };
 
-export interface LookExample {
-  before: string;
-  after: string;
-  caption: string;
-}
-
-export function BridalLook({ example }: { example?: LookExample }) {
+export function BridalLook() {
   const [who, setWho] = useState<LookWho>("bride");
   const [tradition, setTradition] = useState("north");
   const [color, setColor] = useState("");
@@ -40,7 +34,6 @@ export function BridalLook({ example }: { example?: LookExample }) {
   const [busy, setBusy] = useState(false);
   const [tick, setTick] = useState(0);
   const [result, setResult] = useState<string | null>(null);
-  const [exampleOk, setExampleOk] = useState(true);
   const [error, setError] = useState<{ msg: string; code?: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -364,31 +357,9 @@ export function BridalLook({ example }: { example?: LookExample }) {
           ) : null}
         </div>
 
-        {example && exampleOk && !result && !busy ? (
-          <figure className="mt-4 rounded-[22px] border border-gold/50 bg-white p-4">
-            <figcaption className="mb-3 flex items-baseline justify-between gap-2">
-              <span className="font-display text-lg text-maroon">Example</span>
-              <span className="text-xs text-ink-soft">AI-generated model, not a customer</span>
-            </figcaption>
-            <div className="grid grid-cols-[1fr_auto_1.35fr] items-center gap-2">
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={example.before} alt="An everyday photo of a woman in a kitchen" className="aspect-[3/4] w-full rounded-xl object-cover" loading="lazy" onError={() => setExampleOk(false)} />
-                <p className="mt-1 text-center text-xs text-ink-soft">Her photo</p>
-              </div>
-              <span className="text-xl text-gold" aria-hidden="true">→</span>
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={example.after} alt="The same woman as a North Indian bride in a red lehenga" className="aspect-[3/4] w-full rounded-xl object-cover" loading="lazy" onError={() => setExampleOk(false)} />
-                <p className="mt-1 text-center text-xs text-ink-soft">Her bridal look</p>
-              </div>
-            </div>
-            <p className="mt-3 text-sm text-ink-soft">{example.caption}</p>
-          </figure>
-        ) : null}
         {error && error.code !== "signup_for_more" ? <p className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">{error.msg}</p> : null}
         {outOfTries && quota && !quota.signedIn ? <FreeTrySignup
-            next="/tools/ai-bridal-look"
+            next="/looks"
             source="looks"
             title="One more look, free"
             text={`Create a free account to try another tradition or color. You'll also get ${FOUNDING_OFFER.text}.`}

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { SectionTitle } from "@/components/Ornaments";
 import { Breadcrumbs, JsonLd, breadcrumbLd } from "@/components/tools/ToolPage";
-import { FREE_TOOLS } from "@/lib/tools";
+import { FREE_TOOLS, toolHref } from "@/lib/tools";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { SITE } from "@/lib/config";
 
@@ -25,7 +25,7 @@ export default function ToolsPage() {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Free Desi wedding planning tools",
-    itemListElement: FREE_TOOLS.map((t, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE.url}/tools/${t.slug}`, name: t.name })),
+    itemListElement: FREE_TOOLS.map((t, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE.url}${toolHref(t)}`, name: t.name })),
   };
   return (
     <PageShell>
@@ -40,7 +40,7 @@ export default function ToolsPage() {
         <ul className="mt-12 grid gap-6 md:grid-cols-2">
           {FREE_TOOLS.map((t) => (
             <li key={t.slug}>
-              <Link href={`/tools/${t.slug}`} className="group block overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">
+              <Link href={toolHref(t)} className="group block overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">
                 <ToolArt slug={t.slug} />
                 <span className="block p-6">
                   <span className="block font-display text-2xl text-maroon group-hover:text-kumkum">{t.name}</span>

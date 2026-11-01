@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { BridalLook } from "@/components/tools/BridalLook";
+import { LookExamples } from "@/components/looks/LookExamples";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
 import { LOOK_TRADITIONS } from "@/lib/bridalLooks";
 import { PACKS, formatUSD } from "@/lib/config";
 
 const tool = getTool("ai-bridal-look");
-const path = `/tools/${tool.slug}`;
+const path = "/looks";
 
 export const metadata: Metadata = {
   title: { absolute: `${tool.title} · MandapCanvas` },
@@ -53,23 +54,41 @@ export default function BridalLookPage() {
   return (
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-6">
-        <Breadcrumbs items={[["Home", "/"], ["Free tools", "/tools"], [tool.name, path]]} />
-        <header className="mt-6 max-w-3xl">
-          <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">See yourself as a bride or groom</h1>
-          <p className="mt-4 text-lg text-ink-soft">
-            Upload a photo of yourself, or of you both. Pick a tradition, a color and a setting, and get a photo-real wedding portrait that still looks like you.
-            Your first look is free.
-          </p>
+        <Breadcrumbs items={[["Home", "/"], ["Bridal looks", path]]} />
+        <header className="mt-6 grid items-center gap-10 lg:grid-cols-[1fr_440px]">
+          <div>
+            <h1 className="text-[2.4rem] text-maroon sm:text-[3.4rem]">See yourself as a bride or groom</h1>
+            <p className="mt-4 max-w-xl text-lg text-ink-soft">
+              Upload a selfie, or a photo of you both. Get photo-real portraits of you in your wedding look, still unmistakably you, at every event from the
+              Haldi to the reception.
+            </p>
+            <ul className="mt-6 grid max-w-xl gap-3 sm:grid-cols-2">
+              <li className="rounded-2xl border border-gold/50 bg-white p-4">
+                <span className="block font-display text-xl text-maroon">First look free</span>
+                <span className="text-sm text-ink-soft">One portrait, no sign-up. One more with a free account.</span>
+              </li>
+              <li className="rounded-2xl border border-gold/50 bg-white p-4">
+                <span className="block font-display text-xl text-maroon">Every event from {formatUSD(PACKS.look12.priceCents)}</span>
+                <span className="text-sm text-ink-soft">
+                  {PACKS.look12.images} or {PACKS.look30.images} portraits, no watermark.
+                </span>
+              </li>
+            </ul>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a href="#try" className="btn btn-primary">
+                Try your look free
+              </a>
+              <a href="#look-pack" className="btn btn-ghost">
+                See the Look Pack
+              </a>
+            </div>
+          </div>
+          <LookExamples />
         </header>
 
-        <div className="mt-10">
-          <BridalLook
-            example={{
-              before: "/samples/look-before.jpg",
-              after: "/samples/look-after.jpg",
-              caption: "One everyday photo, North Indian look, classic red, classic jewelry, at the mandap. Same face, same smile.",
-            }}
-          />
+        <div id="try" className="mt-16 scroll-mt-24">
+          <h2 className="mb-6 text-[2rem]">Try your look, free</h2>
+          <BridalLook />
         </div>
 
         <section className="mt-16 grid gap-8 md:grid-cols-3" aria-labelledby="how-h">
@@ -108,7 +127,7 @@ export default function BridalLookPage() {
       </div>
       <JsonLd data={appLd(tool)} />
       <JsonLd data={faqLd(FAQ)} />
-      <JsonLd data={breadcrumbLd([["Home", "/"], ["Free tools", "/tools"], [tool.name, path]])} />
+      <JsonLd data={breadcrumbLd([["Home", "/"], ["Bridal looks", path]])} />
     </PageShell>
   );
 }

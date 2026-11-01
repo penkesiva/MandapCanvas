@@ -9,6 +9,12 @@ export interface FreeTool {
   description: string;
   keywords: string[];
   image: string;
+  /** Where the tool lives when it isn't under /tools (the bridal look is the Looks product page). */
+  href?: string;
+}
+
+export function toolHref(t: FreeTool): string {
+  return t.href ?? `/tools/${t.slug}`;
 }
 
 export const FREE_TOOLS: FreeTool[] = [
@@ -29,6 +35,7 @@ export const FREE_TOOLS: FreeTool[] = [
       "Indian wedding look AI",
     ],
     image: "/samples/couple.jpg",
+    href: "/looks",
   },
   {
     slug: "wedding-invitation-maker",

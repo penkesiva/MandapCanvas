@@ -14,11 +14,11 @@ export async function SiteHeader() {
           MandapCanvas
         </Link>
         <nav className="hidden items-center gap-6 text-[0.95rem] font-medium text-ink-soft md:flex" aria-label="Main">
-          <Link href="/gallery" className="hover:text-ink">Gallery</Link>
+          <Link href="/looks" className="hover:text-ink">Bridal looks</Link>
+          <Link href="/mandap" className="hover:text-ink">Mandap designs</Link>
+          <Link href="/tools" className="hover:text-ink">Free tools</Link>
           <Link href="/pricing" className="hover:text-ink">Pricing</Link>
           <Link href="/pro" className="hover:text-ink">For decorators</Link>
-          <Link href="/tools" className="hover:text-ink">Free tools</Link>
-          <Link href="/faq" className="hover:text-ink">FAQ</Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {user ? (
@@ -30,18 +30,18 @@ export async function SiteHeader() {
               Sign in
             </Link>
           )}
-          <Link href="/create" className="btn btn-primary btn-sm">
-            <span className="sm:hidden">Free preview</span>
-            <span className="hidden sm:inline">Make a free preview</span>
+          <Link href="/looks" className="btn btn-primary btn-sm">
+            <span className="sm:hidden">Try free</span>
+            <span className="hidden sm:inline">Try your look free</span>
           </Link>
         </div>
       </div>
       <nav className="flex gap-5 overflow-x-auto px-4 pb-2.5 text-sm font-medium text-ink-soft md:hidden" aria-label="Main mobile">
-        <Link href="/gallery">Gallery</Link>
-        <Link href="/pricing">Pricing</Link>
-        <Link href="/pro">For decorators</Link>
+        <Link href="/looks">Bridal looks</Link>
+        <Link href="/mandap">Mandap designs</Link>
         <Link href="/tools">Free tools</Link>
-        <Link href="/faq">FAQ</Link>
+        <Link href="/pricing">Pricing</Link>
+        <Link href="/pro">Decorators</Link>
         <Link href={user ? "/account" : "/signin"}>{user ? "My albums" : "Sign in"}</Link>
       </nav>
     </header>
@@ -65,8 +65,8 @@ export function SiteFooter() {
             Photo-real previews of Desi weddings in the U.S. — for couples, families and the decorators who make it real.
           </p>
         </div>
-        <FooterCol title="Couples" links={[["Make a free preview", "/create"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
-        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["AI bridal and groom look", "/tools/ai-bridal-look"], ["Wedding invitation maker", "/tools/wedding-invitation-maker"], ["Palette from your outfit photo", "/tools/outfit-photo-color-palette"], ["Color palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
+        <FooterCol title="Couples" links={[["Bridal looks", "/looks"], ["Mandap designs", "/mandap"], ["Design my mandap", "/create"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Wedding invitation maker", "/tools/wedding-invitation-maker"], ["Palette from your outfit photo", "/tools/outfit-photo-color-palette"], ["Color palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"], ["My account", "/account"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>

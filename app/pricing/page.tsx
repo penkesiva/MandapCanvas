@@ -6,7 +6,7 @@ import { PACKS, PLANS, formatUSD } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Wedding Look Packs from $10. One-time album packs for couples from $29. Monthly plans for decorators from $99. Two free previews before you pay.",
+  description: "Bridal Look Packs from $10. Mandap design albums from $29. Monthly plans for decorators from $99. Two free previews before you pay.",
 };
 
 export default function Pricing() {
@@ -15,24 +15,37 @@ export default function Pricing() {
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-12 sm:px-6">
         <h1 className="text-[2.6rem] sm:text-[3.2rem]">Pricing</h1>
         <p className="mt-3 max-w-2xl text-lg text-ink-soft">
-          See two free images first. If you like them, pick a pack. No subscription for couples.
+          Try both for free first. If you love what you see, pay once. No subscriptions for couples.
         </p>
-        <div className="mt-10">
-          <PricingCards />
-        </div>
-        <div className="mt-8 flex flex-col gap-4 rounded-[22px] bg-maroon p-6 text-[#fff8ef] sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-display text-2xl text-gold-light">Wedding Look Pack: portraits of you at every event</p>
-            <p className="mt-1 text-[#f3e3d3]">
-              Upload your photos and get yourself, or the two of you, at the Haldi, Mehndi, Sangeet, wedding and reception.{" "}
-              {PACKS.look12.images} portraits for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}. Try one free first.
-            </p>
+        <nav className="mt-6 flex flex-wrap gap-2" aria-label="Products">
+          <a href="#looks" className="chip">Bridal looks</a>
+          <a href="#mandap" className="chip">Mandap designs</a>
+          <a href="#decorators" className="chip">Decorators</a>
+        </nav>
+
+        <section id="looks" className="mt-12 scroll-mt-24">
+          <h2 className="text-[2rem] text-maroon">Bridal looks</h2>
+          <p className="mt-1 max-w-2xl text-ink-soft">
+            Portraits of you, the groom or the two of you at every event, from your own photos. One free look first, no sign-up.{" "}
+            <Link href="/looks" className="font-medium text-kumkum underline">How it works</Link>
+          </p>
+          <div className="mt-10">
+            <PricingCards product="looks" />
           </div>
-          <Link href="/tools/ai-bridal-look" className="btn btn-gold flex-none">
-            Try it free
-          </Link>
-        </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        </section>
+
+        <section id="mandap" className="mt-20 scroll-mt-24">
+          <h2 className="text-[2rem] text-maroon">Mandap designs</h2>
+          <p className="mt-1 max-w-2xl text-ink-soft">
+            Your decor for every event, photo-real, in the palettes you&apos;re choosing between, with the two of you in it. Two free previews first.{" "}
+            <Link href="/mandap" className="font-medium text-kumkum underline">How it works</Link>
+          </p>
+          <div className="mt-10">
+            <PricingCards />
+          </div>
+        </section>
+
+        <div id="decorators" className="mt-12 grid scroll-mt-24 gap-4 md:grid-cols-2">
           <div className="rounded-[22px] border border-line bg-silk p-6">
             <p className="font-semibold">Need more images later?</p>
             <p className="mt-1 text-ink-soft">Add {PACKS.topup.images} images to any album for {formatUSD(PACKS.topup.priceCents)}.</p>
