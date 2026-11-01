@@ -13,6 +13,23 @@ export interface FreeTool {
 
 export const FREE_TOOLS: FreeTool[] = [
   {
+    slug: "outfit-photo-color-palette",
+    name: "Palette from your outfit photo",
+    blurb: "Upload a photo of a lehenga, saree or sherwani. Get its exact colors, the matching groom and family colors, and decor that frames it.",
+    title: "Get a Wedding Color Palette From Your Lehenga or Saree Photo",
+    description:
+      "Free tool: upload a photo of your lehenga, saree, sherwani or fabric and get its exact colors with names and hex codes, matching groom and family colors, and mandap decor palettes. Your photo never leaves your device.",
+    keywords: [
+      "color palette from photo",
+      "lehenga color palette",
+      "saree color combination finder",
+      "extract colors from image",
+      "matching groom outfit for lehenga",
+      "wedding palette from dress",
+    ],
+    image: "/samples/groom.jpg",
+  },
+  {
     slug: "wedding-color-palette-finder",
     name: "Wedding color palette finder",
     blurb: "Pick the event, the season and the time of day. Get the three palettes that suit it best, with in-season flowers.",

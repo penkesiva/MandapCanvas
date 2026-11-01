@@ -62,7 +62,7 @@ export function SiteFooter() {
           </p>
         </div>
         <FooterCol title="Couples" links={[["Make a free preview", "/create"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
-        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Color palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
+        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Palette from your outfit photo", "/tools/outfit-photo-color-palette"], ["Color palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"], ["My account", "/account"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>
