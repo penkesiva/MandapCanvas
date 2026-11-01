@@ -1,11 +1,16 @@
 /**
- * Flat, recolorable illustrations of a Desi bride, groom and family, so the tools can show
- * colors on people instead of in words. Pure SVG: every color is a prop.
+ * Cute, flat, recolorable illustrations of a Desi bride, groom and family, so the tools can show
+ * colors on people instead of in words. Pure SVG: every outfit color is a prop.
+ * Chibi proportions: big heads, big shiny eyes, rosy cheeks.
  */
 
-const SKIN = "#C58B66";
-const SKIN_SHADE = "#A8704F";
-const HAIR = "#2A1A14";
+const SKIN = "#E0A47E";
+const SKIN_SHADE = "#C98962";
+const HAIR = "#2B1B17";
+const HAIR_SHINE = "#4A3029";
+const BLUSH = "#F0857D";
+const LIP = "#C2454B";
+const KUMKUM = "#C8102E";
 
 function shade(hex: string, amt: number): string {
   const n = parseInt(hex.replace("#", ""), 16);
@@ -13,97 +18,219 @@ function shade(hex: string, amt: number): string {
   return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => f(c).toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** Bride in a lehenga: `outfit` is the lehenga and blouse, `dupatta` the veil, `trim` the zari border. */
+function luminance(hex: string): number {
+  const n = parseInt(hex.replace("#", ""), 16);
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+}
+
+/** Very dark fabric reads as a hole at this size, so lift it a little. */
+function lift(hex: string): string {
+  return luminance(hex) < 0.14 ? shade(hex, 0.16) : hex;
+}
+
+/** Big shiny eyes, rosy cheeks and a small smile, centered on (cx, cy). */
+function Face({ cx, cy, lashes = false, brows = false }: { cx: number; cy: number; lashes?: boolean; brows?: boolean }) {
+  const ex = 9.5;
+  return (
+    <g>
+      {brows ? (
+        <>
+          <path d={`M${cx - ex - 4} ${cy - 8} Q${cx - ex} ${cy - 11} ${cx - ex + 4} ${cy - 8.5}`} stroke={HAIR} strokeWidth="2" strokeLinecap="round" fill="none" />
+          <path d={`M${cx + ex - 4} ${cy - 8.5} Q${cx + ex} ${cy - 11} ${cx + ex + 4} ${cy - 8}`} stroke={HAIR} strokeWidth="2" strokeLinecap="round" fill="none" />
+        </>
+      ) : null}
+      {[-1, 1].map((s) => (
+        <g key={s}>
+          <ellipse cx={cx + s * ex} cy={cy} rx="3.6" ry="4.4" fill={HAIR} />
+          <circle cx={cx + s * ex + 1.2} cy={cy - 1.6} r="1.4" fill="#fff" />
+          <circle cx={cx + s * ex - 1.1} cy={cy + 1.6} r="0.6" fill="#fff" />
+          {lashes ? <path d={`M${cx + s * (ex + 3)} ${cy - 2.5} l${s * 2.6} -2`} stroke={HAIR} strokeWidth="1.4" strokeLinecap="round" /> : null}
+          <ellipse cx={cx + s * (ex + 5)} cy={cy + 7} rx="4" ry="2.4" fill={BLUSH} opacity="0.55" />
+        </g>
+      ))}
+      <path d={`M${cx - 3.5} ${cy + 8} Q${cx} ${cy + 11.5} ${cx + 3.5} ${cy + 8}`} stroke={LIP} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+    </g>
+  );
+}
+
+/** Bride in a lehenga: `outfit` is the lehenga and blouse, `dupatta` the veil, `trim` the zari and jewelry. */
 export function Bride({ outfit, dupatta, trim = "#C9A24B", className = "" }: { outfit: string; dupatta?: string; trim?: string; className?: string }) {
-  const veil = dupatta ?? outfit;
+  const lehenga = lift(outfit);
+  const veil = lift(dupatta ?? outfit);
   return (
     <svg viewBox="0 0 120 240" width="120" height="240" className={className} role="img" aria-label="Bride">
-      {/* lehenga */}
-      <path d="M44 100 L76 100 L108 226 Q60 236 12 226 Z" fill={outfit} />
-      <path d="M44 100 L76 100 L92 160 Q60 168 28 160 Z" fill={shade(outfit, 0.06)} />
-      <path d="M15 214 Q60 224 105 214 L108 226 Q60 236 12 226 Z" fill={trim} />
-      {[34, 50, 66, 82].map((x) => (
-        <circle key={x} cx={x + (x > 60 ? 4 : -4)} cy={190} r={2.2} fill={trim} />
+      {/* dupatta, back layer: frames the head and falls behind the shoulders */}
+      <path d="M31 66 Q28 26 60 24 Q92 26 89 66 L98 150 Q102 190 96 214 L24 214 Q18 190 22 150 Z" fill={shade(veil, -0.08)} />
+      <path d="M22 150 Q18 190 24 214 M98 150 Q102 190 96 214" stroke={trim} strokeWidth="2.4" fill="none" />
+
+      {/* lehenga: flared skirt with pleats, butis and a broad zari border */}
+      <path d="M41 132 L79 132 Q100 180 110 222 Q60 234 10 222 Q20 180 41 132 Z" fill={lehenga} />
+      {[-26, -13, 0, 13, 26].map((d) => (
+        <path key={d} d={`M${60 + d * 0.35} 134 Q${60 + d * 0.8} 180 ${60 + d * 1.5} 222`} stroke={shade(lehenga, -0.07)} strokeWidth="1.2" fill="none" />
       ))}
-      {/* blouse + arms */}
-      <rect x="44" y="62" width="32" height="40" rx="10" fill={shade(outfit, -0.06)} />
-      <path d="M44 66 Q34 82 38 108" stroke={SKIN} strokeWidth="7" strokeLinecap="round" fill="none" />
-      <path d="M76 66 Q86 82 82 108" stroke={SKIN} strokeWidth="7" strokeLinecap="round" fill="none" />
-      <rect x="34" y="98" width="8" height="5" rx="2" fill={trim} />
-      <rect x="78" y="98" width="8" height="5" rx="2" fill={trim} />
-      {/* neck + head */}
-      <rect x="55" y="50" width="10" height="14" fill={SKIN_SHADE} />
-      <path d="M50 64 Q60 76 70 64" stroke={trim} strokeWidth="3" fill="none" />
-      <circle cx="60" cy="38" r="15" fill={SKIN} />
-      <path d="M45 37 Q47 20 60 21 Q73 20 75 37 Q71 28 60 28 Q49 28 45 37 Z" fill={HAIR} />
-      <circle cx="60" cy="25" r="2.4" fill={trim} />
-      <circle cx="54" cy="39" r="1.3" fill={HAIR} />
-      <circle cx="66" cy="39" r="1.3" fill={HAIR} />
-      <path d="M56 45 Q60 48 64 45" stroke="#8E3B3B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      {/* dupatta over the head, falling to one side */}
-      <path d="M42 34 Q44 14 60 12 Q78 13 80 34 L86 120 Q80 150 92 200 L84 202 Q70 150 74 110 L72 46 Q60 30 48 46 L46 110 Q40 140 30 170 L24 166 Q36 130 38 100 Z" fill={veil} opacity="0.82" />
-      <path d="M42 34 Q44 14 60 12 Q78 13 80 34" stroke={trim} strokeWidth="2.4" fill="none" />
+      {[
+        [40, 168],
+        [60, 160],
+        [80, 168],
+        [32, 196],
+        [50, 190],
+        [70, 190],
+        [88, 196],
+      ].map(([x, y]) => (
+        <g key={`${x}-${y}`}>
+          <circle cx={x} cy={y} r="2.4" fill={trim} />
+          <circle cx={x} cy={y} r="0.9" fill={shade(lehenga, 0.1)} />
+        </g>
+      ))}
+      <path d="M13 210 Q60 220 107 210 L110 222 Q60 234 10 222 Z" fill={trim} />
+      <path d="M12 216 Q60 226 108 216" stroke={shade(trim, -0.15)} strokeWidth="1" strokeDasharray="2 3" fill="none" />
+
+      {/* blouse, arms with bangles, hands meeting in front */}
+      <rect x="42" y="100" width="36" height="36" rx="13" fill={shade(lehenga, -0.06)} />
+      <path d="M44 106 Q36 122 50 136" stroke={SKIN} strokeWidth="8" strokeLinecap="round" fill="none" />
+      <path d="M76 106 Q84 122 70 136" stroke={SKIN} strokeWidth="8" strokeLinecap="round" fill="none" />
+      <path d="M41 124 l6 3 M79 124 l-6 3" stroke={KUMKUM} strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M40 120 l6 3 M80 120 l-6 3" stroke={trim} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="56" cy="137" r="5" fill={SKIN} />
+      <circle cx="64" cy="137" r="5" fill={SKIN} />
+      <circle cx="60" cy="137" r="1.6" fill="#9C4A2E" opacity="0.6" />
+
+      {/* neck and necklace */}
+      <rect x="54" y="88" width="12" height="14" rx="4" fill={SKIN_SHADE} />
+      <path d="M49 101 Q60 112 71 101" stroke={trim} strokeWidth="3.2" fill="none" strokeLinecap="round" />
+      <path d="M60 108 l-2.6 4 l2.6 3.4 l2.6 -3.4 Z" fill={KUMKUM} />
+
+      {/* head: hair back, face, center-parted hair */}
+      <circle cx="60" cy="62" r="28" fill={HAIR} />
+      <ellipse cx="60" cy="67" rx="23.5" ry="23" fill={SKIN} />
+      <path d="M60 41 Q38 40 35 66 Q42 50 60 48 Z" fill={HAIR} />
+      <path d="M60 41 Q82 40 85 66 Q78 50 60 48 Z" fill={HAIR} />
+      <path d="M44 46 Q50 42 56 43" stroke={HAIR_SHINE} strokeWidth="2" strokeLinecap="round" fill="none" />
+      {/* jhumkas */}
+      {[35, 85].map((x) => (
+        <g key={x}>
+          <path d={`M${x - 3.6} 82 Q${x} 75 ${x + 3.6} 82 Z`} fill={trim} />
+          <circle cx={x} cy="84" r="1.2" fill={trim} />
+        </g>
+      ))}
+      <Face cx={60} cy={69} lashes />
+      {/* bindi, maang tikka, nath */}
+      <circle cx="60" cy="58" r="1.7" fill={KUMKUM} />
+      <path d="M60 39 L60 47" stroke={trim} strokeWidth="1.4" />
+      <path d="M60 46 Q56.5 50 60 53.5 Q63.5 50 60 46 Z" fill={trim} />
+      <circle cx="60" cy="50" r="1.2" fill={KUMKUM} />
+      <circle cx="65" cy="76" r="3" stroke={trim} strokeWidth="1.2" fill="none" />
+
+      {/* dupatta, front edge resting over the hair */}
+      <path d="M32 64 Q29 28 60 27 Q91 28 88 64 Q85 40 60 39 Q35 40 32 64 Z" fill={veil} opacity="0.94" />
+      <path d="M32 64 Q29 28 60 27 Q91 28 88 64" stroke={trim} strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      {[40, 50, 60, 70, 80].map((x) => (
+        <circle key={x} cx={x} cy={x === 60 ? 29.5 : x === 50 || x === 70 ? 31 : 35} r="1.1" fill={shade(trim, 0.15)} />
+      ))}
     </svg>
   );
 }
 
 /** Groom in a sherwani: `outfit` is the sherwani, `safa` the turban, `stole` the dupatta, `trim` buttons and brooch. */
 export function Groom({ outfit, safa, stole, trim = "#C9A24B", className = "" }: { outfit: string; safa: string; stole?: string; trim?: string; className?: string }) {
+  const coat = lift(outfit);
+  const turban = lift(safa);
   return (
     <svg viewBox="0 0 120 240" width="120" height="240" className={className} role="img" aria-label="Groom">
-      {/* churidar + mojari */}
-      <rect x="47" y="168" width="11" height="54" rx="4" fill={shade(outfit, 0.1)} />
-      <rect x="62" y="168" width="11" height="54" rx="4" fill={shade(outfit, 0.1)} />
-      <path d="M43 222 Q52 216 59 222 L59 228 L43 228 Z" fill={trim} />
-      <path d="M61 222 Q68 216 77 222 L77 228 L61 228 Z" fill={trim} />
-      {/* sherwani */}
-      <path d="M40 66 Q60 58 80 66 L86 176 Q60 182 34 176 Z" fill={outfit} />
-      <path d="M60 64 L60 178" stroke={shade(outfit, -0.12)} strokeWidth="1.5" />
-      {[78, 92, 106, 120, 134].map((y) => (
-        <circle key={y} cx="60" cy={y} r="1.9" fill={trim} />
+      {/* churidar and mojaris */}
+      <rect x="47" y="200" width="11" height="24" rx="4" fill={shade(coat, 0.08)} />
+      <rect x="62" y="200" width="11" height="24" rx="4" fill={shade(coat, 0.08)} />
+      <path d="M41 224 Q50 216 59 222 L59 229 L43 229 Q38 229 41 224 Z" fill={trim} />
+      <path d="M61 222 Q70 216 79 224 Q82 229 77 229 L61 229 Z" fill={trim} />
+
+      {/* sherwani: long coat with a placket, buttons and zari hem */}
+      <path d="M40 100 Q60 94 80 100 Q88 150 90 206 Q60 212 30 206 Q32 150 40 100 Z" fill={coat} />
+      <path d="M31 198 Q60 204 89 198 L90 206 Q60 212 30 206 Z" fill={trim} opacity="0.85" />
+      <path d="M60 100 L60 208" stroke={shade(coat, -0.12)} strokeWidth="1.4" />
+      {[112, 124, 136, 148, 160].map((y) => (
+        <circle key={y} cx="60" cy={y} r="2" fill={trim} />
       ))}
-      <path d="M40 66 Q30 92 34 136" stroke={outfit} strokeWidth="9" strokeLinecap="round" fill="none" />
-      <path d="M80 66 Q90 92 86 136" stroke={outfit} strokeWidth="9" strokeLinecap="round" fill="none" />
-      <circle cx="34" cy="140" r="4" fill={SKIN} />
-      <circle cx="86" cy="140" r="4" fill={SKIN} />
       {/* stole over one shoulder */}
-      {stole ? <path d="M44 64 Q60 70 78 64 L84 72 Q66 110 50 168 L42 166 Q56 108 72 74 Q58 76 44 72 Z" fill={stole} opacity="0.9" /> : null}
-      {/* collar + head */}
-      <rect x="54" y="50" width="12" height="14" fill={SKIN_SHADE} />
-      <rect x="52" y="60" width="16" height="6" rx="2" fill={shade(outfit, -0.08)} />
-      <circle cx="60" cy="40" r="14" fill={SKIN} />
-      <circle cx="54" cy="41" r="1.3" fill={HAIR} />
-      <circle cx="66" cy="41" r="1.3" fill={HAIR} />
-      <path d="M53 46 Q60 50 67 46 Q60 54 53 46 Z" fill={HAIR} opacity="0.85" />
-      {/* safa */}
-      <path d="M43 36 Q42 16 60 15 Q78 16 77 36 Q70 30 60 30 Q50 30 43 36 Z" fill={safa} />
-      <path d="M44 28 Q60 20 76 28" stroke={shade(safa, -0.15)} strokeWidth="2" fill="none" />
-      <path d="M46 22 Q60 15 74 22" stroke={shade(safa, -0.15)} strokeWidth="2" fill="none" />
-      <circle cx="60" cy="21" r="3" fill={trim} />
-      <path d="M60 18 Q66 8 62 4" stroke={trim} strokeWidth="1.6" fill="none" />
-      <path d="M77 34 Q86 50 82 70" stroke={safa} strokeWidth="4" strokeLinecap="round" fill="none" />
+      {stole ? <path d="M43 100 Q60 108 78 99 L83 106 Q66 144 52 204 L44 202 Q55 146 71 110 Q57 112 43 106 Z" fill={lift(stole)} /> : null}
+      {/* arms and hands */}
+      <path d="M41 104 Q32 128 38 150" stroke={coat} strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M79 104 Q88 128 82 150" stroke={coat} strokeWidth="10" strokeLinecap="round" fill="none" />
+      <path d="M33 146 l10 0 M77 146 l10 0" stroke={trim} strokeWidth="2.4" strokeLinecap="round" />
+      <circle cx="38" cy="154" r="5" fill={SKIN} />
+      <circle cx="82" cy="154" r="5" fill={SKIN} />
+
+      {/* neck and mandarin collar */}
+      <rect x="54" y="88" width="12" height="12" rx="4" fill={SKIN_SHADE} />
+      <rect x="51" y="97" width="18" height="6" rx="3" fill={shade(coat, -0.1)} />
+      <path d="M52 100 L68 100" stroke={trim} strokeWidth="1.2" />
+
+      {/* head */}
+      <circle cx="36" cy="68" r="4.6" fill={SKIN_SHADE} />
+      <circle cx="84" cy="68" r="4.6" fill={SKIN_SHADE} />
+      <ellipse cx="60" cy="67" rx="23.5" ry="23" fill={SKIN} />
+      <path d="M37 54 Q37 66 40 72 L42 56 Z M83 54 Q83 66 80 72 L78 56 Z" fill={HAIR} />
+      <Face cx={60} cy={70} brows />
+      <path d="M54 76.5 Q57 74.5 60 76 Q63 74.5 66 76.5 Q63 78.5 60 77.4 Q57 78.5 54 76.5 Z" fill={HAIR} />
+      <circle cx="60" cy="60" r="1.2" fill={KUMKUM} />
+
+      {/* safa: a rounded, wrapped turban with layered folds, a kalgi brooch and a small fan */}
+      <path d="M84 50 Q98 52 96 70 Q92 60 84 58 Z" fill={shade(turban, -0.1)} />
+      <path d="M33 58 Q30 24 60 22 Q90 24 87 58 Q76 50 60 50 Q44 50 33 58 Z" fill={turban} />
+      <path d="M35 47 Q60 34 86 46" stroke={shade(turban, -0.14)} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <path d="M38 37 Q60 26 82 36" stroke={shade(turban, -0.14)} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <path d="M33 58 Q46 49 60 50 Q76 50 87 58" stroke={trim} strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <path d="M44 30 Q52 26 58 26" stroke={shade(turban, 0.14)} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="60" cy="38" r="4.4" fill={trim} />
+      <circle cx="60" cy="38" r="2" fill={KUMKUM} />
+      <path d="M60 34 Q63 22 70 14 Q66 26 62 35" fill={trim} />
+      <path d="M56 42 Q60 48 64 42" stroke={trim} strokeWidth="1.2" fill="none" />
+      {[54, 60, 66].map((x) => (
+        <circle key={x} cx={x} cy={x === 60 ? 47 : 44.5} r="1" fill={shade(trim, 0.2)} />
+      ))}
     </svg>
   );
 }
 
-/** A family member in a saree and one in a kurta, smaller, for "family colors". */
+/** A woman in a saree and a man in a kurta, for "family colors". */
 export function Family({ a, b, className = "" }: { a: string; b: string; className?: string }) {
+  const saree = lift(a);
+  const kurta = lift(b);
   return (
     <svg viewBox="0 0 160 200" width="160" height="200" className={className} role="img" aria-label="Family">
       {/* woman in saree */}
-      <path d="M36 82 L64 82 L80 188 Q50 194 20 188 Z" fill={a} />
-      <path d="M38 62 L62 62 L66 90 L34 90 Z" fill={shade(a, -0.08)} />
-      <path d="M62 60 Q74 90 40 120 L30 114 Q58 92 56 62 Z" fill={shade(a, 0.08)} />
-      <circle cx="50" cy="44" r="12" fill={SKIN} />
-      <path d="M38 44 Q38 30 50 30 Q62 30 62 44 Q58 36 50 36 Q42 36 38 44 Z" fill={HAIR} />
-      <circle cx="61" cy="46" r="5" fill={HAIR} />
+      <path d="M34 112 L66 112 Q78 150 80 188 Q50 196 20 188 Q22 150 34 112 Z" fill={saree} />
+      <path d="M22 180 Q50 188 79 180 L80 188 Q50 196 20 188 Z" fill="#C9A24B" />
+      <path d="M36 92 Q28 112 38 128" stroke={SKIN} strokeWidth="7" strokeLinecap="round" fill="none" />
+      <path d="M64 92 Q72 112 62 128" stroke={SKIN} strokeWidth="7" strokeLinecap="round" fill="none" />
+      <path d="M31 112 l6 2 M69 112 l-6 2" stroke="#C9A24B" strokeWidth="2.2" strokeLinecap="round" />
+      <rect x="34" y="86" width="32" height="30" rx="11" fill={shade(saree, -0.08)} />
+      <path d="M64 86 Q74 116 34 150 L28 142 Q60 116 58 88 Z" fill={shade(saree, 0.08)} />
+      <path d="M64 86 Q74 116 34 150" stroke="#C9A24B" strokeWidth="2" fill="none" />
+      <rect x="45" y="74" width="10" height="12" rx="4" fill={SKIN_SHADE} />
+      <circle cx="50" cy="52" r="23" fill={HAIR} />
+      <circle cx="70" cy="46" r="8" fill={HAIR} />
+      <ellipse cx="50" cy="56" rx="19" ry="18.5" fill={SKIN} />
+      <path d="M50 36 Q32 36 31 56 Q37 44 50 42 Z M50 36 Q68 36 69 56 Q63 44 50 42 Z" fill={HAIR} />
+      <Face cx={50} cy={58} lashes />
+      <circle cx="50" cy="48" r="1.5" fill={KUMKUM} />
+
       {/* man in kurta */}
-      <rect x="100" y="150" width="9" height="40" rx="3" fill="#F6EFE2" />
-      <rect x="112" y="150" width="9" height="40" rx="3" fill="#F6EFE2" />
-      <path d="M94 66 Q110 60 126 66 L130 156 Q110 160 90 156 Z" fill={b} />
-      <path d="M110 64 L110 104" stroke={shade(b, -0.15)} strokeWidth="1.4" />
-      <circle cx="110" cy="46" r="12" fill={SKIN} />
-      <path d="M98 44 Q98 32 110 32 Q122 32 122 44 Q118 38 110 38 Q102 38 98 44 Z" fill={HAIR} />
+      <rect x="99" y="160" width="10" height="28" rx="3" fill="#F6EFE2" />
+      <rect x="113" y="160" width="10" height="28" rx="3" fill="#F6EFE2" />
+      <path d="M94 92 Q111 86 128 92 Q132 130 132 166 Q111 172 90 166 Q90 130 94 92 Z" fill={kurta} />
+      <path d="M95 96 Q86 118 90 138" stroke={kurta} strokeWidth="9" strokeLinecap="round" fill="none" />
+      <path d="M127 96 Q136 118 132 138" stroke={kurta} strokeWidth="9" strokeLinecap="round" fill="none" />
+      <circle cx="90" cy="142" r="4.4" fill={SKIN} />
+      <circle cx="132" cy="142" r="4.4" fill={SKIN} />
+      <path d="M111 92 L111 128" stroke={shade(kurta, -0.15)} strokeWidth="1.4" />
+      {[100, 110, 120].map((y) => (
+        <circle key={y} cx="111" cy={y} r="1.4" fill="#C9A24B" />
+      ))}
+      <rect x="106" y="78" width="10" height="14" rx="4" fill={SKIN_SHADE} />
+      <ellipse cx="111" cy="58" rx="19" ry="18.5" fill={SKIN} />
+      <path d="M92 56 Q90 36 111 36 Q132 36 130 56 Q126 44 111 44 Q98 44 92 56 Z" fill={HAIR} />
+      <path d="M100 41 Q106 38 112 39" stroke={HAIR_SHINE} strokeWidth="2" strokeLinecap="round" fill="none" />
+      <Face cx={111} cy={60} brows />
     </svg>
   );
 }
@@ -141,10 +268,11 @@ export function CoupleScene({
         </g>
       ))}
       <rect x="0" y="236" width="320" height="24" fill={shade(d3, -0.08)} />
-      <g transform="translate(78 24) scale(0.95)">
+      <ellipse cx="160" cy="240" rx="92" ry="6" fill="#000" opacity="0.08" />
+      <g transform="translate(70 22) scale(0.95)">
         <Groom outfit={groom} safa={safa} trim={trim} />
       </g>
-      <g transform="translate(130 24) scale(0.95)">
+      <g transform="translate(136 22) scale(0.95)">
         <Bride outfit={bride} dupatta={dupatta} trim={trim} />
       </g>
     </svg>
