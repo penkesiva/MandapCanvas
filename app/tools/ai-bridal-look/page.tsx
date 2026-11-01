@@ -58,7 +58,13 @@ export default function BridalLookPage() {
         </header>
 
         <div className="mt-10">
-          <BridalLook />
+          <BridalLook
+            example={{
+              before: "/samples/look-before.jpg",
+              after: "/samples/look-after.jpg",
+              caption: "One everyday photo, North Indian look, classic red, classic jewelry, at the mandap. Same face, glasses and smile.",
+            }}
+          />
         </div>
 
         <section className="mt-16 grid gap-8 md:grid-cols-3" aria-labelledby="how-h">

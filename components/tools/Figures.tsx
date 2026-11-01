@@ -290,6 +290,7 @@ export function CoupleScene({
   decor,
   trim = "#C9A24B",
   confetti = true,
+  show = "both",
   className = "",
 }: {
   bride: string;
@@ -299,12 +300,14 @@ export function CoupleScene({
   decor: string[];
   trim?: string;
   confetti?: boolean;
+  /** Draw both of them, or one person centered under the arch. */
+  show?: "both" | "bride" | "groom";
   className?: string;
 }) {
   const [d1, d2, d3] = [decor[0], decor[1] ?? decor[0], decor[2] ?? decor[1] ?? decor[0]];
   const clip = `mc-scene-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
-    <svg viewBox="0 0 320 260" width="320" height="260" className={className} role="img" aria-label="Bride and groom in these colors">
+    <svg viewBox="0 0 320 260" width="320" height="260" className={className} role="img" aria-label={show === "both" ? "Bride and groom in these colors" : `${show === "bride" ? "Bride" : "Groom"} in these colors`}>
       <defs>
         <clipPath id={clip}>
           <rect width="320" height="260" rx="18" />
@@ -325,12 +328,16 @@ export function CoupleScene({
       <rect x="0" y="236" width="320" height="24" fill={shade(d3, -0.08)} />
       <ellipse cx="160" cy="240" rx="92" ry="6" fill="#000" opacity="0.08" />
       {confetti ? <Confetti colors={[trim, "#F2A33A", "#E7849B", d1, "#FFF6E5", d2]} count={16} /> : null}
-      <g transform="translate(70 22) scale(0.95)">
-        <Groom outfit={groom} safa={safa} trim={trim} />
-      </g>
-      <g transform="translate(136 22) scale(0.95)">
-        <Bride outfit={bride} dupatta={dupatta} trim={trim} />
-      </g>
+      {show !== "bride" ? (
+        <g transform={`translate(${show === "groom" ? 103 : 70} 22) scale(0.95)`}>
+          <Groom outfit={groom} safa={safa} trim={trim} />
+        </g>
+      ) : null}
+      {show !== "groom" ? (
+        <g transform={`translate(${show === "bride" ? 103 : 136} 22) scale(0.95)`}>
+          <Bride outfit={bride} dupatta={dupatta} trim={trim} />
+        </g>
+      ) : null}
       {confetti ? <Confetti colors={[trim, "#F2A33A", "#E7849B", "#FFF6E5"]} count={6} seed={100} /> : null}
       </g>
     </svg>
