@@ -86,6 +86,7 @@ async function uploadFile(file: Blob, kind: string): Promise<string> {
 export function CreateWizard({
   initialPack,
   initialStyle,
+  initialPalette,
   mode,
   credits,
   plan,
@@ -93,6 +94,7 @@ export function CreateWizard({
 }: {
   initialPack: PackId;
   initialStyle?: string;
+  initialPalette?: string;
   mode: "couple" | "proposal";
   credits: number;
   plan: string | null;
@@ -100,7 +102,7 @@ export function CreateWizard({
 }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [s, setS] = useState<WizardState>(() => initialState(initialPack, initialStyle));
+  const [s, setS] = useState<WizardState>(() => ({ ...initialState(initialPack, initialStyle), ...(initialPalette ? { palettes: [initialPalette] } : {}) }));
   const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -126,13 +128,15 @@ export function CreateWizard({
           ...saved,
           packId: saved.packId ?? cur.packId,
           ...(initialStyle ? { styleHint: initialStyle } : {}),
+          // A palette picked in a free tool becomes the starting palette for every event.
+          ...(initialPalette ? { palettes: [initialPalette], eventSettings: {} } : {}),
         }));
       }
     } catch {
       /* storage unavailable */
     }
     setHydrated(true);
-  }, [initialStyle]);
+  }, [initialStyle, initialPalette]);
   useEffect(() => {
     if (!hydrated) return;
     try {

@@ -15,6 +15,7 @@ export async function SiteHeader() {
           <Link href="/gallery" className="hover:text-ink">Gallery</Link>
           <Link href="/pricing" className="hover:text-ink">Pricing</Link>
           <Link href="/pro" className="hover:text-ink">For decorators</Link>
+          <Link href="/tools" className="hover:text-ink">Free tools</Link>
           <Link href="/faq" className="hover:text-ink">FAQ</Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
@@ -37,6 +38,7 @@ export async function SiteHeader() {
         <Link href="/gallery">Gallery</Link>
         <Link href="/pricing">Pricing</Link>
         <Link href="/pro">For decorators</Link>
+        <Link href="/tools">Free tools</Link>
         <Link href="/faq">FAQ</Link>
         <Link href={user ? "/account" : "/signin"}>{user ? "My albums" : "Sign in"}</Link>
       </nav>
@@ -49,7 +51,7 @@ export function SiteFooter() {
     <footer className="no-print relative mt-auto overflow-hidden bg-maroon text-[#f3e3d3]">
       <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
       <div className="toran relative" aria-hidden="true" />
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div>
           <p className="flex items-center gap-2 font-display text-2xl text-gold-light">
             <Logo light />
@@ -60,6 +62,7 @@ export function SiteFooter() {
           </p>
         </div>
         <FooterCol title="Couples" links={[["Make a free preview", "/create"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"], ["My account", "/account"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>
