@@ -78,9 +78,20 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
   const label = eventLabel(shot.event, config.tradition);
   const usesDecorRef = refs.decorImage;
 
+  const day = shot.lighting === "day";
+  const outdoor = shot.venue === "outdoor";
+  const timeRule = day
+    ? "DAYTIME. The scene is lit by bright, soft natural daylight (sun through windows, open sides or open sky). It must not look like night or a dim room: no dark backgrounds, no night sky, no dramatic colored uplighting. Candles or lamps may appear but are not the main light."
+    : "EVENING, after sunset. Warm ambient uplighting, candles, lanterns and string lights set the mood; if outdoors the sky is dusk or night.";
+  const venueRule = outdoor
+    ? "OUTDOORS at a U.S. venue: garden lawn, courtyard, estate grounds or an open-sided tent, with greenery and sky visible. If the decor description below mentions indoor elements (ballroom, ceiling, chandeliers), translate them into outdoor equivalents (hanging installations from a frame or trees)."
+    : "INDOORS at a U.S. venue: a hotel ballroom or elegant banquet hall with real architecture (walls, windows or ceiling visible).";
+
   const lines: string[] = [
     "ROLE: You are an award-winning South Asian wedding photographer and decor designer creating a realistic preview of a real wedding in the United States.",
     `WEDDING: ${tradition.name} wedding. EVENT: ${label}. MOOD: ${ev.mood}.`,
+    `SETTING (MUST FOLLOW, overrides anything below): Time of day is ${timeRule} Location is ${venueRule}`,
+    `COLOR PALETTE (MUST FOLLOW): ${palette.name} — ${palette.colors}. Decor, florals, fabrics and outfits all use these colors; avoid other dominant colors.`,
     CATEGORY_FRAMING[shot.category],
     `DECOR: ${decorDescription(config, shot)}.`,
   ];
@@ -101,7 +112,7 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
   }
 
   lines.push(
-    `PALETTE: ${palette.name}. Flowers: ${palette.flowers}. Fabrics: ${palette.fabrics}. Use only flowers and materials that are realistic to source in the U.S.`,
+    `PALETTE DETAILS: Flowers: ${palette.flowers}. Fabrics: ${palette.fabrics}. Use only flowers and materials that are realistic to source in the U.S.`,
   );
 
   if (!["decor", "decor_detail"].includes(shot.category)) {
@@ -109,17 +120,13 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
   }
   lines.push(peopleRules(config, refs, shot));
 
-  lines.push(
-    `VENUE: ${shot.venue === "outdoor" ? "outdoor — garden, lawn or tent at a U.S. venue" : "indoor — hotel ballroom or banquet hall in the United States"}. LIGHT: ${
-      shot.lighting === "evening"
-        ? "evening — warm uplighting, candles, string lights, glowing atmosphere"
-        : "daytime — soft natural light, bright and airy"
-    }.`,
-  );
 
   if (tradition.guardrails) lines.push(`RESPECT: ${tradition.guardrails}`);
   if (config.notes.trim()) lines.push(`CUSTOMER NOTES (follow when compatible): ${config.notes.trim().slice(0, 600)}`);
 
+  lines.push(
+    `FINAL CHECK before rendering: ${day ? "daylight, bright scene" : "evening, after sunset"}; ${outdoor ? "outdoors" : "indoors"}; dominant colors from the ${palette.name} palette.`,
+  );
   lines.push(
     "QUALITY: Photorealistic, editorial wedding photography, natural color, believable scale and perspective, sharp focus on the subject. No text, logos, watermarks, signage or captions in the image. No distorted architecture or melted flowers.",
   );

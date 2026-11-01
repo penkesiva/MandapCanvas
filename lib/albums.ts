@@ -140,15 +140,17 @@ export function planShots(config: AlbumConfig, total: number, existing: Shot[] =
       const i = counters[cat] ?? 0;
       counters[cat] = i + 1;
       const event = events[i % events.length];
-      const palette = palettes[Math.floor(i / events.length) % palettes.length];
+      const set = config.eventSettings?.[event];
+      const pals = set?.palettes?.length ? set.palettes : palettes;
+      const palette = pals[Math.floor(i / events.length) % pals.length];
       const ev = EVENTS[event];
       shots.push({
         id: crypto.randomUUID().slice(0, 12),
         event,
         category: cat,
         paletteId: palette,
-        venue: config.venue === "mixed" ? ev.defaultVenue : config.venue,
-        lighting: config.lighting === "mixed" ? ev.defaultLighting : config.lighting,
+        venue: set?.venue ?? (config.venue === "mixed" ? ev.defaultVenue : config.venue),
+        lighting: set?.lighting ?? (config.lighting === "mixed" ? ev.defaultLighting : config.lighting),
         status: "pending",
         attempts: 0,
       });

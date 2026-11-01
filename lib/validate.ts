@@ -1,6 +1,6 @@
 import { PACKS, type PackId, ALBUM_PACKS } from "./config";
 import { supabaseHost } from "./supabase";
-import { CATEGORIES, DECOR_PRESETS, EVENTS, PALETTES, TRADITIONS, mixTotal } from "./catalog";
+import { CATEGORIES, DECOR_PRESETS, EVENTS, PALETTES, TRADITIONS, mixTotal, normalizeEventSettings } from "./catalog";
 import type { AlbumConfig, EventId, ShotMix, TraditionId } from "./types";
 
 /** Only accept image URLs that we stored ourselves (prevents fetching arbitrary URLs server-side). */
@@ -38,7 +38,25 @@ export function parseConfig(raw: unknown, packId: PackId): { config: AlbumConfig
   if (uniqEvents.length === 0) return { error: "Pick at least one event." };
   if (uniqEvents.length > pack.maxEvents) return { error: `The ${pack.name} pack covers up to ${pack.maxEvents} events.` };
 
-  const palettes = [...new Set((Array.isArray(r.palettes) ? r.palettes : []).filter((p): p is string => PALETTES.some((x) => x.id === p)))];
+  let palettes = [...new Set((Array.isArray(r.palettes) ? r.palettes : []).filter((p): p is string => PALETTES.some((x) => x.id === p)))];
+
+  // Per-event palettes, venue and light (newer clients). Distinct palettes across the album count toward the pack.
+  let eventSettings: AlbumConfig["eventSettings"];
+  if (r.eventSettings && typeof r.eventSettings === "object") {
+    const raw = r.eventSettings as Record<string, { palettes?: unknown; venue?: unknown; lighting?: unknown }>;
+    const requested = new Set<string>();
+    const cleaned: NonNullable<AlbumConfig["eventSettings"]> = {};
+    for (const e of uniqEvents) {
+      const x = raw[e] ?? {};
+      const pals = (Array.isArray(x.palettes) ? x.palettes : []).filter((p): p is string => typeof p === "string" && PALETTES.some((q) => q.id === p));
+      pals.forEach((p) => requested.add(p));
+      cleaned[e] = { palettes: pals, venue: x.venue as "indoor", lighting: x.lighting as "day" };
+    }
+    if (requested.size > pack.maxPalettes) return { error: `The ${pack.name} pack covers up to ${pack.maxPalettes} palettes in total.` };
+    const norm = normalizeEventSettings(uniqEvents, cleaned, palettes, pack.maxPalettes);
+    eventSettings = norm.eventSettings;
+    palettes = norm.palettes;
+  }
   if (palettes.length === 0) return { error: "Pick at least one color palette." };
   if (palettes.length > pack.maxPalettes) return { error: `The ${pack.name} pack covers up to ${pack.maxPalettes} palettes.` };
 
@@ -75,6 +93,6 @@ export function parseConfig(raw: unknown, packId: PackId): { config: AlbumConfig
   const inventoryUrls = (Array.isArray(r.inventoryUrls) ? r.inventoryUrls : []).filter(isOurImageUrl).slice(0, 3);
 
   return {
-    config: { tradition, events: uniqEvents, palettes, venue, lighting, decor, people, mix, notes, inventoryUrls },
+    config: { tradition, events: uniqEvents, palettes, venue, lighting, decor, people, mix, notes, inventoryUrls, eventSettings },
   };
 }

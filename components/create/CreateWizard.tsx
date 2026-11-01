@@ -7,8 +7,8 @@ import { track } from "@vercel/analytics";
 import { AlertCircle, Check, ImagePlus, Loader2, Minus, Plus, Sparkles, Upload } from "lucide-react";
 import { SketchCanvas, type SketchCanvasHandle } from "./SketchCanvas";
 import { ALBUM_PACKS, PACKS, AI_LABEL, formatUSD, type PackId } from "@/lib/config";
-import { CATEGORIES, DECOR_PRESETS, PALETTES, STYLE_TIERS, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
-import type { DecorSource, EventId, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
+import { CATEGORIES, DECOR_PRESETS, PALETTES, STYLE_TIERS, normalizeEventSettings, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
+import type { DecorSource, EventId, EventSetting, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
 
 type PreviewShot = { id: string; url?: string; status: string; category: string; event: EventId };
 
@@ -20,6 +20,7 @@ interface WizardState {
   tradition: TraditionId;
   events: EventId[];
   palettes: string[];
+  eventSettings: Partial<Record<EventId, EventSetting>>;
   venue: VenueMode;
   lighting: LightingMode;
   notes: string;
@@ -46,7 +47,8 @@ function initialState(pack: PackId, style?: string): WizardState {
     applyToAllEvents: false,
     tradition: "hindu_north",
     events: ["mehndi", "sangeet", "ceremony", "reception"],
-    palettes: ["blush_ivory", "emerald_gold"],
+    palettes: [],
+    eventSettings: {},
     venue: "mixed",
     lighting: "mixed",
     notes: "",
@@ -130,6 +132,31 @@ export function CreateWizard({
   const pack = PACKS[s.packId];
   const tradition = TRADITIONS.find((t) => t.id === s.tradition)!;
   const total = mixTotal(s.mix);
+  // Per-event palettes, venue and light, kept within the pack's palette limit.
+  const perEvent = useMemo(
+    () => normalizeEventSettings(s.events, s.eventSettings, s.palettes, pack.maxPalettes),
+    [s.events, s.eventSettings, s.palettes, pack.maxPalettes],
+  );
+  const [openEvent, setOpenEvent] = useState<EventId | null>(null);
+  const setEvent = (e: EventId, patch: Partial<EventSetting>) =>
+    setS((cur) => {
+      const base = normalizeEventSettings(cur.events, cur.eventSettings, cur.palettes, PACKS[cur.packId].maxPalettes).eventSettings;
+      return { ...cur, eventSettings: { ...base, [e]: { ...base[e]!, ...patch } } };
+    });
+  const toggleEventPalette = (e: EventId, id: string) => {
+    const mine = perEvent.eventSettings[e]?.palettes ?? [];
+    if (mine.includes(id)) {
+      if (mine.length === 1) return setError("Keep at least one palette for each event.");
+      return setEvent(e, { palettes: mine.filter((x) => x !== id) });
+    }
+    if (!perEvent.palettes.includes(id) && perEvent.palettes.length >= pack.maxPalettes) {
+      return setError(
+        `The ${pack.name} pack covers ${pack.maxPalettes} palettes in total, and you're using ${perEvent.palettes.length}. Reuse one, remove one, or choose a bigger pack on the Album step.`,
+      );
+    }
+    setError(null);
+    setEvent(e, { palettes: [...mine, id] });
+  };
 
   const go = (n: number) => {
     setError(null);
@@ -169,7 +196,7 @@ export function CreateWizard({
 
   const finishWedding = () => {
     if (!s.events.length) return setError("Pick at least one event.");
-    if (!s.palettes.length) return setError("Pick at least one palette.");
+    if (!perEvent.palettes.length) return setError("Pick at least one palette.");
     go(2);
   };
 
@@ -196,9 +223,10 @@ export function CreateWizard({
     () => ({
       tradition: s.tradition,
       events: s.events,
-      palettes: s.palettes,
-      venue: s.venue,
-      lighting: s.lighting,
+      palettes: perEvent.palettes,
+      venue: "mixed",
+      lighting: "mixed",
+      eventSettings: perEvent.eventSettings,
       notes: s.notes,
       decor: {
         source: s.decorSource,
@@ -210,7 +238,7 @@ export function CreateWizard({
       mix: s.mix,
       inventoryUrls: mode === "proposal" ? s.inventoryUrls : [],
     }),
-    [s, mode],
+    [s, mode, perEvent],
   );
   const configKey = JSON.stringify([configPayload, s.packId]);
 
@@ -457,7 +485,10 @@ export function CreateWizard({
                     className="chip"
                     onClick={() => {
                       if (on) update("events", s.events.filter((x) => x !== e));
-                      else if (s.events.length < pack.maxEvents) update("events", [...s.events, e]);
+                      else if (s.events.length < pack.maxEvents) {
+                        update("events", tradition.events.filter((x) => x === e || s.events.includes(x)));
+                        setOpenEvent(e);
+                      }
                       else setError(`The ${pack.name} pack covers up to ${pack.maxEvents} events. Choose a bigger pack on the Album step for more.`);
                     }}
                   >
@@ -467,41 +498,64 @@ export function CreateWizard({
               })}
             </div>
           </Field>
-          <Field label="Color palettes" hint={`Pick up to ${pack.maxPalettes}. Your album rotates through them so you can compare.`}>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {PALETTES.map((p) => {
-                const on = s.palettes.includes(p.id);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => {
-                      if (on) update("palettes", s.palettes.filter((x) => x !== p.id));
-                      else if (s.palettes.length < pack.maxPalettes) update("palettes", [...s.palettes, p.id]);
-                      else setError(`The ${pack.name} pack covers up to ${pack.maxPalettes} palettes.`);
-                    }}
-                    className={`flex items-center gap-3 rounded-2xl border-2 bg-white px-3 py-3 text-left ${on ? "border-kumkum" : "border-line"}`}
-                  >
-                    <span className="flex flex-none">
-                      {p.swatches.map((c) => (
-                        <span key={c} className="-ml-1.5 h-7 w-7 rounded-full border-2 border-white ring-1 ring-ink/10 first:ml-0" style={{ background: c }} />
-                      ))}
-                    </span>
-                    <span className="text-[0.95rem] font-medium leading-tight">{p.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-          <div className="grid gap-8 sm:grid-cols-2">
-            <Field label="Venue">
-              <Segmented value={s.venue} onChange={(v) => update("venue", v as VenueMode)} options={[["mixed", "Best per event"], ["indoor", "Indoor"], ["outdoor", "Outdoor"]]} />
+          {s.events.length > 0 && (
+            <Field
+              label="Colors, venue and light for each event"
+              hint={`Open an event to choose its colors. Your ${pack.name} pack covers ${pack.maxPalettes} palettes in total (${perEvent.palettes.length} used); reusing one across events doesn't count twice.`}
+            >
+              <div className="space-y-3">
+                {tradition.events
+                  .filter((e) => s.events.includes(e))
+                  .map((e) => {
+                    const set = perEvent.eventSettings[e]!;
+                    const open = openEvent === e;
+                    return (
+                      <div key={e} className={`overflow-hidden rounded-[20px] border bg-white transition ${open ? "border-gold shadow-[0_18px_36px_-28px_rgba(74,13,26,0.55)]" : "border-line"}`}>
+                        <button
+                          type="button"
+                          aria-expanded={open}
+                          onClick={() => setOpenEvent(open ? null : e)}
+                          className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5 text-left sm:px-5"
+                        >
+                          <span className="font-display text-xl text-maroon">{eventLabel(e, s.tradition)}</span>
+                          <span className="flex gap-1.5" aria-label={set.palettes.map((id) => PALETTES.find((x) => x.id === id)?.name).join(", ")}>
+                            {set.palettes.map((id) => (
+                              <span key={id} className="flex h-5 w-10 overflow-hidden rounded-md ring-1 ring-ink/10">
+                                {PALETTES.find((x) => x.id === id)!.swatches.map((c, i) => (
+                                  <span key={c} className={i === 0 ? "flex-[2]" : "flex-1"} style={{ background: c }} />
+                                ))}
+                              </span>
+                            ))}
+                          </span>
+                          <span className="text-sm text-ink-soft">
+                            {set.venue === "outdoor" ? "Outdoor" : "Indoor"}, {set.lighting === "day" ? "daytime" : "evening"}
+                          </span>
+                          <span className="ml-auto text-sm font-semibold text-kumkum">{open ? "Done" : "Change"}</span>
+                        </button>
+                        {open && (
+                          <div className="space-y-6 border-t border-line px-4 pb-5 pt-4 sm:px-5">
+                            <div>
+                              <p className="mb-3 text-sm font-semibold">Colors for {eventLabel(e, s.tradition)} <span className="font-normal text-ink-soft">(pick one, or two to compare)</span></p>
+                              <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
+                            </div>
+                            <div className="grid gap-5 sm:grid-cols-2">
+                              <div>
+                                <p className="mb-2 text-sm font-semibold">Venue</p>
+                                <Segmented value={set.venue} onChange={(v) => setEvent(e, { venue: v as "indoor" | "outdoor" })} options={[["indoor", "Indoor"], ["outdoor", "Outdoor"]]} />
+                              </div>
+                              <div>
+                                <p className="mb-2 text-sm font-semibold">Light</p>
+                                <Segmented value={set.lighting} onChange={(v) => setEvent(e, { lighting: v as "day" | "evening" })} options={[["day", "Daytime"], ["evening", "Evening"]]} />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
             </Field>
-            <Field label="Light">
-              <Segmented value={s.lighting} onChange={(v) => update("lighting", v as LightingMode)} options={[["mixed", "Best per event"], ["day", "Daytime"], ["evening", "Evening"]]} />
-            </Field>
-          </div>
+          )}
           <Field label="Anything else? (optional)" hint="Flowers you love or hate, a venue name, family must-haves.">
             <textarea className="field min-h-24" maxLength={600} value={s.notes} onChange={(e) => update("notes", e.target.value)} placeholder="e.g. no lilies, lots of jasmine, venue is a garden estate in Sonoma" />
           </Field>
@@ -697,7 +751,7 @@ export function CreateWizard({
                       {pack.name} album: {pack.images} images, no watermark
                     </p>
                     <p className="text-ink-soft">
-                      {s.events.map((e) => eventLabel(e, s.tradition)).join(", ")}. {s.palettes.length} palette{s.palettes.length > 1 ? "s" : ""}. {pack.freeRegens} free new versions.
+                      {s.events.map((e) => eventLabel(e, s.tradition)).join(", ")}. {perEvent.palettes.length} palette{perEvent.palettes.length > 1 ? "s" : ""}. {pack.freeRegens} free new versions.
                     </p>
                   </div>
                   <button type="button" className="btn btn-primary" onClick={checkout} disabled={!!busy || !albumId}>
@@ -741,6 +795,36 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <p className="font-semibold">{label}</p>
       {hint ? <p className="mb-3 text-sm text-ink-soft">{hint}</p> : <div className="mb-3" />}
       {children}
+    </div>
+  );
+}
+
+/** Palette options as fabric swatches: the colors fill the tile, the name sits underneath. */
+function PaletteGrid({ selected, onToggle }: { selected: string[]; onToggle: (id: string) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4">
+      {PALETTES.map((p) => {
+        const on = selected.includes(p.id);
+        return (
+          <button key={p.id} type="button" aria-pressed={on} onClick={() => onToggle(p.id)} className="group text-left">
+            <span
+              className={`relative flex h-16 overflow-hidden rounded-2xl ring-offset-2 ring-offset-white transition ${
+                on ? "ring-[3px] ring-kumkum" : "ring-1 ring-ink/10 group-hover:ring-2 group-hover:ring-gold"
+              }`}
+            >
+              {p.swatches.map((c, i) => (
+                <span key={c} className={i === 0 ? "flex-[2]" : "flex-1"} style={{ background: c }} />
+              ))}
+              {on ? (
+                <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-kumkum text-white shadow" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" clipRule="evenodd" /></svg>
+                </span>
+              ) : null}
+            </span>
+            <span className={`mt-2 block text-[0.95rem] leading-tight ${on ? "font-semibold text-kumkum-deep" : "font-medium"}`}>{p.name}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

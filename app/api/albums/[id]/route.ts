@@ -4,7 +4,7 @@ import { canEdit, getAlbum, publicAlbum, saveAlbum } from "@/lib/albums";
 import { parseConfig, parsePackId } from "@/lib/validate";
 import { jsonError } from "@/lib/http";
 import { PACKS } from "@/lib/config";
-import { defaultMix } from "@/lib/catalog";
+import { defaultMix, normalizeEventSettings } from "@/lib/catalog";
 
 export const runtime = "nodejs";
 
@@ -44,10 +44,15 @@ export async function PATCH(request: Request, ctx: Ctx) {
     if (!packId) return jsonError("Unknown pack.");
     const p = PACKS[packId];
     album.packId = packId;
+    const events = album.config.events.slice(0, p.maxEvents);
+    const trimmed = album.config.eventSettings
+      ? normalizeEventSettings(events, album.config.eventSettings, album.config.palettes, p.maxPalettes)
+      : { eventSettings: undefined, palettes: album.config.palettes.slice(0, p.maxPalettes) };
     album.config = {
       ...album.config,
-      events: album.config.events.slice(0, p.maxEvents),
-      palettes: album.config.palettes.slice(0, p.maxPalettes),
+      events,
+      palettes: trimmed.palettes,
+      eventSettings: trimmed.eventSettings,
       mix: defaultMix(p.images),
     };
   } else if (body.config || body.packId) {

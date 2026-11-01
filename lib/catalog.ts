@@ -1,4 +1,4 @@
-import type { EventId, ShotCategory, ShotMix, TraditionId } from "./types";
+import type { EventSetting, EventId, ShotCategory, ShotMix, TraditionId } from "./types";
 
 /* ---------------------------------------------------------------- Traditions */
 
@@ -174,8 +174,8 @@ export const EVENTS: Record<EventId, EventDef> = {
     id: "sangeet",
     name: "Sangeet",
     decor:
-      "a Sangeet stage with a dance floor, statement floral or light installation, draping, string lights, uplighting, guest tables at the edges",
-    mood: "glamorous, celebratory, nighttime party",
+      "a Sangeet stage with a dance floor, a statement floral or light installation, draping, and guest tables at the edges",
+    mood: "glamorous, celebratory party",
     brideOutfit: "a glamorous embellished lehenga or saree",
     groomOutfit: "an embellished bandhgala, Indo-western jacket or tuxedo",
     defaultVenue: "indoor",
@@ -185,7 +185,7 @@ export const EVENTS: Record<EventId, EventDef> = {
     id: "garba",
     name: "Garba / Raas",
     decor:
-      "a Garba night with a central decorated pole or lamp, colorful mirror-work and bandhani fabric canopies, festoon lights, an open dance floor",
+      "a Garba celebration with a central decorated pole or lamp, colorful mirror-work and bandhani fabric canopies, festoon strings, an open dance floor",
     mood: "energetic, colorful, traditional folk",
     brideOutfit: "a mirror-work chaniya choli with oxidized jewelry",
     groomOutfit: "a kediyu with dhoti and a colorful pagdi",
@@ -206,7 +206,7 @@ export const EVENTS: Record<EventId, EventDef> = {
     id: "reception",
     name: "Reception",
     decor:
-      "a reception stage with a floral wall, a sofa for the couple, chandeliers or statement lighting, a styled aisle, round guest tables",
+      "a reception stage with a floral wall, a sofa for the couple, statement chandeliers, a styled aisle, round guest tables",
     mood: "luxurious, modern, polished",
     brideOutfit: "a reception lehenga, gown-style lehenga or saree",
     groomOutfit: "a tuxedo, bandhgala or embellished sherwani",
@@ -214,6 +214,55 @@ export const EVENTS: Record<EventId, EventDef> = {
     defaultLighting: "evening",
   },
 };
+
+/** A sensible first palette when someone adds an event. */
+export const EVENT_DEFAULT_PALETTE: Record<EventId, string> = {
+  haldi: "marigold_haldi",
+  mehndi: "mint_pastel",
+  sangeet: "wine_champagne",
+  garba: "marigold_haldi",
+  ceremony: "red_gold",
+  reception: "blush_ivory",
+};
+
+/**
+ * Brings per-event settings in line with the chosen events and the pack's palette limit
+ * (distinct palettes across the whole album). Returns the settings and the album-wide palette list.
+ */
+export function normalizeEventSettings(
+  events: EventId[],
+  settings: Partial<Record<EventId, EventSetting>> | undefined,
+  fallbackPalettes: string[],
+  maxPalettes: number,
+): { eventSettings: Partial<Record<EventId, EventSetting>>; palettes: string[] } {
+  const valid = (id: string) => PALETTES.some((p) => p.id === id);
+  const out: Partial<Record<EventId, EventSetting>> = {};
+  const union: string[] = [];
+  for (const e of events) {
+    const cur = settings?.[e];
+    const ev = EVENTS[e];
+    const pals: string[] = [];
+    for (const p of new Set((cur?.palettes ?? fallbackPalettes).filter(valid))) {
+      if (union.includes(p)) pals.push(p);
+      else if (union.length < maxPalettes) {
+        union.push(p);
+        pals.push(p);
+      }
+    }
+    if (!pals.length) {
+      const preferred = EVENT_DEFAULT_PALETTE[e];
+      const first = union.includes(preferred) || union.length < maxPalettes ? preferred : union[0];
+      if (!union.includes(first)) union.push(first);
+      pals.push(first);
+    }
+    out[e] = {
+      palettes: pals,
+      venue: cur?.venue === "indoor" || cur?.venue === "outdoor" ? cur.venue : ev.defaultVenue,
+      lighting: cur?.lighting === "day" || cur?.lighting === "evening" ? cur.lighting : ev.defaultLighting,
+    };
+  }
+  return { eventSettings: out, palettes: union };
+}
 
 export function eventLabel(event: EventId, tradition: TraditionId): string {
   const t = getTradition(tradition);
@@ -228,6 +277,8 @@ export interface Palette {
   id: string;
   name: string;
   swatches: [string, string, string];
+  /** Plain-words color brief: what dominates and what accents. */
+  colors: string;
   flowers: string;
   fabrics: string;
   outfits: string;
@@ -238,6 +289,7 @@ export const PALETTES: Palette[] = [
     id: "red_gold",
     name: "Sindoor red & gold",
     swatches: ["#A4161A", "#D4A017", "#F5E6C8"],
+    colors: "dominant deep sindoor red (#A4161A), accents of warm metallic gold (#D4A017), soft cream (#F5E6C8) as the light base",
     flowers: "red roses, carnations, marigold accents, gold-sprayed leaves",
     fabrics: "red velvet and gold brocade",
     outfits: "deep red with gold zari for the bride; ivory and gold with a red accent for the groom",
@@ -246,6 +298,7 @@ export const PALETTES: Palette[] = [
     id: "blush_ivory",
     name: "Blush & ivory",
     swatches: ["#F2C4C0", "#FFF8EE", "#C9A24B"],
+    colors: "dominant soft blush pink (#F2C4C0) and ivory white (#FFF8EE), small touches of muted gold (#C9A24B); light, airy and pale overall",
     flowers: "garden roses, spray roses, hydrangea, lisianthus, eucalyptus",
     fabrics: "ivory chiffon and blush silk",
     outfits: "blush pink with gold for the bride; ivory with blush accents for the groom",
@@ -254,6 +307,7 @@ export const PALETTES: Palette[] = [
     id: "emerald_gold",
     name: "Emerald & antique gold",
     swatches: ["#0F5132", "#B8923A", "#F3EBDD"],
+    colors: "dominant deep emerald green (#0F5132), antique gold (#B8923A) details, warm ivory (#F3EBDD) florals for contrast",
     flowers: "white roses, orchids, deep greenery, gold accents",
     fabrics: "emerald velvet and antique gold brocade",
     outfits: "emerald green with antique gold for the bride; ivory or deep green for the groom",
@@ -262,6 +316,7 @@ export const PALETTES: Palette[] = [
     id: "marigold_haldi",
     name: "Marigold & haldi",
     swatches: ["#F2A900", "#E8590C", "#6A8D2B"],
+    colors: "dominant marigold yellow (#F2A900) and saffron orange (#E8590C), fresh leaf green (#6A8D2B) accents; bright and sunny",
     flowers: "marigolds, yellow mums, orange roses, mango leaves",
     fabrics: "mustard and saffron cotton with mirror-work",
     outfits: "mustard yellow and saffron for the bride; pale yellow or white for the groom",
@@ -270,6 +325,7 @@ export const PALETTES: Palette[] = [
     id: "mint_pastel",
     name: "Mint & pastel",
     swatches: ["#BFE3D0", "#F7D6E0", "#FFF4D6"],
+    colors: "dominant soft mint green (#BFE3D0) and powder pink (#F7D6E0), butter cream (#FFF4D6) base; pale, fresh, pastel",
     flowers: "pastel roses, sweet peas, delphinium, white hydrangea",
     fabrics: "pastel organza and sheer drapes",
     outfits: "mint and powder pink for the bride; pastel mint or ivory for the groom",
@@ -278,6 +334,7 @@ export const PALETTES: Palette[] = [
     id: "royal_blue_silver",
     name: "Royal blue & silver",
     swatches: ["#1C3F8C", "#C0C6D0", "#F4F6FA"],
+    colors: "dominant royal blue (#1C3F8C), cool silver (#C0C6D0) metal details, crisp white (#F4F6FA) florals; no gold",
     flowers: "white orchids, blue delphinium, white roses, silver dollar eucalyptus",
     fabrics: "royal blue velvet and silver sequin",
     outfits: "royal blue with silver for the bride; midnight blue or silver for the groom",
@@ -286,6 +343,7 @@ export const PALETTES: Palette[] = [
     id: "wine_champagne",
     name: "Wine & champagne",
     swatches: ["#6D1A36", "#E8D3B0", "#B08D57"],
+    colors: "dominant deep wine burgundy (#6D1A36), champagne beige (#E8D3B0) and soft antique gold (#B08D57)",
     flowers: "burgundy roses, champagne roses, dahlias, ranunculus",
     fabrics: "wine velvet and champagne satin",
     outfits: "wine with champagne gold for the bride; champagne or wine for the groom",
@@ -294,6 +352,7 @@ export const PALETTES: Palette[] = [
     id: "peach_sage",
     name: "Peach & sage",
     swatches: ["#F6B99B", "#A7BFA0", "#FDF1E6"],
+    colors: "dominant soft peach (#F6B99B) and sage green (#A7BFA0), warm cream (#FDF1E6) base; natural and soft",
     flowers: "peach garden roses, ranunculus, sage eucalyptus, olive branches",
     fabrics: "peach chiffon and natural linen",
     outfits: "peach with gold for the bride; sage or ivory for the groom",

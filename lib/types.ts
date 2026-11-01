@@ -22,6 +22,13 @@ export type PeopleMode = "silhouette" | "likeness";
 
 export type ShotMix = Record<ShotCategory, number>;
 
+/** Choices made for one event. */
+export interface EventSetting {
+  palettes: string[];
+  venue: "indoor" | "outdoor";
+  lighting: "day" | "evening";
+}
+
 export interface AlbumConfig {
   tradition: TraditionId;
   events: EventId[];
@@ -42,6 +49,8 @@ export interface AlbumConfig {
     consentAt?: number;
   };
   mix: ShotMix;
+  /** Per-event palettes, venue and light. When set for an event, it overrides the album-wide values. */
+  eventSettings?: Partial<Record<EventId, EventSetting>>;
   notes: string;
   /** Pro accounts: style reference photos of the vendor's own inventory. */
   inventoryUrls?: string[];

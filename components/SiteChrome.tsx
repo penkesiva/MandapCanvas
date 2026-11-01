@@ -40,7 +40,6 @@ export async function SiteHeader() {
         <Link href="/faq">FAQ</Link>
         <Link href={user ? "/account" : "/signin"}>{user ? "My albums" : "Sign in"}</Link>
       </nav>
-      <div className="toran pointer-events-none absolute inset-x-0 top-full" aria-hidden="true" />
     </header>
   );
 }
@@ -108,6 +107,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SiteHeader />
+      <div className="toran no-print pointer-events-none" aria-hidden="true" />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </>
