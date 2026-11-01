@@ -4,8 +4,9 @@ import { readJson } from "@/lib/readJson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@vercel/analytics";
-import { AlertCircle, Check, Copy, ImagePlus, LayoutGrid, Loader2, Minus, Pencil, Plus, Sparkles, Upload } from "lucide-react";
+import { AlertCircle, ArrowDown, Check, Copy, Download, ImagePlus, LayoutGrid, Loader2, Lock, Maximize2, Minus, Pencil, Plus, Sparkles, Upload } from "lucide-react";
 import { SketchCanvas, type SketchCanvasHandle } from "./SketchCanvas";
+import { Divider } from "@/components/Ornaments";
 import { ALBUM_PACKS, PACKS, AI_LABEL, formatUSD, type PackId } from "@/lib/config";
 import { CATEGORIES, DECOR_PRESETS, EVENT_DEFAULT_PRESET, PALETTES, STYLE_TIERS, normalizeEventSettings, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
 import type { DecorSource, EventDesign, EventId, EventSetting, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
@@ -110,6 +111,7 @@ export function CreateWizard({
   const canvases = useRef<Partial<Record<EventId, SketchCanvasHandle | null>>>({});
   const [activeEvent, setActiveEvent] = useState<EventId | null>(null);
   const [copyMsg, setCopyMsg] = useState<string | null>(null);
+  const [paywall, setPaywall] = useState<{ url: string; reason: "view" | "download" | "more"; label?: string } | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
   // Restore an in-progress draft (per-browser convenience only).
@@ -146,6 +148,7 @@ export function CreateWizard({
   const total = mixTotal(s.mix);
   // Per-event palettes, venue and light, kept within the pack's palette limit.
   const perEvent = useMemo(() => resolveSettings(s), [s]);
+  const mainEvent: EventId | undefined = s.events.includes("ceremony") ? "ceremony" : s.events[0];
   const current: EventId | undefined = activeEvent && s.events.includes(activeEvent) ? activeEvent : s.events[0];
   const setEvent = (e: EventId, patch: Partial<EventSetting>) =>
     setS((cur) => {
@@ -373,6 +376,36 @@ export function CreateWizard({
     }
   };
 
+  useEffect(() => {
+    if (!paywall) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPaywall(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [paywall]);
+
+  // Locked teasers on the preview step: shots their album will include, shown blurred.
+  const teasers = useMemo(() => {
+    const samples: Partial<Record<keyof ShotMix, string>> = {
+      bride: "/samples/bride.jpg",
+      couple: "/samples/couple.jpg",
+      family: "/samples/family.jpg",
+      groom: "/samples/groom.jpg",
+    };
+    const ev = s.events.find((e) => e !== mainEvent) ?? mainEvent;
+    const evLabel = ev ? eventLabel(ev, s.tradition) : "";
+    const out: { key: string; label: string; image: string }[] = [];
+    for (const c of ["bride", "couple", "family", "groom"] as (keyof ShotMix)[]) {
+      if (out.length >= 2) break;
+      if ((s.mix[c] ?? 0) > 0 && samples[c]) out.push({ key: c, label: `${CATEGORIES.find((x) => x.id === c)?.name}${evLabel ? `, ${evLabel}` : ""}`, image: samples[c]! });
+    }
+    if (out.length < 2 && ev) {
+      const d = perEvent.eventSettings[ev]?.design;
+      const img = d?.source === "preset" ? DECOR_PRESETS.find((p) => p.id === d.presetId)?.image : d?.imageUrl;
+      if (img) out.push({ key: "decor-other", label: `Decor, ${evLabel}`, image: img });
+    }
+    return out.slice(0, 2);
+  }, [s.events, s.mix, s.tradition, perEvent, mainEvent]);
+
   /* -------- render */
 
   return (
@@ -447,11 +480,22 @@ export function CreateWizard({
                       else setError(`The ${pack.name} pack covers up to ${pack.maxEvents} events. Choose a bigger pack on the Album step for more.`);
                     }}
                   >
+                    {on ? (
+                      <span className="pop-in grid h-4 w-4 place-items-center rounded-full bg-kumkum text-white" aria-hidden="true">
+                        <Check size={11} strokeWidth={3} />
+                      </span>
+                    ) : null}
                     {eventLabel(e, s.tradition)}
                   </button>
                 );
               })}
             </div>
+            {s.events.length > 0 ? (
+              <p key={s.events.length} className="mt-4 flex items-center gap-2 text-sm font-medium text-kumkum-deep">
+                <ArrowDown size={16} className="nudge-down text-gold" aria-hidden="true" />
+                Next, you&apos;ll set the backdrop, colors, venue and light for {s.events.length === 1 ? "this event" : `each of these ${s.events.length} events`}.
+              </p>
+            ) : null}
           </Field>
           <Field label="Anything else? (optional)" hint="Flowers you love or hate, a venue name, family must-haves.">
             <textarea className="field min-h-24" maxLength={600} value={s.notes} onChange={(e) => update("notes", e.target.value)} placeholder="e.g. no lilies, lots of jasmine, venue is a garden estate in Sonoma" />
@@ -604,7 +648,14 @@ export function CreateWizard({
                     </div>
                   </div>
 
-                  <div>
+                  <button
+                    type="button"
+                    onClick={(ev) => (ev.currentTarget.nextElementSibling as HTMLElement | null)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    className="mx-auto flex w-fit items-center gap-2 rounded-full border border-gold/50 bg-silk px-4 py-1.5 text-sm font-medium text-kumkum-deep hover:border-gold"
+                  >
+                    <ArrowDown size={15} className="nudge-down text-gold" aria-hidden="true" /> Colors, venue and light for {label}
+                  </button>
+                  <div className="scroll-mt-24">
                     <p className="mb-3 font-semibold">
                       Colors for {label} <span className="font-normal text-ink-soft">(pick one, or two to compare)</span>
                     </p>
@@ -818,10 +869,23 @@ export function CreateWizard({
                 {[0, 1].map((i) => {
                   const p = previews[i];
                   return (
-                    <div key={i} className="relative aspect-[4/3] overflow-hidden rounded-[18px] border border-line bg-white">
+                    <div key={i} className="group relative aspect-[4/3] overflow-hidden rounded-[18px] border border-line bg-white">
                       {p?.url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.url} alt={`Preview ${i + 1}: ${p.category === "decor" ? "decor" : "couple at the stage"}`} className="h-full w-full object-cover" />
+                        <>
+                          <button type="button" className="block h-full w-full" onClick={() => setPaywall({ url: p.url!, reason: "view" })} aria-label="View larger">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={p.url} alt={`Preview ${i + 1}: ${p.category === "decor" ? "decor" : "couple at the stage"}`} className="h-full w-full object-cover" />
+                          </button>
+                          <div className="absolute right-3 top-3 flex gap-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+                            <button type="button" onClick={() => setPaywall({ url: p.url!, reason: "view" })} className="grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow" aria-label="Full screen (with your album)">
+                              <Maximize2 size={16} />
+                            </button>
+                            <button type="button" onClick={() => setPaywall({ url: p.url!, reason: "download" })} className="relative grid h-9 w-9 place-items-center rounded-full bg-white/95 text-ink shadow" aria-label="Download (with your album)">
+                              <Download size={16} />
+                              <span className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-kumkum text-white"><Lock size={9} /></span>
+                            </button>
+                          </div>
+                        </>
                       ) : (
                         <div className="grid h-full place-items-center p-6 text-center text-ink-soft">
                           {busy ? (
@@ -837,7 +901,36 @@ export function CreateWizard({
                     </div>
                   );
                 })}
+                {previews.length > 0 &&
+                  teasers.map((t) => (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setPaywall({ url: t.image, reason: "more", label: t.label })}
+                      className="sheen group relative aspect-[4/3] overflow-hidden rounded-[18px] border border-gold/50 bg-maroon text-left"
+                      aria-label={`${t.label}: locked, included in your album`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={t.image} alt="" className="h-full w-full scale-110 object-cover blur-[14px] brightness-90" aria-hidden="true" />
+                      <span className="absolute inset-0 bg-gradient-to-t from-maroon/85 via-maroon/30 to-transparent" />
+                      <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-[#fff8ef]">
+                        <span className="grid h-12 w-12 place-items-center rounded-full border border-gold-light/70 bg-maroon/70 shadow-lg">
+                          <Lock size={20} className="text-gold-light" />
+                        </span>
+                        <span className="font-display text-xl">{t.label}</span>
+                        <span className="text-sm text-[#f3e3d3]">In your album</span>
+                      </span>
+                      <span className="absolute bottom-3 right-3 rounded-full bg-gold-light px-3 py-1 text-xs font-semibold text-maroon-deep transition group-hover:bg-white">
+                        Unlock
+                      </span>
+                    </button>
+                  ))}
               </div>
+              {previews.length > 0 ? (
+                <p className="text-center text-sm font-medium text-kumkum-deep">
+                  + {Math.max(0, pack.images - 2 - teasers.length)} more images of {s.events.map((e) => eventLabel(e, s.tradition)).join(", ")} are waiting in your {pack.name} album.
+                </p>
+              ) : null}
               <p className="text-xs text-ink-soft">{AI_LABEL} Free previews are watermarked and lower resolution.</p>
               {!busy && previews.length === 0 && albumId ? (
                 <button type="button" className="btn btn-ghost" onClick={() => runPreview(albumId)}>
@@ -884,6 +977,48 @@ export function CreateWizard({
           </button>
         </section>
       )}
+      {paywall ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/80 p-4" role="dialog" aria-modal="true" aria-labelledby="paywall-h" onClick={() => setPaywall(null)}>
+          <div className="grid w-full max-w-4xl overflow-hidden rounded-[26px] bg-silk shadow-2xl md:grid-cols-[1.25fr_1fr]" onClick={(e) => e.stopPropagation()}>
+            <div className="relative bg-maroon">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={paywall.url} alt="" className={`h-full max-h-[60vh] w-full object-cover ${paywall.reason === "more" ? "scale-110 blur-[14px]" : ""}`} />
+              <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-ink/75 px-3 py-1 text-xs font-semibold text-white">
+                <Lock size={12} /> {paywall.reason === "more" ? paywall.label : "Watermarked preview"}
+              </span>
+            </div>
+            <div className="flex flex-col p-6 sm:p-8">
+              <Divider className="!justify-start" />
+              <h3 id="paywall-h" className="mt-3 text-[1.8rem] leading-tight text-maroon">
+                {paywall.reason === "download" ? "Keep it in full quality" : paywall.reason === "more" ? "See the rest of your wedding" : "See it full screen"}
+              </h3>
+              <ul className="mt-4 space-y-2 text-[0.97rem]">
+                {[
+                  `${pack.images} images across ${s.events.map((e) => eventLabel(e, s.tradition)).join(", ")}`,
+                  "Full screen, HD and no watermark",
+                  "Download every image, or the whole album as a ZIP",
+                  "Change anything: “make the flowers white”",
+                  "A share link for family to vote on favorites",
+                ].map((x) => (
+                  <li key={x} className="flex gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 flex-none rotate-45 bg-gold" aria-hidden="true" />
+                    {x}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-auto pt-6">
+                <button type="button" className="btn btn-primary w-full" onClick={() => { setPaywall(null); void checkout(); }} disabled={!!busy || !albumId}>
+                  Create my album, {formatUSD(pack.priceCents)}
+                </button>
+                <button type="button" className="mt-2 w-full py-2 text-sm font-medium text-ink-soft hover:text-ink" onClick={() => setPaywall(null)}>
+                  Keep looking
+                </button>
+                <p className="mt-1 text-center text-xs text-ink-soft">One-time payment. Refund within 14 days if you&apos;re not happy.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
