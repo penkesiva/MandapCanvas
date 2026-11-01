@@ -60,7 +60,21 @@ function initialState(pack: PackId, style?: string): WizardState {
 }
 
 /** Per-event settings with every event's design filled in (template defaults where none was chosen). */
+const MAX_PALETTES = Math.max(...ALBUM_PACKS.map((id) => PACKS[id].maxPalettes));
+
+/** True when a pack covers this many events and distinct palettes. */
+function packFits(id: PackId, events: number, palettes: number): boolean {
+  return PACKS[id].maxEvents >= events && PACKS[id].maxPalettes >= palettes;
+}
+
+/** The smallest album pack that covers the choices (falls back to the biggest). */
+function smallestFit(events: number, palettes: number): PackId {
+  return ALBUM_PACKS.find((id) => packFits(id, events, palettes)) ?? ALBUM_PACKS[ALBUM_PACKS.length - 1];
+}
+
 function resolveSettings(st: WizardState) {
+  // Default palettes are fitted to the current pack, so defaults never force a bigger pack;
+  // palettes the couple adds themselves raise the pack (see toggleEventPalette).
   const norm = normalizeEventSettings(st.events, st.eventSettings, st.palettes, PACKS[st.packId].maxPalettes);
   const main = st.events.includes("ceremony") ? "ceremony" : st.events[0];
   for (const e of st.events) {
@@ -164,13 +178,22 @@ export function CreateWizard({
       if (mine.length === 1) return setError("Keep at least one palette for each event.");
       return setEvent(e, { palettes: mine.filter((x) => x !== id) });
     }
-    if (!perEvent.palettes.includes(id) && perEvent.palettes.length >= pack.maxPalettes) {
-      return setError(
-        `The ${pack.name} pack covers ${pack.maxPalettes} palettes in total, and you're using ${perEvent.palettes.length}. Reuse one, remove one, or choose a bigger pack on the Album step.`,
-      );
+    const isNew = !perEvent.palettes.includes(id);
+    if (isNew && perEvent.palettes.length >= MAX_PALETTES) {
+      return setError(`You can use up to ${MAX_PALETTES} palettes across the album, and you're using ${perEvent.palettes.length}. Reuse one or remove one.`);
     }
     setError(null);
-    setEvent(e, { palettes: [...mine, id] });
+    const need = perEvent.palettes.length + (isNew ? 1 : 0);
+    setS((cur) => {
+      const packId = packFits(cur.packId, cur.events.length, need) ? cur.packId : smallestFit(cur.events.length, need);
+      const base = resolveSettings({ ...cur, packId }).eventSettings;
+      return {
+        ...cur,
+        packId,
+        mix: packId === cur.packId ? cur.mix : defaultMix(PACKS[packId].images),
+        eventSettings: { ...base, [e]: { ...base[e]!, palettes: [...mine, id] } },
+      };
+    });
   };
 
   const go = (n: number) => {
@@ -264,14 +287,22 @@ export function CreateWizard({
 
   const setPack = (id: PackId) => {
     const p = PACKS[id];
-    setS((cur) => ({
-      ...cur,
-      packId: id,
-      mix: defaultMix(p.images),
-      events: cur.events.slice(0, p.maxEvents),
-      palettes: cur.palettes.slice(0, p.maxPalettes),
-    }));
+    if (!packFits(id, s.events.length, perEvent.palettes.length)) {
+      return setError(
+        `${p.name} covers up to ${p.maxEvents} events and ${p.maxPalettes} palettes. You have ${s.events.length} events and ${perEvent.palettes.length} palettes. Go back to remove some, or keep a bigger pack.`,
+      );
+    }
+    setError(null);
+    setS((cur) => ({ ...cur, packId: id, mix: defaultMix(p.images) }));
   };
+
+  // Keep the pack big enough for the events and palettes chosen. Couples pick their pack on the Album step.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (PACKS[s.packId].maxEvents >= s.events.length) return;
+    const fit = smallestFit(s.events.length, 0);
+    setS((cur) => ({ ...cur, packId: fit, mix: defaultMix(PACKS[fit].images) }));
+  }, [hydrated, s.packId, s.events.length]);
 
   const configPayload = useMemo(
     () => ({
@@ -478,7 +509,7 @@ export function CreateWizard({
                   aria-checked={s.tradition === t.id}
                   className="chip"
                   onClick={() =>
-                    setS((cur) => ({ ...cur, tradition: t.id, events: cur.events.filter((e) => t.events.includes(e)).length ? cur.events.filter((e) => t.events.includes(e)) : t.events.slice(0, pack.maxEvents) }))
+                    setS((cur) => ({ ...cur, tradition: t.id, events: cur.events.filter((e) => t.events.includes(e)).length ? cur.events.filter((e) => t.events.includes(e)) : t.events.slice(0, 4) }))
                   }
                 >
                   {t.short}
@@ -486,8 +517,22 @@ export function CreateWizard({
               ))}
             </div>
           </Field>
-          <Field label="Events" hint={`The ${pack.name} pack covers up to ${pack.maxEvents} ${pack.maxEvents === 1 ? "event" : "events"}.`}>
-            <div className="flex flex-wrap gap-2">
+          <Field label="Which events are you having?" hint="Pick one or more. Each event gets its own design.">
+            <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span className="font-semibold text-kumkum-deep">
+                {s.events.length === 0 ? "No events picked yet" : `${s.events.length} of ${tradition.events.length} picked`}
+              </span>
+              {s.events.length < tradition.events.length ? (
+                <button type="button" className="font-semibold text-kumkum underline underline-offset-4" onClick={() => update("events", [...tradition.events])}>
+                  Select all
+                </button>
+              ) : (
+                <button type="button" className="font-semibold text-kumkum underline underline-offset-4" onClick={() => update("events", [])}>
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Events, pick one or more">
               {tradition.events.map((e) => {
                 const on = s.events.includes(e);
                 return (
@@ -498,10 +543,7 @@ export function CreateWizard({
                     className="chip"
                     onClick={() => {
                       if (on) update("events", s.events.filter((x) => x !== e));
-                      else if (s.events.length < pack.maxEvents) {
-                        update("events", tradition.events.filter((x) => x === e || s.events.includes(x)));
-                      }
-                      else setError(`The ${pack.name} pack covers up to ${pack.maxEvents} events. Choose a bigger pack on the Album step for more.`);
+                      else update("events", tradition.events.filter((x) => x === e || s.events.includes(x)));
                     }}
                   >
                     {on ? (
@@ -685,7 +727,7 @@ export function CreateWizard({
                     </p>
                     <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
                     <p className="mt-3 text-sm text-ink-soft">
-                      Your {pack.name} pack covers {pack.maxPalettes} palettes across the album ({perEvent.palettes.length} used). Reusing one for several events counts once.
+                      {perEvent.palettes.length} of up to {MAX_PALETTES} palettes used across the album. Reusing one for several events counts once.
                     </p>
                   </div>
 
@@ -787,14 +829,16 @@ export function CreateWizard({
             <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Pack">
               {ALBUM_PACKS.map((id) => {
                 const p = PACKS[id];
+                const fits = packFits(id, s.events.length, perEvent.palettes.length);
                 return (
                   <button
                     key={id}
                     type="button"
                     role="radio"
                     aria-checked={s.packId === id}
+                    aria-disabled={!fits}
                     onClick={() => setPack(id)}
-                    className={`rounded-2xl border-2 bg-white p-4 text-left ${s.packId === id ? "border-kumkum" : "border-line"}`}
+                    className={`rounded-2xl border-2 bg-white p-4 text-left ${s.packId === id ? "border-kumkum" : "border-line"} ${fits ? "" : "opacity-55"}`}
                   >
                     <span className="flex items-baseline justify-between">
                       <span className="text-lg font-semibold">{p.name}</span>
@@ -803,6 +847,11 @@ export function CreateWizard({
                     <span className="mt-1 block text-sm text-ink-soft">
                       {p.images} images, up to {p.maxEvents} events and {p.maxPalettes} palettes
                     </span>
+                    {!fits ? (
+                      <span className="mt-1 block text-xs font-semibold text-kumkum-deep">
+                        You picked {s.events.length} events{perEvent.palettes.length > p.maxPalettes ? ` and ${perEvent.palettes.length} palettes` : ""}.
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
