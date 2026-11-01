@@ -2,17 +2,24 @@ import "server-only";
 import { put, del } from "@vercel/blob";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { MEDIA_BUCKET, supabaseFromEnv } from "./supabase";
 
 /**
- * Image storage. Vercel Blob in production (BLOB_READ_WRITE_TOKEN), local files in development.
+ * Image storage: Supabase Storage (public "media" bucket) or Vercel Blob in production, local files in development.
  * All stored objects get unguessable paths.
  */
 
 const DEV_DIR = path.join(process.cwd(), ".data", "blob");
 
 export function usingDevBlob(): boolean {
-  return !process.env.BLOB_READ_WRITE_TOKEN;
+  return !supabaseFromEnv() && !process.env.BLOB_READ_WRITE_TOKEN;
 }
+
+export function blobBackend(): string {
+  return supabaseFromEnv() ? "Supabase Storage" : process.env.BLOB_READ_WRITE_TOKEN ? "Vercel Blob" : "Local files (set Supabase env)";
+}
+
+const SB_PUBLIC = `/storage/v1/object/public/${MEDIA_BUCKET}/`;
 
 function randomSuffix(): string {
   return crypto.randomUUID().replace(/-/g, "").slice(0, 16);
@@ -31,6 +38,12 @@ export async function saveImage(
     await fs.writeFile(file, data);
     return { url: `/api/dev-blob/${key}`, key };
   }
+  const sb = supabaseFromEnv();
+  if (sb) {
+    const { error } = await sb.storage.from(MEDIA_BUCKET).upload(key, data, { contentType, upsert: false, cacheControl: "31536000" });
+    if (error) throw new Error(`Image upload failed: ${error.message}`);
+    return { url: sb.storage.from(MEDIA_BUCKET).getPublicUrl(key).data.publicUrl, key };
+  }
   const res = await put(key, data, { access: "public", contentType, addRandomSuffix: false });
   return { url: res.url, key };
 }
@@ -41,7 +54,13 @@ export async function deleteImage(url: string): Promise<void> {
       await fs.rm(path.join(DEV_DIR, url.replace("/api/dev-blob/", "")), { force: true });
       return;
     }
-    if (!usingDevBlob()) await del(url);
+    const sb = supabaseFromEnv();
+    if (sb && url.includes(SB_PUBLIC)) {
+      const key = decodeURIComponent(new URL(url).pathname.split(SB_PUBLIC)[1] ?? "");
+      if (key) await sb.storage.from(MEDIA_BUCKET).remove([key]);
+      return;
+    }
+    if (process.env.BLOB_READ_WRITE_TOKEN) await del(url);
   } catch (e) {
     console.error("deleteImage failed", url, e);
   }

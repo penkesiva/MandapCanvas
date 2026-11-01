@@ -15,14 +15,15 @@ See `docs/PLAN.md` for positioning and pricing, `docs/AUDIT.md` for the technica
 
 - Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4
 - Gemini image generation via `@google/genai` (server-only)
-- Upstash Redis (data, credits, locks, stats) · Vercel Blob (images) · Stripe Checkout + Billing · Resend (email)
+- Supabase Postgres (data, credits, locks, stats) + Supabase Storage (images) · Stripe Checkout + Billing · Resend (email)
+- Upstash Redis and Vercel Blob also work as drop-in alternatives
 - Every external service has a local fallback, so the whole app runs with **zero accounts** in development.
 
 ## Run it locally
 
 ```bash
 npm install
-npm run fetch-samples      # downloads the marketing images into public/samples (one time, then commit them)
+npm run fetch-samples      # only needed if public/samples is missing images
 cp .env.example .env.local # optional — everything works with it empty
 npm run dev
 ```
@@ -32,8 +33,8 @@ With no keys set, development uses:
 | Service | Local fallback |
 | --- | --- |
 | Gemini | placeholder images (`MOCK_GENERATION=1` forces this even with a key) |
-| Redis | JSON file at `.data/kv.json` |
-| Blob | files in `.data/blob`, served by `/api/dev-blob` |
+| Supabase (database) | JSON file at `.data/kv.json` |
+| Supabase (images) | files in `.data/blob`, served by `/api/dev-blob` |
 | Stripe | a test checkout page at `/checkout/dev` |
 | Resend | magic links printed in the terminal and shown on the sign-in page |
 
@@ -42,8 +43,8 @@ Delete `.data/` to reset.
 ## Deploy (Vercel)
 
 1. Import the repo in Vercel.
-2. Add storage from the Vercel dashboard: **Upstash for Redis** (Marketplace) and a **Blob** store. Both set their env vars.
-3. Set the remaining env vars from `.env.example`: `GEMINI_API_KEY`, `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`,
+2. Create a Supabase project, run `supabase/schema.sql` in its SQL Editor, and copy the Project URL and service_role key.
+3. Set the env vars from `.env.example`: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL`,
    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `CRON_SECRET`, `ADMIN_EMAILS`.
 4. In Stripe, add a webhook to `https://YOUR_DOMAIN/api/stripe/webhook` with the five events listed in `.env.example`.
    No products need to be created — prices live in `lib/config.ts`.

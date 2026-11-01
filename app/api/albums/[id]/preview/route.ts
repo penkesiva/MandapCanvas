@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { anonId, currentUser } from "@/lib/auth";
+import { anonId, currentUser, isAdmin } from "@/lib/auth";
 import { canEdit, GenerationPausedError, generatePreview, getAlbum, publicAlbum } from "@/lib/albums";
 import { FREE_PREVIEW } from "@/lib/config";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
@@ -18,7 +18,8 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ ok: true, album: publicAlbum(album) });
   }
   const ip = await clientIp();
-  if (!(await rateLimit(`preview:${ip}`, FREE_PREVIEW.perIpPerDay, 86400))) {
+  // Admins (ADMIN_EMAILS) skip the daily limit for demos and QA.
+  if (!isAdmin(user) && !(await rateLimit(`preview:${ip}`, FREE_PREVIEW.perIpPerDay, 86400))) {
     return jsonError("You've used today's free previews. Choose a pack to see your full album.", 429, "preview_limit");
   }
   try {

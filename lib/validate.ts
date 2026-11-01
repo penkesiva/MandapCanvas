@@ -1,4 +1,5 @@
 import { PACKS, type PackId, ALBUM_PACKS } from "./config";
+import { supabaseHost } from "./supabase";
 import { CATEGORIES, DECOR_PRESETS, EVENTS, PALETTES, TRADITIONS, mixTotal } from "./catalog";
 import type { AlbumConfig, EventId, ShotMix, TraditionId } from "./types";
 
@@ -8,7 +9,10 @@ export function isOurImageUrl(url: unknown): url is string {
   if (/^\/api\/dev-blob\/[\w\-/.]+$/.test(url)) return true;
   try {
     const u = new URL(url);
-    return u.protocol === "https:" && u.hostname.endsWith(".public.blob.vercel-storage.com");
+    if (u.protocol !== "https:") return false;
+    if (u.hostname.endsWith(".public.blob.vercel-storage.com")) return true;
+    const sbHost = supabaseHost();
+    return !!sbHost && u.host === sbHost && u.pathname.startsWith("/storage/v1/object/public/media/");
   } catch {
     return false;
   }

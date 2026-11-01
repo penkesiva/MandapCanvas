@@ -5,8 +5,8 @@ import { PageShell } from "@/components/SiteChrome";
 import { currentUser, isAdmin } from "@/lib/auth";
 import { readStats } from "@/lib/stats";
 import { getAlbum, listAlbumIds } from "@/lib/albums";
-import { kv, usingDevKV } from "@/lib/kv";
-import { usingDevBlob } from "@/lib/blob";
+import { kv, kvBackend } from "@/lib/kv";
+import { blobBackend } from "@/lib/blob";
 import { flags, formatUSD } from "@/lib/config";
 import { imageModel } from "@/lib/imagegen";
 
@@ -26,8 +26,8 @@ export default async function Admin() {
   const setup = [
     ["Image model", flags.mockGeneration() ? "MOCK (set GEMINI_API_KEY)" : imageModel()],
     ["Payments", flags.stripeEnabled() ? "Stripe live/test key set" : "Test checkout (set STRIPE_SECRET_KEY)"],
-    ["Database", usingDevKV() ? "Local file (set Upstash/KV env)" : "Upstash Redis"],
-    ["Image storage", usingDevBlob() ? "Local files (set BLOB_READ_WRITE_TOKEN)" : "Vercel Blob"],
+    ["Database", kvBackend()],
+    ["Image storage", blobBackend()],
     ["Email", process.env.RESEND_API_KEY ? "Resend" : "Logged to console (set RESEND_API_KEY)"],
   ];
 

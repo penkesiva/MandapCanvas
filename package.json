@@ -13,6 +13,7 @@
     "@fontsource/hind": "^5.3.0",
     "@fontsource/rozha-one": "^5.3.0",
     "@google/genai": "^1.48.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@upstash/redis": "^1.40.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.8.2",

@@ -2,9 +2,11 @@ import "server-only";
 import { Redis } from "@upstash/redis";
 import fs from "node:fs";
 import path from "node:path";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabaseFromEnv } from "./supabase";
 
 /**
- * Tiny key-value layer. Uses Upstash Redis (or Vercel KV, which is Upstash) when configured,
+ * Tiny key-value layer. Uses Supabase Postgres (supabase/schema.sql) or Upstash Redis when configured,
  * otherwise a local JSON file under .data/ so the app runs end to end with zero setup.
  */
 export interface KV {
@@ -72,6 +74,68 @@ class RedisKV implements KV {
       cursor = next;
     } while (String(cursor) !== "0");
     return out;
+  }
+}
+
+/** Postgres-backed KV on Supabase. Atomic operations are SQL functions in supabase/schema.sql. */
+class SupabaseKV implements KV {
+  constructor(private sb: SupabaseClient) {}
+  private async rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
+    const { data, error } = await this.sb.rpc(fn, args);
+    if (error) throw new Error(`${fn}: ${error.message}`);
+    return data as T;
+  }
+  async get(key: string) {
+    const v = await this.rpc<string | null>("mc_get", { p_key: key });
+    return v == null ? null : String(v);
+  }
+  async set(key: string, value: string, opts?: { ex?: number; nx?: boolean }) {
+    return !!(await this.rpc<boolean>("mc_set", { p_key: key, p_value: value, p_ex: opts?.ex ?? null, p_nx: !!opts?.nx }));
+  }
+  async del(key: string) {
+    await this.rpc("mc_del", { p_key: key });
+  }
+  async incrby(key: string, by: number) {
+    return Number(await this.rpc("mc_incrby", { p_key: key, p_by: by }));
+  }
+  async lpush(key: string, value: string) {
+    const { error } = await this.sb.from("mc_list").insert({ key, value });
+    if (error) throw new Error(`lpush: ${error.message}`);
+  }
+  async lrange(key: string, start: number, stop: number) {
+    // Supabase caps a single response at 1000 rows by default; page through for -1.
+    const out: string[] = [];
+    const last = stop === -1 ? Infinity : stop;
+    for (let from = start; from <= last; from += 1000) {
+      const to = Math.min(from + 999, last);
+      const { data, error } = await this.sb
+        .from("mc_list")
+        .select("value")
+        .eq("key", key)
+        .order("id", { ascending: false })
+        .range(from, to === Infinity ? from + 999 : to);
+      if (error) throw new Error(`lrange: ${error.message}`);
+      out.push(...(data ?? []).map((r) => String(r.value)));
+      if (!data || data.length < 1000) break;
+    }
+    return out;
+  }
+  async hincrby(key: string, field: string, by: number) {
+    return Number(await this.rpc("mc_hincrby", { p_key: key, p_field: field, p_by: by }));
+  }
+  async hgetall(key: string) {
+    const { data, error } = await this.sb.from("mc_hash").select("field,value").eq("key", key);
+    if (error) throw new Error(`hgetall: ${error.message}`);
+    return Object.fromEntries((data ?? []).map((r) => [String(r.field), String(r.value)]));
+  }
+  async expire(key: string, seconds: number) {
+    await this.rpc("mc_expire", { p_key: key, p_seconds: seconds });
+  }
+  async keys(pattern: string) {
+    const like = pattern.replace(/[%_]/g, "\\$&").replace(/\*/g, "%");
+    const { data, error } = await this.sb.from("mc_kv").select("key").like("key", like).limit(5000);
+    if (error) throw new Error(`keys: ${error.message}`);
+    return (data ?? []).map((r) => String(r.key));
   }
 }
 
@@ -152,14 +216,19 @@ const globalForKV = globalThis as unknown as { __kv?: KV };
 
 export function kv(): KV {
   if (!globalForKV.__kv) {
-    const r = redisFromEnv();
-    globalForKV.__kv = r ? new RedisKV(r) : new FileKV();
+    const sb = supabaseFromEnv();
+    const r = sb ? null : redisFromEnv();
+    globalForKV.__kv = sb ? new SupabaseKV(sb) : r ? new RedisKV(r) : new FileKV();
   }
   return globalForKV.__kv;
 }
 
 export function usingDevKV(): boolean {
-  return !redisFromEnv();
+  return !supabaseFromEnv() && !redisFromEnv();
+}
+
+export function kvBackend(): string {
+  return supabaseFromEnv() ? "Supabase Postgres" : redisFromEnv() ? "Upstash Redis" : "Local file (set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY)";
 }
 
 export async function getJSON<T>(key: string): Promise<T | null> {
