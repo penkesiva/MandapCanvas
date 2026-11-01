@@ -4,7 +4,7 @@ import { PageShell } from "@/components/SiteChrome";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { PlanButton } from "@/components/PlanButton";
 import { currentUser } from "@/lib/auth";
-import { PLANS, formatUSD, type PlanId } from "@/lib/config";
+import { PLANS, SITE, formatUSD, type PlanId } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "For decorators and planners",
@@ -110,7 +110,7 @@ export default async function Pro(props: { searchParams: Promise<{ interval?: st
           </div>
           <p className="mt-6 text-sm text-ink-soft">
             Founding offer for the first 10 decorators: 50% off for 6 months. Email{" "}
-            <a className="underline" href="mailto:hello@mandapcanvas.com?subject=Founding%20decorator">hello@mandapcanvas.com</a> for your code.
+            <a className="underline" href={`mailto:${SITE.supportEmail}?subject=Founding%20decorator`}>{SITE.supportEmail}</a> for your code.
           </p>
         </div>
       </section>

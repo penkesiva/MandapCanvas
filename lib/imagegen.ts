@@ -41,8 +41,32 @@ function estimatedCost(model: string, hd: boolean): number {
 }
 
 let client: GoogleGenAI | null = null;
+/**
+ * Two ways to reach Gemini:
+ * - Vertex AI on Google Cloud (billed monthly to a Cloud billing account): GOOGLE_CLOUD_PROJECT plus
+ *   GOOGLE_SERVICE_ACCOUNT_JSON (the service account's JSON key, pasted whole). Preferred when set.
+ * - AI Studio API key (prepaid credits): GEMINI_API_KEY.
+ */
+export function usingVertex(): boolean {
+  return !!process.env.GOOGLE_CLOUD_PROJECT && !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+}
+
 function gemini(): GoogleGenAI {
-  if (!client) client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  if (!client) {
+    if (usingVertex()) {
+      const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON!.trim();
+      // Accept the JSON as-is or base64-encoded (handy for env var editors that mangle newlines).
+      const json = raw.startsWith("{") ? raw : Buffer.from(raw, "base64").toString("utf8");
+      client = new GoogleGenAI({
+        vertexai: true,
+        project: process.env.GOOGLE_CLOUD_PROJECT,
+        location: process.env.GOOGLE_CLOUD_LOCATION || "global",
+        googleAuthOptions: { credentials: JSON.parse(json), scopes: ["https://www.googleapis.com/auth/cloud-platform"] },
+      });
+    } else {
+      client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+    }
+  }
   return client;
 }
 

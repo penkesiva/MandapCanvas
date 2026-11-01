@@ -8,7 +8,7 @@ import { getAlbum, listAlbumIds } from "@/lib/albums";
 import { kv, kvBackend } from "@/lib/kv";
 import { blobBackend } from "@/lib/blob";
 import { flags, formatUSD } from "@/lib/config";
-import { imageModel } from "@/lib/imagegen";
+import { imageModel, usingVertex } from "@/lib/imagegen";
 
 export const metadata: Metadata = { title: "Admin", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export default async function Admin() {
   const cost = Math.round((total.costMilliCents ?? 0) / 1000);
 
   const setup = [
-    ["Image model", flags.mockGeneration() ? "MOCK (set GEMINI_API_KEY)" : imageModel()],
+    ["Image model", flags.mockGeneration() ? "MOCK (set Vertex AI or GEMINI_API_KEY)" : `${imageModel()} via ${usingVertex() ? "Vertex AI" : "AI Studio key"}`],
     ["Payments", flags.stripeEnabled() ? "Stripe live/test key set" : "Test checkout (set STRIPE_SECRET_KEY)"],
     ["Database", kvBackend()],
     ["Image storage", blobBackend()],

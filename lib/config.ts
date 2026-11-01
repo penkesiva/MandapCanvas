@@ -152,7 +152,8 @@ export const flags = {
   mockGeneration(): boolean {
     if (process.env.MOCK_GENERATION === "1") return true;
     // Never fall back to mock images in production: a paying customer must get real images or an error.
-    return !process.env.GEMINI_API_KEY && process.env.NODE_ENV !== "production";
+    const configured = !!process.env.GEMINI_API_KEY || (!!process.env.GOOGLE_CLOUD_PROJECT && !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    return !configured && process.env.NODE_ENV !== "production";
   },
   /** Allow the fake checkout when Stripe is not configured (never in production unless forced). */
   devCheckout(): boolean {
