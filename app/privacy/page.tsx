@@ -19,15 +19,15 @@ export default function Privacy() {
         </ul>
         <h2>Photos of people</h2>
         <ul>
-          <li>Face photos are used only to create images in your album.</li>
-          <li>They are deleted from our storage within {FACE_RETENTION_DAYS} days of upload.</li>
+          <li>Face photos are used only to create images in your album, or your portrait in the free AI bridal look tool.</li>
+          <li>They are deleted from our storage within {FACE_RETENTION_DAYS} days of upload. Portraits made with the free AI bridal look tool are deleted on the same schedule.</li>
           <li>We never use your photos or albums to train AI models, and we never sell them.</li>
           <li>We strip location and camera metadata from every upload.</li>
         </ul>
         <h2>Who processes your data</h2>
         <p>
-          We use service providers to run MandapCanvas: Google (Gemini) to generate images from your inputs, Vercel for hosting and file
-          storage, Upstash for our database, Stripe for payments and Resend for email. They process data on our behalf under their own
+          We use service providers to run MandapCanvas: Google (Gemini) to generate images from your inputs, Vercel for hosting, Supabase for our database and file
+          storage, Stripe for payments and Resend for email. They process data on our behalf under their own
           terms.
         </p>
         <h2>Sharing</h2>

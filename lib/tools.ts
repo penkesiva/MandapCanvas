@@ -13,6 +13,24 @@ export interface FreeTool {
 
 export const FREE_TOOLS: FreeTool[] = [
   {
+    slug: "ai-bridal-look",
+    name: "AI bridal and groom look",
+    blurb: "Upload a selfie or a couple photo. See yourself as a North Indian, South Indian, Bengali, Punjabi or Nikah bride or groom. First look free.",
+    title: "AI Bridal Look Try-On: See Yourself as an Indian Bride or Groom (Free)",
+    description:
+      "Free AI wedding look try-on for Desi brides and grooms. Upload your photo and see yourself in a bridal lehenga, Kanjeevaram saree, sherwani and safa or a couple portrait, in the tradition and color you choose. Your first look is free.",
+    keywords: [
+      "AI bridal look",
+      "see yourself as an Indian bride",
+      "bridal lehenga try on",
+      "virtual saree try on",
+      "AI wedding photo generator",
+      "groom sherwani try on",
+      "Indian wedding look AI",
+    ],
+    image: "/samples/couple.jpg",
+  },
+  {
     slug: "outfit-photo-color-palette",
     name: "Palette from your outfit photo",
     blurb: "Upload a photo of a lehenga, saree or sherwani. Get its exact colors, the matching groom and family colors, and decor that frames it.",

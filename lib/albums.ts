@@ -262,7 +262,7 @@ async function renderShot(
   return { url: saved.url, cost: result.costMilliCents };
 }
 
-function dailyCapCents(): number {
+export function dailyCapCents(): number {
   const v = Number(process.env.DAILY_COST_CAP_CENTS);
   return Number.isFinite(v) && v > 0 ? v : 5000;
 }

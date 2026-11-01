@@ -6,7 +6,7 @@ import { clientIp, IMAGE_TYPES, jsonError, MAX_UPLOAD_BYTES, rateLimit } from "@
 
 export const runtime = "nodejs";
 
-const KINDS = new Set(["sketch", "decor", "bride", "groom", "logo", "inventory"]);
+const KINDS = new Set(["sketch", "decor", "bride", "groom", "logo", "inventory", "look"]);
 
 export async function POST(request: Request) {
   const ip = await clientIp();
@@ -38,9 +38,9 @@ export async function POST(request: Request) {
   }
 
   // Face photos live under faces/ so the cleanup job can delete them after the retention window.
-  const folder = kind === "bride" || kind === "groom" ? `faces/${owner}` : `uploads/${kind}/${owner}`;
+  const folder = kind === "bride" || kind === "groom" || kind === "look" ? `faces/${owner}` : `uploads/${kind}/${owner}`;
   const saved = await saveImage(`${folder}/${kind}`, data, "image/jpeg");
-  if (kind === "bride" || kind === "groom") {
+  if (kind === "bride" || kind === "groom" || kind === "look") {
     const { kv } = await import("@/lib/kv");
     await kv().lpush("faces:index", JSON.stringify({ url: saved.url, at: Date.now() }));
   }

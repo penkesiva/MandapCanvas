@@ -153,6 +153,33 @@ export async function watermark(data: Buffer): Promise<Buffer> {
     .toBuffer();
 }
 
+/**
+ * Lighter mark for the free AI look tool: a faint diagonal tile plus a corner badge with the site name,
+ * so the picture stays shareable and still says where it came from.
+ */
+export async function brandMark(data: Buffer, site: string): Promise<Buffer> {
+  const img = sharp(data).resize({ width: 960, withoutEnlargement: true });
+  const meta = await img.toBuffer({ resolveWithObject: true });
+  const { width, height } = meta.info;
+  const label = esc(site);
+  const badgeW = Math.round(14 + label.length * 9.6 + 150);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <defs><pattern id="p" width="420" height="260" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
+      <text x="10" y="130" font-family="Georgia, serif" font-size="28" fill="rgba(255,255,255,0.22)" stroke="rgba(0,0,0,0.08)" stroke-width="1">MandapCanvas preview</text>
+    </pattern></defs>
+    <rect width="100%" height="100%" fill="url(#p)"/>
+    <g transform="translate(${width - badgeW - 18} ${height - 54})">
+      <rect width="${badgeW}" height="38" rx="19" fill="rgba(50,8,17,0.78)"/>
+      <text x="18" y="25" font-family="Georgia, serif" font-size="17" fill="#ecd08a">MandapCanvas</text>
+      <text x="138" y="25" font-family="Arial, sans-serif" font-size="15" fill="#fff8ef">${label}</text>
+    </g>
+  </svg>`;
+  return sharp(meta.data)
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+    .jpeg({ quality: 84 })
+    .toBuffer();
+}
+
 /** Normalizes uploads: strips metadata (incl. GPS), fixes rotation, caps size, converts to JPEG. */
 export async function normalizeUpload(data: Buffer, maxSide = 1600): Promise<Buffer> {
   return sharp(data)
