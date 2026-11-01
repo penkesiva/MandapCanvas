@@ -22,8 +22,18 @@ export type PeopleMode = "silhouette" | "likeness";
 
 export type ShotMix = Record<ShotCategory, number>;
 
+/** Where one event's decor design comes from. */
+export interface EventDesign {
+  source: DecorSource;
+  /** Sketch or uploaded photo (source "sketch" or "upload"). */
+  imageUrl?: string;
+  /** Template id (source "preset"). */
+  presetId?: string;
+}
+
 /** Choices made for one event. */
 export interface EventSetting {
+  design?: EventDesign;
   palettes: string[];
   venue: "indoor" | "outdoor";
   lighting: "day" | "evening";
@@ -71,7 +81,22 @@ export interface Shot {
   favorite?: boolean;
   attempts: number;
   watermarked?: boolean;
+  /** How the current image was made, and the change asked for if it was a refinement. */
+  made?: "original" | "new" | "refine";
+  madeNote?: string;
+  /** A requested change ("make the flowers white") waiting to be applied to the current image. */
+  edit?: string;
+  /** Earlier images of this shot, newest first. */
+  versions?: ShotVersion[];
   doneAt?: number;
+}
+
+export interface ShotVersion {
+  url: string;
+  at: number;
+  /** How this image was made. */
+  kind: "original" | "new" | "refine";
+  note?: string;
 }
 
 export type AlbumStatus = "draft" | "queued" | "generating" | "complete";

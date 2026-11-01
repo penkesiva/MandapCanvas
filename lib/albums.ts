@@ -2,12 +2,12 @@ import "server-only";
 import { ADVANCE_BATCH, FREE_PREVIEW, PACKS, type PackId } from "./config";
 import { EVENTS, CATEGORIES, getTradition, eventLabel, getPalette } from "./catalog";
 import { acquireLock, getJSON, kv, setJSON } from "./kv";
-import { buildShotPrompt, type PromptRefs } from "./prompts";
+import { buildEditPrompt, buildShotPrompt, type PromptRefs } from "./prompts";
 import { generateImage, watermark, type RefImage } from "./imagegen";
 import { loadImage, saveImage, deleteImage } from "./blob";
 import { recordStat, todayCostCents } from "./stats";
 import { sendAlbumReadyEmail } from "./email";
-import type { Album, AlbumConfig, LedgerEntry, Shot, ShotCategory, User } from "./types";
+import type { Album, AlbumConfig, EventDesign, EventId, LedgerEntry, Shot, ShotCategory, User } from "./types";
 
 /* ---------------------------------------------------------------- storage */
 
@@ -166,12 +166,27 @@ export function planShots(config: AlbumConfig, total: number, existing: Shot[] =
 
 /* ---------------------------------------------------------------- generation */
 
-async function loadRefs(album: Album): Promise<{ decor?: RefImage; bride?: RefImage; groom?: RefImage; inventory: RefImage[] }> {
+/**
+ * The design that guides one event. Per-event designs win; older albums fall back to the album-wide
+ * decor (a template styled every event; a sketch or photo guided the ceremony unless told otherwise).
+ */
+export function designFor(c: AlbumConfig, event: EventId): EventDesign | null {
+  const own = c.eventSettings?.[event]?.design;
+  if (own) return own;
+  if (!c.decor) return null;
+  if (c.decor.source === "preset") return { source: "preset", presetId: c.decor.presetId };
+  const applies = event === "ceremony" || c.decor.applyToAllEvents || !c.events.includes("ceremony");
+  return applies && c.decor.imageUrl ? { source: c.decor.source, imageUrl: c.decor.imageUrl } : null;
+}
+
+type Refs = { decor: Map<string, RefImage>; bride?: RefImage; groom?: RefImage; inventory: RefImage[] };
+
+async function loadRefs(album: Album, events: EventId[] = album.config.events): Promise<Refs> {
   const c = album.config;
-  const out: { decor?: RefImage; bride?: RefImage; groom?: RefImage; inventory: RefImage[] } = { inventory: [] };
+  const out: Refs = { decor: new Map(), inventory: [] };
   const tasks: Promise<void>[] = [];
-  if (c.decor.source !== "preset" && c.decor.imageUrl)
-    tasks.push(loadImage(c.decor.imageUrl).then((i) => void (out.decor = { label: "DECOR", ...i })));
+  const urls = new Set(events.map((e) => designFor(c, e)).filter((d) => d && d.source !== "preset" && d.imageUrl).map((d) => d!.imageUrl!));
+  for (const url of urls) tasks.push(loadImage(url).then((i) => void out.decor.set(url, { label: "DECOR", ...i })));
   if (c.people.mode === "likeness" && c.people.consentAt) {
     if (c.people.brideUrl) tasks.push(loadImage(c.people.brideUrl).then((i) => void (out.bride = { label: "BRIDE", ...i })));
     if (c.people.groomUrl) tasks.push(loadImage(c.people.groomUrl).then((i) => void (out.groom = { label: "GROOM", ...i })));
@@ -189,15 +204,37 @@ function aspectFor(shot: Shot): "4:3" | "3:4" {
 async function renderShot(
   album: Album,
   shot: Shot,
-  refs: Awaited<ReturnType<typeof loadRefs>>,
+  refs: Refs,
   opts: { watermarked: boolean },
 ): Promise<{ url: string; cost: number }> {
   const c = album.config;
+  const category = CATEGORIES.find((x) => x.id === shot.category)?.name ?? shot.category;
+  const mockLabel = {
+    title: `${eventLabel(shot.event, c.tradition)} · ${category}`,
+    subtitle: `${getTradition(c.tradition).short} · ${getPalette(shot.paletteId).name}`,
+    paletteId: shot.paletteId,
+  };
+
+  // Refinement: edit the current image instead of starting over.
+  if (shot.edit && shot.url && !opts.watermarked) {
+    const current = await loadImage(shot.url);
+    const result = await generateImage({
+      prompt: buildEditPrompt(c, shot, shot.edit),
+      refs: [{ label: "CURRENT IMAGE", ...current }],
+      aspectRatio: aspectFor(shot),
+      hd: PACKS[album.packId]?.hd,
+      mockLabel: { ...mockLabel, subtitle: `Changed: ${shot.edit.slice(0, 60)}` },
+    });
+    const saved = await saveImage(`albums/${album.id}/${shot.id}`, result.data, result.mimeType);
+    return { url: saved.url, cost: result.costMilliCents };
+  }
+
   const isPeople = !["decor", "decor_detail"].includes(shot.category);
-  // The sketch guides the ceremony; it guides every event if asked to, or if there's no ceremony in the album.
-  const useDecor = !!refs.decor && (shot.event === "ceremony" || c.decor.applyToAllEvents || !c.events.includes("ceremony"));
+  const design = designFor(c, shot.event);
+  const decorRef = design && design.source !== "preset" && design.imageUrl ? refs.decor.get(design.imageUrl) : undefined;
+  const useDecor = !!decorRef;
   const attached: RefImage[] = [];
-  if (useDecor) attached.push(refs.decor!);
+  if (decorRef) attached.push(decorRef);
   if (isPeople && refs.bride && ["bride", "couple", "couple_stage", "family"].includes(shot.category)) attached.push(refs.bride);
   if (isPeople && refs.groom && ["groom", "couple", "couple_stage", "family"].includes(shot.category)) attached.push(refs.groom);
   attached.push(...refs.inventory);
@@ -208,18 +245,13 @@ async function renderShot(
     groomImage: attached.some((r) => r.label === "GROOM"),
     inventoryCount: refs.inventory.length,
   };
-  const prompt = buildShotPrompt(c, shot, promptRefs);
-  const category = CATEGORIES.find((x) => x.id === shot.category)?.name ?? shot.category;
+  const prompt = buildShotPrompt(c, shot, promptRefs, design);
   const result = await generateImage({
     prompt,
     refs: attached,
     aspectRatio: aspectFor(shot),
     hd: PACKS[album.packId]?.hd && !opts.watermarked,
-    mockLabel: {
-      title: `${eventLabel(shot.event, c.tradition)} · ${category}`,
-      subtitle: `${getTradition(c.tradition).short} · ${getPalette(shot.paletteId).name}`,
-      paletteId: shot.paletteId,
-    },
+    mockLabel,
   });
   const bytes = opts.watermarked ? await watermark(result.data) : result.data;
   const saved = await saveImage(
@@ -236,6 +268,8 @@ function dailyCapCents(): number {
 }
 
 export class GenerationPausedError extends Error {}
+
+const MAX_VERSIONS = 8;
 
 /**
  * Generates the next few pending shots. Safe to call repeatedly and concurrently:
@@ -276,7 +310,15 @@ export async function advanceAlbum(albumId: string): Promise<{ album: Album | nu
       if (!shot) return;
       shot.attempts += 1;
       if (r.status === "fulfilled") {
-        if (shot.url) void deleteImage(shot.url);
+        // Keep the previous image as a version so it can be restored.
+        if (shot.url) {
+          shot.versions = [{ url: shot.url, at: shot.doneAt ?? Date.now(), kind: shot.made ?? "original", note: shot.madeNote }, ...(shot.versions ?? [])];
+          for (const old of shot.versions.slice(MAX_VERSIONS)) void deleteImage(old.url);
+          shot.versions = shot.versions.slice(0, MAX_VERSIONS);
+        }
+        shot.made = shot.edit ? "refine" : shot.url ? "new" : "original";
+        shot.madeNote = shot.edit;
+        shot.edit = undefined;
         shot.url = r.value.url;
         shot.status = "done";
         shot.error = undefined;
@@ -286,7 +328,8 @@ export async function advanceAlbum(albumId: string): Promise<{ album: Album | nu
       } else {
         const msg = r.reason instanceof Error ? r.reason.message : String(r.reason);
         shot.error = msg.slice(0, 200);
-        shot.status = shot.attempts >= 3 ? "failed" : "pending";
+        shot.status = shot.attempts >= 3 ? (shot.url ? "done" : "failed") : "pending";
+        if (shot.status === "done") shot.edit = undefined; // a failed change keeps the current image
         console.error("shot failed", albumId, shot.id, msg);
       }
     });
@@ -341,7 +384,7 @@ export async function generatePreview(album: Album): Promise<Album> {
   if ((await todayCostCents()) >= dailyCapCents()) {
     throw new GenerationPausedError("Previews are paused for today. Please try again tomorrow.");
   }
-  const refs = await loadRefs(album);
+  const refs = await loadRefs(album, [...new Set(plan.map((s) => s.event))]);
   const results = await Promise.allSettled(plan.map((s) => renderShot(album, s, refs, { watermarked: true })));
   const fresh = (await getAlbum(album.id)) ?? album;
   let cost = 0;

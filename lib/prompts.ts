@@ -1,5 +1,5 @@
 import { EVENTS, eventLabel, getPalette, getPreset, getTradition } from "./catalog";
-import type { AlbumConfig, Shot } from "./types";
+import type { AlbumConfig, EventDesign, Shot } from "./types";
 
 /**
  * Builds the image-model prompt for one shot. Kept deterministic and readable so it can be
@@ -31,13 +31,23 @@ const CATEGORY_FRAMING: Record<Shot["category"], string> = {
     "SHOT: Candid group photograph of the bridal party and close family (5–8 people) in outfits color-coordinated with the event palette, laughing naturally, decor behind them.",
 };
 
-function decorDescription(config: AlbumConfig, shot: Shot): string {
+function decorDescription(config: AlbumConfig, shot: Shot, design: EventDesign | null): string {
   const tradition = getTradition(config.tradition);
   const isCeremony = shot.event === "ceremony";
   const base = isCeremony ? tradition.ceremonyDecor : EVENTS[shot.event].decor;
-  if (config.decor.source === "preset") {
-    const preset = getPreset(config.decor.presetId);
-    return `${base}, interpreted in this style: ${preset.prompt}`;
+  if (design?.source === "preset") {
+    const preset = getPreset(design.presetId);
+    const m = preset.meta;
+    return [
+      `${base}, designed in the "${preset.name}" style:`,
+      `layout — ${m.layout};`,
+      `structure — ${m.structure};`,
+      `florals — ${m.florals};`,
+      `draping — ${m.draping};`,
+      `details — ${m.details};`,
+      `overall — ${m.style}.`,
+      "Recolor every flower and fabric of this style to the chosen palette.",
+    ].join(" ");
   }
   return base;
 }
@@ -71,7 +81,7 @@ function peopleRules(config: AlbumConfig, refs: PromptRefs, shot: Shot): string 
   return rules.join(" ");
 }
 
-export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRefs): string {
+export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRefs, design: EventDesign | null = null): string {
   const tradition = getTradition(config.tradition);
   const palette = getPalette(shot.paletteId);
   const ev = EVENTS[shot.event];
@@ -93,7 +103,7 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
     `SETTING (MUST FOLLOW, overrides anything below): Time of day is ${timeRule} Location is ${venueRule}`,
     `COLOR PALETTE (MUST FOLLOW): ${palette.name} — ${palette.colors}. Decor, florals, fabrics and outfits all use these colors; avoid other dominant colors.`,
     CATEGORY_FRAMING[shot.category],
-    `DECOR: ${decorDescription(config, shot)}.`,
+    `DECOR: ${decorDescription(config, shot, design)}`,
   ];
 
   if (usesDecorRef) {
@@ -132,4 +142,23 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
   );
 
   return lines.join("\n");
+}
+
+/**
+ * Prompt for refining an existing image: change only what was asked, keep everything else.
+ * The current image is attached as the CURRENT IMAGE reference.
+ */
+export function buildEditPrompt(config: AlbumConfig, shot: Shot, instruction: string): string {
+  const palette = getPalette(shot.paletteId);
+  const label = eventLabel(shot.event, config.tradition);
+  return [
+    "TASK: Edit the attached CURRENT IMAGE, a photo-real preview of a South Asian wedding decor design in the United States.",
+    `CHANGE REQUESTED: ${instruction.trim().slice(0, 300)}`,
+    "KEEP EVERYTHING ELSE THE SAME: the same layout and structure, camera angle and framing, venue, time of day and lighting, people (faces, poses, outfits) and every element the request does not mention. Do not redesign, re-crop or restage the scene.",
+    `CONTEXT: ${getTradition(config.tradition).name} wedding, ${label}. Palette in use: ${palette.name} (${palette.colors}). Only depart from it if the request asks.`,
+    getTradition(config.tradition).guardrails ? `RESPECT: ${getTradition(config.tradition).guardrails}` : "",
+    "QUALITY: Photorealistic, editorial wedding photography. No text, logos, watermarks or captions.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }

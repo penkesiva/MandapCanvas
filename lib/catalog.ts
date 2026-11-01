@@ -215,6 +215,16 @@ export const EVENTS: Record<EventId, EventDef> = {
   },
 };
 
+/** A sensible first design when someone adds an event. */
+export const EVENT_DEFAULT_PRESET: Record<EventId, string> = {
+  haldi: "garden_boho",
+  mehndi: "garden_boho",
+  sangeet: "floral_ceiling",
+  garba: "gujarati_mirror",
+  ceremony: "floral_classic",
+  reception: "minimal_modern",
+};
+
 /** A sensible first palette when someone adds an event. */
 export const EVENT_DEFAULT_PALETTE: Record<EventId, string> = {
   haldi: "marigold_haldi",
@@ -256,6 +266,7 @@ export function normalizeEventSettings(
       pals.push(first);
     }
     out[e] = {
+      design: cur?.design,
       palettes: pals,
       venue: cur?.venue === "indoor" || cur?.venue === "outdoor" ? cur.venue : ev.defaultVenue,
       lighting: cur?.lighting === "day" || cur?.lighting === "evening" ? cur.lighting : ev.defaultLighting,
@@ -372,6 +383,15 @@ export interface DecorPreset {
   prompt: string;
   image: string;
   tier: StyleTier;
+  /** Structured description fed to the image model. Colors are left to the chosen palette. */
+  meta: {
+    layout: string;
+    structure: string;
+    florals: string;
+    draping: string;
+    details: string;
+    style: string;
+  };
 }
 
 export type StyleTier = "simple" | "elegant" | "classic" | "royal";
@@ -392,6 +412,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Four wooden posts, sheer ivory drapes, white roses.",
     prompt: "a minimal open-frame mandap of four slim natural-wood posts, loosely draped sheer ivory fabric and small clusters of white flowers, lots of negative space",
     image: "/samples/style-garden-minimal.jpg",
+    meta: {
+      layout: "an open square frame on a low platform, wide open space around it",
+      structure: "four slim natural-wood posts joined by a simple top beam",
+      florals: "small, loose clusters of garden roses and baby's breath only at the top corners",
+      draping: "sheer chiffon loosely swagged across the top and tied at two posts",
+      details: "two floor cushions and a small brass havan kund; nothing else",
+      style: "minimal, airy, lots of negative space",
+    },
   },
   {
     id: "jasmine_brass",
@@ -400,6 +428,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Slim brass pillars with hanging jasmine strands.",
     prompt: "an understated mandap of four slender brushed-brass pillars and a thin canopy frame hung with long strands of jasmine and small orchids",
     image: "/samples/style-jasmine-brass.jpg",
+    meta: {
+      layout: "a square mandap centered on a slightly raised platform with a clear aisle",
+      structure: "four slender brushed-brass pillars with a thin square canopy frame",
+      florals: "long hanging strands of jasmine and small orchids forming a light curtain from the frame",
+      draping: "none or a single sheer panel at the back",
+      details: "a few brass diyas and low brass urlis on the floor",
+      style: "understated, refined, clean lines",
+    },
   },
   {
     id: "ocean_bluff",
@@ -408,6 +444,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "White pillars, long drapes moving in the breeze.",
     prompt: "an airy mandap of four white pillars with long flowing fabric, roses and greenery at the base and lanterns along the aisle",
     image: "/samples/style-ocean-bluff.jpg",
+    meta: {
+      layout: "an open mandap at the end of a straight aisle with a wide view behind it",
+      structure: "four tall white wooden pillars with an open top",
+      florals: "low clusters of roses and greenery at the base of each pillar and along the aisle",
+      draping: "long flowing fabric from the top of every pillar, moving in the breeze",
+      details: "candles in glass lanterns lining the aisle",
+      style: "serene, flowing, elegant",
+    },
   },
   {
     id: "garden_boho",
@@ -416,6 +460,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Round hoop, pampas grass, cushions and lanterns.",
     prompt: "a boho circular hoop mandap with pampas grass, garden roses, eucalyptus, floor cushions, rugs and brass lanterns",
     image: "/samples/style-boho-pampas.jpg",
+    meta: {
+      layout: "a round focal frame on a low platform with a lounge-style seating area in front",
+      structure: "a large circular wooden hoop or moongate arch",
+      florals: "dried pampas grass, garden roses and trailing eucalyptus massed asymmetrically on one side of the hoop",
+      draping: "a single soft fabric swag across the hoop",
+      details: "floor cushions, woven rugs and low brass lanterns",
+      style: "bohemian, relaxed, natural textures",
+    },
   },
   {
     id: "minimal_modern",
@@ -424,6 +476,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Gold hexagon frame, cascading orchids, mirror floor.",
     prompt: "a modern geometric mandap with a polished gold hexagonal frame, cascading white orchids and hydrangeas and a mirrored platform",
     image: "/samples/style-modern-hexagon.jpg",
+    meta: {
+      layout: "a geometric mandap on a raised mirrored platform with two upholstered chairs",
+      structure: "a polished metal hexagonal or geometric frame",
+      florals: "cascading orchids and hydrangea clustered at the top corners and base of the frame",
+      draping: "none; the clean frame is the focus",
+      details: "a mirrored floor, sleek low candles, minimal props",
+      style: "contemporary, chic, architectural",
+    },
   },
   {
     id: "bengali_shola",
@@ -432,6 +492,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Banana-plant pillars, white shola, red and white garlands.",
     prompt: "a Bengali-style mandap with banana-plant pillars, intricate white shola-pith decorations, red and white garlands and an alpana floor pattern",
     image: "/samples/style-bengali-shola.jpg",
+    meta: {
+      layout: "a square chadnatala-style mandap with a low carved wooden seat at the center",
+      structure: "four banana-plant pillars with a canopy of intricate white shola-pith cut-work",
+      florals: "tuberose and rose garlands hung in loops between the pillars",
+      draping: "minimal; the shola-work panels form the canopy",
+      details: "an alpana floor pattern painted around the seat, brass lamps",
+      style: "traditional Bengali, graceful, handcrafted",
+    },
   },
   {
     id: "temple_south",
@@ -440,6 +508,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Carved teak pillars, marigold, banana leaves, oil lamps.",
     prompt: "a South Indian temple-style mandapam with carved wooden pillars, marigold and jasmine garlands, banana plants, a mango-leaf toran and brass lamps",
     image: "/samples/style-temple-south.jpg",
+    meta: {
+      layout: "a square mandapam on a raised platform with a kolam drawn in front",
+      structure: "four heavy carved dark-wood temple pillars with a carved top",
+      florals: "thick marigold and jasmine garlands wrapped around pillars and hung in rows across the top",
+      draping: "minimal; flowers and wood carry the design",
+      details: "banana plants at each pillar, a mango-leaf toran across the front, lit brass kuthuvilakku lamps",
+      style: "traditional South Indian temple, warm and auspicious",
+    },
   },
   {
     id: "floral_classic",
@@ -448,6 +524,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Domed canopy covered in roses, a curtain of flowers.",
     prompt: "a round domed mandap canopy covered in roses, hydrangeas and peonies, with strands of flowers hanging like a curtain and a chandelier in the center",
     image: "/samples/style-rose-dome.jpg",
+    meta: {
+      layout: "a round mandap on a circular raised platform",
+      structure: "four or six pillars supporting a domed canopy",
+      florals: "the dome fully covered in roses, hydrangea and peonies, with long strands of small flowers hanging all around like a curtain",
+      draping: "sheer fabric behind the floral curtain",
+      details: "a crystal chandelier hanging at the center, carved seats for the couple",
+      style: "romantic, abundant, classic",
+    },
   },
   {
     id: "gujarati_mirror",
@@ -456,6 +540,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Bandhani canopy, painted pillars, toran, brass pots.",
     prompt: "a vibrant mandap with a mirror-work and bandhani fabric canopy, painted carved pillars, marigold garlands, a mirrored toran and stacked brass pots",
     image: "/samples/style-gujarati-mirror.jpg",
+    meta: {
+      layout: "a square mandap with a colorful canopy and stacked pots at the corners",
+      structure: "four carved wooden pillars painted with traditional motifs",
+      florals: "thick marigold and rose garlands on pillars and across the top",
+      draping: "a mirror-work and bandhani fabric canopy and side panels",
+      details: "a hanging toran with small mirrors and tassels, stacked brass pots (chori), kalash with coconuts",
+      style: "vibrant, festive, folk-rich",
+    },
   },
   {
     id: "royal_palace",
@@ -464,6 +556,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Gold filigree arches, velvet drapes, hundreds of candles.",
     prompt: "a grand stage of tall scalloped Mughal arches in gold filigree jaali, velvet drapes, orchids and roses in tall stands and hundreds of candles",
     image: "/samples/style-mughal-emerald.jpg",
+    meta: {
+      layout: "a wide stage with three tall arches side by side and steps leading up",
+      structure: "tall scalloped Mughal arches in gold filigree jaali",
+      florals: "tall stands of orchids and roses between the arches",
+      draping: "rich velvet drapes behind each arch",
+      details: "hundreds of candles in glass hurricanes on the steps, a Persian carpet, hanging lanterns",
+      style: "grand, regal, Mughal-inspired",
+    },
   },
   {
     id: "rajasthani_royal",
@@ -472,6 +572,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Carved jharokha pillars, velvet and zari, chandeliers.",
     prompt: "an opulent Rajasthani palace mandap with carved jharokha-style pillars, velvet and zari drapes, cascades of roses and marigolds, brass bells and chandeliers",
     image: "/samples/style-rajasthani-royal.jpg",
+    meta: {
+      layout: "a large mandap on a raised stage with a long carpeted aisle",
+      structure: "ornately carved jharokha-style pillars and an arched carved crown",
+      florals: "cascades of roses and marigolds, and a dense floral canopy overhead",
+      draping: "heavy velvet with zari borders tied back at every pillar",
+      details: "hanging brass bells, crystal chandeliers, throne-style seats, brass urlis of floating flowers along the aisle",
+      style: "opulent Rajasthani palace",
+    },
   },
   {
     id: "floral_ceiling",
@@ -480,6 +588,14 @@ export const DECOR_PRESETS: DecorPreset[] = [
     description: "Thousands of hanging flowers over a mirrored stage.",
     prompt: "an extravagant mandap beneath a full suspended floral ceiling of thousands of hanging roses and orchids, gilded flower-wrapped pillars and a mirrored stage",
     image: "/samples/style-floral-ceiling.jpg",
+    meta: {
+      layout: "a raised mirrored stage under a full suspended floral ceiling covering the whole space",
+      structure: "four tall gilded pillars wrapped in flowers",
+      florals: "thousands of hanging roses, amaranthus and orchids suspended overhead at different lengths",
+      draping: "silk drapes framing the back of the stage",
+      details: "crystal candelabras, a plush sofa for the couple",
+      style: "maximal, breathtaking, world-class luxury",
+    },
   },
 ];
 
@@ -492,6 +608,14 @@ const LEGACY_PRESETS: DecorPreset[] = [
     description: "Marigold strings, brass urlis, warm and earthy.",
     prompt: "an earthy setting of dense marigold strings, brass urlis, hand-block printed fabrics and terracotta pots",
     image: "/samples/haldi.jpg",
+    meta: {
+      layout: "a low seating platform with hanging strands behind it",
+      structure: "a simple wooden frame",
+      florals: "dense marigold strings hung in rows",
+      draping: "hand-block printed cotton",
+      details: "brass urlis, terracotta pots, floor cushions",
+      style: "earthy, warm, rustic",
+    },
   },
 ];
 

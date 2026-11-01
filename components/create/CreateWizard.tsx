@@ -4,19 +4,17 @@ import { readJson } from "@/lib/readJson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@vercel/analytics";
-import { AlertCircle, Check, ImagePlus, Loader2, Minus, Plus, Sparkles, Upload } from "lucide-react";
+import { AlertCircle, Check, Copy, ImagePlus, LayoutGrid, Loader2, Minus, Pencil, Plus, Sparkles, Upload } from "lucide-react";
 import { SketchCanvas, type SketchCanvasHandle } from "./SketchCanvas";
 import { ALBUM_PACKS, PACKS, AI_LABEL, formatUSD, type PackId } from "@/lib/config";
-import { CATEGORIES, DECOR_PRESETS, PALETTES, STYLE_TIERS, normalizeEventSettings, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
-import type { DecorSource, EventId, EventSetting, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
+import { CATEGORIES, DECOR_PRESETS, EVENT_DEFAULT_PRESET, PALETTES, STYLE_TIERS, normalizeEventSettings, TRADITIONS, defaultMix, eventLabel, mixTotal } from "@/lib/catalog";
+import type { DecorSource, EventDesign, EventId, EventSetting, LightingMode, PeopleMode, ShotMix, TraditionId, VenueMode } from "@/lib/types";
 
 type PreviewShot = { id: string; url?: string; status: string; category: string; event: EventId };
 
 interface WizardState {
-  decorSource: DecorSource;
-  decorImageUrl?: string;
-  presetId: string;
-  applyToAllEvents: boolean;
+  /** Template chosen on the home page; seeds the main event's design. */
+  styleHint?: string;
   tradition: TraditionId;
   events: EventId[];
   palettes: string[];
@@ -35,16 +33,14 @@ interface WizardState {
   inventoryUrls: string[];
 }
 
-const STEPS = ["Decor", "Wedding", "People", "Album", "Preview"] as const;
-const STORAGE_KEY = "mc:wizard:v1";
+const STEPS = ["Wedding", "Designs", "People", "Album", "Preview"] as const;
+const STORAGE_KEY = "mc:wizard:v2";
 
 const DEFAULT_PRESET = "floral_classic";
 
 function initialState(pack: PackId, style?: string): WizardState {
   return {
-    decorSource: style ? "preset" : "sketch",
-    presetId: style ?? DEFAULT_PRESET,
-    applyToAllEvents: false,
+    styleHint: style,
     tradition: "hindu_north",
     events: ["mehndi", "sangeet", "ceremony", "reception"],
     palettes: [],
@@ -60,6 +56,20 @@ function initialState(pack: PackId, style?: string): WizardState {
     clientName: "",
     inventoryUrls: [],
   };
+}
+
+/** Per-event settings with every event's design filled in (template defaults where none was chosen). */
+function resolveSettings(st: WizardState) {
+  const norm = normalizeEventSettings(st.events, st.eventSettings, st.palettes, PACKS[st.packId].maxPalettes);
+  const main = st.events.includes("ceremony") ? "ceremony" : st.events[0];
+  for (const e of st.events) {
+    const set = norm.eventSettings[e]!;
+    if (!set.design) {
+      const hint = e === main && st.styleHint && DECOR_PRESETS.some((p) => p.id === st.styleHint) ? st.styleHint : EVENT_DEFAULT_PRESET[e];
+      set.design = { source: "preset", presetId: hint };
+    }
+  }
+  return norm;
 }
 
 async function uploadFile(file: Blob, kind: string): Promise<string> {
@@ -96,8 +106,10 @@ export function CreateWizard({
   const [albumId, setAlbumId] = useState<string | null>(null);
   const [albumKey, setAlbumKey] = useState<string | null>(null);
   const [previews, setPreviews] = useState<PreviewShot[]>([]);
-  const [sketchDirty, setSketchDirty] = useState(false);
-  const canvas = useRef<SketchCanvasHandle>(null);
+  const [dirtySketches, setDirtySketches] = useState<Partial<Record<EventId, boolean>>>({});
+  const canvases = useRef<Partial<Record<EventId, SketchCanvasHandle | null>>>({});
+  const [activeEvent, setActiveEvent] = useState<EventId | null>(null);
+  const [copyMsg, setCopyMsg] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
   // Restore an in-progress draft (per-browser convenience only).
@@ -111,7 +123,7 @@ export function CreateWizard({
           ...cur,
           ...saved,
           packId: saved.packId ?? cur.packId,
-          ...(initialStyle ? { decorSource: "preset" as const, presetId: initialStyle } : {}),
+          ...(initialStyle ? { styleHint: initialStyle } : {}),
         }));
       }
     } catch {
@@ -133,14 +145,11 @@ export function CreateWizard({
   const tradition = TRADITIONS.find((t) => t.id === s.tradition)!;
   const total = mixTotal(s.mix);
   // Per-event palettes, venue and light, kept within the pack's palette limit.
-  const perEvent = useMemo(
-    () => normalizeEventSettings(s.events, s.eventSettings, s.palettes, pack.maxPalettes),
-    [s.events, s.eventSettings, s.palettes, pack.maxPalettes],
-  );
-  const [openEvent, setOpenEvent] = useState<EventId | null>(null);
+  const perEvent = useMemo(() => resolveSettings(s), [s]);
+  const current: EventId | undefined = activeEvent && s.events.includes(activeEvent) ? activeEvent : s.events[0];
   const setEvent = (e: EventId, patch: Partial<EventSetting>) =>
     setS((cur) => {
-      const base = normalizeEventSettings(cur.events, cur.eventSettings, cur.palettes, PACKS[cur.packId].maxPalettes).eventSettings;
+      const base = resolveSettings(cur).eventSettings;
       return { ...cur, eventSettings: { ...base, [e]: { ...base[e]!, ...patch } } };
     });
   const toggleEventPalette = (e: EventId, id: string) => {
@@ -164,40 +173,79 @@ export function CreateWizard({
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  /* -------- step validation + side effects */
+  const setDesign = (e: EventId, design: EventDesign) => setEvent(e, { design });
 
-  const finishDecor = async () => {
-    if (s.decorSource === "sketch") {
-      if (canvas.current && !canvas.current.isEmpty() && (sketchDirty || !s.decorImageUrl)) {
-        setBusy("Saving your sketch…");
-        try {
-          const blob = await canvas.current.toBlob();
-          if (!blob) throw new Error("Couldn't read the drawing.");
-          const url = await uploadFile(blob, "sketch");
-          update("decorImageUrl", url);
-          setSketchDirty(false);
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Upload failed.");
-          setBusy(null);
-          return;
-        }
-        setBusy(null);
-      } else if (!s.decorImageUrl) {
-        setError("Draw something first, start from an outline, or choose a different option.");
-        return;
-      }
+  /** Uploads an event's drawing if it changed; returns the event's design with its image URL. */
+  const saveSketch = async (e: EventId): Promise<EventDesign | null> => {
+    const d = perEvent.eventSettings[e]?.design;
+    if (!d || d.source !== "sketch") return d ?? null;
+    const c = canvases.current[e];
+    if (c && !c.isEmpty() && (dirtySketches[e] || !d.imageUrl)) {
+      const blob = await c.toBlob();
+      if (!blob) throw new Error("Couldn't read the drawing.");
+      const url = await uploadFile(blob, "sketch");
+      const next = { source: "sketch" as const, imageUrl: url };
+      setDesign(e, next);
+      setDirtySketches((x) => ({ ...x, [e]: false }));
+      return next;
     }
-    if (s.decorSource === "upload" && !s.decorImageUrl) {
-      setError("Upload a sketch or photo first.");
-      return;
-    }
-    go(1);
+    return d;
   };
+
+  const copyDesign = async (from: EventId, targets: EventId[], withColors: boolean) => {
+    if (!targets.length) return;
+    setError(null);
+    try {
+      setBusy("Copying the design…");
+      const d = await saveSketch(from);
+      if (!d || (d.source !== "preset" && !d.imageUrl)) throw new Error("Finish this event's design first.");
+      setS((cur) => {
+        const next = resolveSettings(cur).eventSettings;
+        const src = next[from]!;
+        for (const t of targets) {
+          const base = next[t]!;
+          next[t] = withColors ? { ...base, design: d, palettes: src.palettes, venue: src.venue, lighting: src.lighting } : { ...base, design: d };
+        }
+        return { ...cur, eventSettings: next };
+      });
+      setCopyMsg(`Copied to ${targets.map((t) => eventLabel(t, s.tradition)).join(", ")}.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't copy the design.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  /* -------- step validation + side effects */
 
   const finishWedding = () => {
     if (!s.events.length) return setError("Pick at least one event.");
-    if (!perEvent.palettes.length) return setError("Pick at least one palette.");
-    go(2);
+    setActiveEvent(s.events[0]);
+    go(1);
+  };
+
+  const finishDesigns = async () => {
+    setBusy("Saving your designs…");
+    setError(null);
+    try {
+      for (const e of s.events) {
+        const d = await saveSketch(e);
+        if (!d || (d.source !== "preset" && !d.imageUrl)) {
+          setActiveEvent(e);
+          throw new Error(
+            d?.source === "sketch"
+              ? `Draw something for ${eventLabel(e, s.tradition)}, start from an outline, or pick a template.`
+              : `Upload a reference image for ${eventLabel(e, s.tradition)}, or pick a template.`,
+          );
+        }
+      }
+      if (!perEvent.palettes.length) throw new Error("Pick at least one palette.");
+      setBusy(null);
+      go(2);
+    } catch (e) {
+      setBusy(null);
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    }
   };
 
   const finishPeople = () => {
@@ -228,12 +276,7 @@ export function CreateWizard({
       lighting: "mixed",
       eventSettings: perEvent.eventSettings,
       notes: s.notes,
-      decor: {
-        source: s.decorSource,
-        imageUrl: s.decorSource === "preset" ? undefined : s.decorImageUrl,
-        presetId: s.decorSource === "preset" ? s.presetId : undefined,
-        applyToAllEvents: s.applyToAllEvents,
-      },
+      decor: { source: "preset", presetId: DEFAULT_PRESET, applyToAllEvents: false },
       people: { mode: s.peopleMode, brideUrl: s.brideUrl, groomUrl: s.groomUrl, consent: s.consent },
       mix: s.mix,
       inventoryUrls: mode === "proposal" ? s.inventoryUrls : [],
@@ -365,94 +408,7 @@ export function CreateWizard({
         </div>
       ) : null}
 
-      {(
-        <section aria-labelledby="decor-h" hidden={step !== 0}>
-          <h2 id="decor-h" className="text-2xl">Start with the decor you have in mind</h2>
-          <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Decor source">
-            {(
-              [
-                ["sketch", "Draw it here"],
-                ["upload", "Upload a sketch or photo"],
-                ["preset", "Pick a style"],
-              ] as [DecorSource, string][]
-            ).map(([id, label]) => (
-              <button key={id} type="button" role="radio" aria-checked={s.decorSource === id} className="chip" onClick={() => update("decorSource", id)}>
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6">
-            {s.decorSource === "sketch" && (
-              <>
-                {s.decorImageUrl && !sketchDirty ? (
-                  <div className="mb-4 flex items-center gap-4 rounded-2xl border border-line bg-white p-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.decorImageUrl} alt="Your saved sketch" className="h-16 w-20 rounded-lg object-cover" />
-                    <p className="text-sm text-ink-soft">We kept your last sketch. Draw below to replace it.</p>
-                  </div>
-                ) : null}
-                <SketchCanvas ref={canvas} onChange={() => setSketchDirty(true)} />
-                <p className="mt-3 text-sm text-ink-soft">
-                  Rough is fine. Shapes, symmetry and color washes matter more than detail. Notes like &ldquo;marigold strings&rdquo; help too.
-                </p>
-              </>
-            )}
-            {s.decorSource === "upload" && (
-              <ImageDrop
-                label="Upload a hand sketch, a decorator's drawing, or a photo of a mandap you love"
-                kind="decor"
-                value={s.decorImageUrl}
-                onUploaded={(url) => update("decorImageUrl", url)}
-                onError={setError}
-              />
-            )}
-            {s.decorSource === "preset" && (
-              <div role="radiogroup" aria-label="Decor style" className="space-y-7">
-                {STYLE_TIERS.map((t) => (
-                <div key={t.id}>
-                  <p className="mb-3 flex items-baseline gap-3">
-                    <span className="font-display text-xl">{t.name}</span>
-                    <span className="text-sm text-ink-soft">{t.note}</span>
-                  </p>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {DECOR_PRESETS.filter((p) => p.tier === t.id).map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={s.presetId === p.id}
-                    onClick={() => update("presetId", p.id)}
-                    className={`overflow-hidden rounded-[18px] border-2 bg-white text-left transition ${s.presetId === p.id ? "border-kumkum ring-4 ring-kumkum/15" : "border-line hover:border-gold"}`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.image} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
-                    <span className="block px-4 py-3">
-                      <span className="block font-semibold">{p.name}</span>
-                      <span className="block text-sm text-ink-soft">{p.description}</span>
-                    </span>
-                  </button>
-                ))}
-                </div>
-                </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {s.decorSource !== "preset" && (
-            <label className="mt-5 flex items-start gap-3 text-[0.97rem]">
-              <input type="checkbox" className="mt-1 h-4 w-4 accent-kumkum" checked={s.applyToAllEvents} onChange={(e) => update("applyToAllEvents", e.target.checked)} />
-              <span>
-                Use this design for every event
-                <span className="block text-sm text-ink-soft">Off: it guides the wedding ceremony, and other events get their own decor in your palettes.</span>
-              </span>
-            </label>
-          )}
-          <StepNav onNext={finishDecor} busy={busy} nextLabel="Next: your wedding" />
-        </section>
-      )}
-
-      {step === 1 && (
+      {step === 0 && (
         <section aria-labelledby="wedding-h" className="space-y-8">
           <h2 id="wedding-h" className="text-2xl">Tell us about your wedding</h2>
           <Field label="Tradition">
@@ -487,7 +443,6 @@ export function CreateWizard({
                       if (on) update("events", s.events.filter((x) => x !== e));
                       else if (s.events.length < pack.maxEvents) {
                         update("events", tradition.events.filter((x) => x === e || s.events.includes(x)));
-                        setOpenEvent(e);
                       }
                       else setError(`The ${pack.name} pack covers up to ${pack.maxEvents} events. Choose a bigger pack on the Album step for more.`);
                     }}
@@ -498,68 +453,214 @@ export function CreateWizard({
               })}
             </div>
           </Field>
-          {s.events.length > 0 && (
-            <Field
-              label="Colors, venue and light for each event"
-              hint={`Open an event to choose its colors. Your ${pack.name} pack covers ${pack.maxPalettes} palettes in total (${perEvent.palettes.length} used); reusing one across events doesn't count twice.`}
-            >
-              <div className="space-y-3">
-                {tradition.events
-                  .filter((e) => s.events.includes(e))
-                  .map((e) => {
-                    const set = perEvent.eventSettings[e]!;
-                    const open = openEvent === e;
-                    return (
-                      <div key={e} className={`overflow-hidden rounded-[20px] border bg-white transition ${open ? "border-gold shadow-[0_18px_36px_-28px_rgba(74,13,26,0.55)]" : "border-line"}`}>
-                        <button
-                          type="button"
-                          aria-expanded={open}
-                          onClick={() => setOpenEvent(open ? null : e)}
-                          className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5 text-left sm:px-5"
-                        >
-                          <span className="font-display text-xl text-maroon">{eventLabel(e, s.tradition)}</span>
-                          <span className="flex gap-1.5" aria-label={set.palettes.map((id) => PALETTES.find((x) => x.id === id)?.name).join(", ")}>
-                            {set.palettes.map((id) => (
-                              <span key={id} className="flex h-5 w-10 overflow-hidden rounded-md ring-1 ring-ink/10">
-                                {PALETTES.find((x) => x.id === id)!.swatches.map((c, i) => (
-                                  <span key={c} className={i === 0 ? "flex-[2]" : "flex-1"} style={{ background: c }} />
-                                ))}
-                              </span>
-                            ))}
-                          </span>
-                          <span className="text-sm text-ink-soft">
-                            {set.venue === "outdoor" ? "Outdoor" : "Indoor"}, {set.lighting === "day" ? "daytime" : "evening"}
-                          </span>
-                          <span className="ml-auto text-sm font-semibold text-kumkum">{open ? "Done" : "Change"}</span>
-                        </button>
-                        {open && (
-                          <div className="space-y-6 border-t border-line px-4 pb-5 pt-4 sm:px-5">
-                            <div>
-                              <p className="mb-3 text-sm font-semibold">Colors for {eventLabel(e, s.tradition)} <span className="font-normal text-ink-soft">(pick one, or two to compare)</span></p>
-                              <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
-                            </div>
-                            <div className="grid gap-5 sm:grid-cols-2">
-                              <div>
-                                <p className="mb-2 text-sm font-semibold">Venue</p>
-                                <Segmented value={set.venue} onChange={(v) => setEvent(e, { venue: v as "indoor" | "outdoor" })} options={[["indoor", "Indoor"], ["outdoor", "Outdoor"]]} />
-                              </div>
-                              <div>
-                                <p className="mb-2 text-sm font-semibold">Light</p>
-                                <Segmented value={set.lighting} onChange={(v) => setEvent(e, { lighting: v as "day" | "evening" })} options={[["day", "Daytime"], ["evening", "Evening"]]} />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-              </div>
-            </Field>
-          )}
           <Field label="Anything else? (optional)" hint="Flowers you love or hate, a venue name, family must-haves.">
             <textarea className="field min-h-24" maxLength={600} value={s.notes} onChange={(e) => update("notes", e.target.value)} placeholder="e.g. no lilies, lots of jasmine, venue is a garden estate in Sonoma" />
           </Field>
-          <StepNav onBack={() => go(0)} onNext={finishWedding} busy={busy} nextLabel="Next: people" />
+          <StepNav onNext={finishWedding} busy={busy} nextLabel="Next: design each event" />
+        </section>
+      )}
+
+      {s.events.length > 0 && step >= 1 && (
+        <section aria-labelledby="designs-h" hidden={step !== 1}>
+          <h2 id="designs-h" className="text-2xl">Design each event</h2>
+          <p className="mt-1 text-ink-soft">Every event gets its own backdrop, colors, venue and light. Set one up, then copy it to others if you like.</p>
+
+          <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Events">
+            {tradition.events
+              .filter((e) => s.events.includes(e))
+              .map((e) => {
+                const d = perEvent.eventSettings[e]?.design;
+                const preset = d?.source === "preset" ? DECOR_PRESETS.find((p) => p.id === d.presetId) : null;
+                const thumb = preset?.image ?? d?.imageUrl;
+                const on = current === e;
+                return (
+                  <button
+                    key={e}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    onClick={() => {
+                      setCopyMsg(null);
+                      setActiveEvent(e);
+                    }}
+                    className={`flex items-center gap-2.5 rounded-full border-2 py-1 pl-1 pr-4 text-[0.95rem] font-medium transition ${
+                      on ? "border-kumkum bg-white text-kumkum-deep" : "border-line bg-white hover:border-gold"
+                    }`}
+                  >
+                    <span className="h-8 w-8 overflow-hidden rounded-full bg-silk ring-1 ring-ink/10">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {thumb ? <img src={thumb} alt="" className="h-full w-full object-cover" /> : null}
+                    </span>
+                    {eventLabel(e, s.tradition)}
+                  </button>
+                );
+              })}
+          </div>
+
+          {tradition.events
+            .filter((e) => s.events.includes(e))
+            .map((e) => {
+              const set = perEvent.eventSettings[e]!;
+              const d = set.design!;
+              const label = eventLabel(e, s.tradition);
+              const others = s.events.filter((x) => x !== e);
+              const idx = s.events.indexOf(e);
+              const nextEvent = tradition.events.filter((x) => s.events.includes(x)).find((x, i, arr) => arr.indexOf(e) + 1 === i);
+              return (
+                <div key={e} role="tabpanel" hidden={current !== e} className="mt-6 space-y-8 rounded-[24px] border border-gold/40 bg-white p-4 sm:p-6" data-index={idx}>
+                  <div>
+                    <h3 className="text-2xl text-maroon">Backdrop for {label}</h3>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={`How to start the ${label} design`}>
+                      {(
+                        [
+                          ["preset", "Pick a template", "12 styles from simple to grand", LayoutGrid],
+                          ["upload", "Upload a reference", "A photo you love or a decorator's sketch", Upload],
+                          ["sketch", "Draw it", "Sketch the shape on screen", Pencil],
+                        ] as [DecorSource, string, string, typeof Upload][]
+                      ).map(([id, title, sub, Icon]) => (
+                        <button
+                          key={id}
+                          type="button"
+                          role="radio"
+                          aria-checked={d.source === id}
+                          onClick={() =>
+                            setDesign(e, id === "preset" ? { source: "preset", presetId: d.presetId ?? EVENT_DEFAULT_PRESET[e] } : { source: id, imageUrl: d.source === id ? d.imageUrl : undefined })
+                          }
+                          className={`flex items-start gap-3 rounded-2xl border-2 px-4 py-3 text-left transition ${
+                            d.source === id ? "border-kumkum bg-[#fdf3f1]" : "border-line hover:border-gold"
+                          }`}
+                        >
+                          <Icon size={20} className={`mt-0.5 flex-none ${d.source === id ? "text-kumkum" : "text-gold"}`} />
+                          <span>
+                            <span className="block font-semibold">{title}</span>
+                            <span className="block text-sm text-ink-soft">{sub}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-5">
+                      {d.source === "preset" && (
+                        <div role="radiogroup" aria-label={`Template for ${label}`} className="space-y-5">
+                          {STYLE_TIERS.map((t) => (
+                            <div key={t.id}>
+                              <p className="mb-2 flex items-baseline gap-3">
+                                <span className="font-display text-lg">{t.name}</span>
+                                <span className="text-sm text-ink-soft">{t.note}</span>
+                              </p>
+                              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                {DECOR_PRESETS.filter((p) => p.tier === t.id).map((p) => {
+                                  const sel = d.presetId === p.id;
+                                  return (
+                                    <button
+                                      key={p.id}
+                                      type="button"
+                                      role="radio"
+                                      aria-checked={sel}
+                                      onClick={() => setDesign(e, { source: "preset", presetId: p.id })}
+                                      className={`overflow-hidden rounded-2xl border-2 bg-white text-left transition ${sel ? "border-kumkum ring-4 ring-kumkum/15" : "border-line hover:border-gold"}`}
+                                    >
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={p.image} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                                      <span className="block px-3 py-2">
+                                        <span className="block text-[0.95rem] font-semibold">{p.name}</span>
+                                        <span className="block text-xs text-ink-soft">{p.description}</span>
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {d.source === "upload" && (
+                        <ImageDrop
+                          label={`Upload a reference for ${label}: a photo you love, or a decorator's sketch`}
+                          kind="decor"
+                          value={d.imageUrl}
+                          onUploaded={(url) => setDesign(e, { source: "upload", imageUrl: url })}
+                          onError={setError}
+                        />
+                      )}
+                      <div hidden={d.source !== "sketch"}>
+                        {d.source === "sketch" && d.imageUrl && !dirtySketches[e] ? (
+                          <div className="mb-4 flex items-center gap-4 rounded-2xl border border-line bg-white p-3">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={d.imageUrl} alt="Your saved sketch" className="h-16 w-20 rounded-lg object-cover" />
+                            <p className="text-sm text-ink-soft">We saved this sketch. Draw below to replace it.</p>
+                          </div>
+                        ) : null}
+                        {(d.source === "sketch" || dirtySketches[e] !== undefined) && (
+                          <SketchCanvas
+                            ref={(h) => {
+                              canvases.current[e] = h;
+                            }}
+                            onChange={() => setDirtySketches((x) => ({ ...x, [e]: true }))}
+                          />
+                        )}
+                        <p className="mt-3 text-sm text-ink-soft">Rough is fine. Shapes, symmetry and color washes matter more than detail.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="mb-3 font-semibold">
+                      Colors for {label} <span className="font-normal text-ink-soft">(pick one, or two to compare)</span>
+                    </p>
+                    <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
+                    <p className="mt-3 text-sm text-ink-soft">
+                      Your {pack.name} pack covers {pack.maxPalettes} palettes across the album ({perEvent.palettes.length} used). Reusing one for several events counts once.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <p className="mb-2 font-semibold">Venue</p>
+                      <Segmented value={set.venue} onChange={(v) => setEvent(e, { venue: v as "indoor" | "outdoor" })} options={[["indoor", "Indoor"], ["outdoor", "Outdoor"]]} />
+                    </div>
+                    <div>
+                      <p className="mb-2 font-semibold">Light</p>
+                      <Segmented value={set.lighting} onChange={(v) => setEvent(e, { lighting: v as "day" | "evening" })} options={[["day", "Daytime"], ["evening", "Evening"]]} />
+                    </div>
+                  </div>
+
+                  {others.length > 0 && (
+                    <div className="rounded-2xl bg-silk p-4">
+                      <p className="font-semibold">Use this {label} setup for other events</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {others.map((o) => (
+                          <button key={o} type="button" className="chip" disabled={!!busy} onClick={() => copyDesign(e, [o], false)}>
+                            <Copy size={14} /> Backdrop to {eventLabel(o, s.tradition)}
+                          </button>
+                        ))}
+                        <button type="button" className="chip" disabled={!!busy} onClick={() => copyDesign(e, others, true)}>
+                          <Copy size={14} /> Backdrop, colors and light to all
+                        </button>
+                      </div>
+                      {copyMsg ? <p className="mt-2 text-sm text-mehndi">{copyMsg}</p> : null}
+                    </div>
+                  )}
+
+                  {nextEvent ? (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => {
+                          setCopyMsg(null);
+                          setActiveEvent(nextEvent);
+                          topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      >
+                        Next event: {eventLabel(nextEvent, s.tradition)}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          <StepNav onBack={() => go(0)} onNext={finishDesigns} busy={busy} nextLabel="Next: people" />
         </section>
       )}
 

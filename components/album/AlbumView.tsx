@@ -4,7 +4,7 @@ import { readJson } from "@/lib/readJson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { track } from "@vercel/analytics";
-import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, X, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
 import { AI_LABEL, PACKS, ALBUM_PACKS, formatUSD, type PackId } from "@/lib/config";
 import { CATEGORIES, eventLabel, getPalette } from "@/lib/catalog";
 import type { PublicAlbum } from "@/lib/albums";
@@ -30,6 +30,7 @@ export function AlbumView({
   const [notice, setNotice] = useState<string | null>(welcome ? "Payment received. Your album is being created — images appear below as they're ready." : null);
   const [filters, setFilters] = useState<Filters>({ event: "all", category: "all", palette: "all", favorites: false });
   const [open, setOpen] = useState<number | null>(null);
+  const [refineText, setRefineText] = useState("");
   const [zipping, setZipping] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -94,23 +95,28 @@ export function AlbumView({
       ),
     [album.shots, filters],
   );
-  const viewable = shots.filter((s) => s.status === "done");
+  // Finished images, plus images being changed (they keep showing until the new one lands).
+  const viewable = shots.filter((s) => !!s.url && s.status !== "failed");
 
   /* -------- actions */
   const shotAction = useCallback(
-    async (shot: Shot, action: "favorite" | "regenerate" | "retry") => {
+    async (shot: Shot, action: "favorite" | "regenerate" | "retry" | "refine" | "use", extra?: { instruction?: string; url?: string }) => {
       setBusyShot(shot.id + action);
       setError(null);
       try {
         const res = await fetch(`/api/albums/${album.id}/shots/${shot.id}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action }),
+          body: JSON.stringify({ action, ...extra }),
         });
         const data = await readJson(res);
         if (!res.ok || !data.ok) throw new Error(data.error || "That didn't work.");
         setAlbum(data.album);
         if (action === "regenerate") track("image_regenerated");
+        if (action === "refine") {
+          track("image_refined");
+          setRefineText("");
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "That didn't work.");
       } finally {
@@ -365,10 +371,17 @@ export function AlbumView({
           return (
             <li key={s.id} className="group relative mb-4 break-inside-avoid">
               <div className={`relative overflow-hidden rounded-[16px] bg-white ${portrait ? "aspect-[3/4]" : "aspect-[4/3]"}`}>
-                {s.status === "done" && s.url ? (
-                  <button type="button" className="block h-full w-full" onClick={() => setOpen(idx)} aria-label={`Open ${caption(s)}`}>
+                {s.url && s.status !== "failed" ? (
+                  <button type="button" className="relative block h-full w-full" onClick={() => setOpen(idx)} aria-label={`Open ${caption(s)}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={s.url} alt={caption(s)} className="h-full w-full object-cover" loading="lazy" />
+                    {s.status !== "done" ? (
+                      <span className="absolute inset-0 grid place-items-center bg-ink/45 text-sm font-semibold text-white">
+                        <span className="flex items-center gap-2">
+                          <Loader2 size={16} className="animate-spin" /> {s.edit ? "Applying your change…" : "Making a new version…"}
+                        </span>
+                      </span>
+                    ) : null}
                   </button>
                 ) : s.status === "failed" ? (
                   <div className="grid h-full place-items-center p-3 text-center text-sm text-ink-soft">
@@ -449,7 +462,12 @@ export function AlbumView({
           </div>
           <div className="relative flex min-h-0 flex-1 items-center justify-center py-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={viewable[open].url} alt={caption(viewable[open])} className="max-h-full max-w-full rounded-lg object-contain" />
+            <img src={viewable[open].url} alt={caption(viewable[open])} className={`max-h-full max-w-full rounded-lg object-contain ${viewable[open].status !== "done" ? "opacity-60" : ""}`} />
+            {viewable[open].status !== "done" ? (
+              <span className="absolute flex items-center gap-2 rounded-full bg-ink/80 px-4 py-2 text-sm font-semibold text-white">
+                <Loader2 size={16} className="animate-spin" /> {viewable[open].edit ? `Applying: ${viewable[open].edit}` : "Making a new version…"}
+              </span>
+            ) : null}
             <button type="button" aria-label="Previous" className="absolute left-0 grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20" onClick={() => setOpen((i) => (i! - 1 + viewable.length) % viewable.length)}>
               <ChevronLeft />
             </button>
@@ -457,17 +475,81 @@ export function AlbumView({
               <ChevronRight />
             </button>
           </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            <button type="button" className="btn bg-white text-ink" onClick={() => shotAction(viewable[open], "favorite")}>
-              <Heart size={18} className={viewable[open].favorite ? "fill-kumkum text-kumkum" : ""} /> {viewable[open].favorite ? "Favorited" : "Favorite"}
-            </button>
-            <a className="btn bg-white text-ink" href={`/api/img?u=${encodeURIComponent(viewable[open].url!)}`} download>
-              <Download size={18} /> Download
-            </a>
-            <button type="button" className="btn bg-white/15 text-white" onClick={() => shotAction(viewable[open], "regenerate")}>
-              <RefreshCw size={18} /> New version
-            </button>
-          </div>
+          {(() => {
+            const cur = viewable[open];
+            const updating = cur.status !== "done";
+            return (
+              <div className="mx-auto w-full max-w-3xl space-y-3">
+                {cur.made === "refine" && cur.madeNote ? <p className="text-center text-sm text-white/80">Changed: &ldquo;{cur.madeNote}&rdquo;</p> : null}
+                {album.paid ? (
+                  <form
+                    className="flex flex-col gap-2 sm:flex-row"
+                    onSubmit={(ev) => {
+                      ev.preventDefault();
+                      if (refineText.trim().length >= 3) void shotAction(cur, "refine", { instruction: refineText });
+                    }}
+                  >
+                    <label className="sr-only" htmlFor="refine">Describe a change</label>
+                    <input
+                      id="refine"
+                      className="field flex-1"
+                      placeholder="Change something, e.g. “make the flowers white, keep everything else”"
+                      value={refineText}
+                      maxLength={300}
+                      onChange={(ev) => setRefineText(ev.target.value)}
+                      disabled={updating}
+                    />
+                    <button type="submit" className="btn btn-gold" disabled={updating || refineText.trim().length < 3 || busyShot === cur.id + "refine"}>
+                      {busyShot === cur.id + "refine" || updating ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />} Apply change
+                    </button>
+                  </form>
+                ) : null}
+                {album.paid && !updating ? (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {["Make the flowers white", "Add more greenery", "Fewer flowers, simpler", "Warmer, golden light"].map((t) => (
+                      <button key={t} type="button" className="rounded-full border border-white/25 px-3 py-1 text-xs text-white/85 hover:bg-white/10" onClick={() => setRefineText(t)}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button type="button" className="btn btn-sm bg-white text-ink" onClick={() => shotAction(cur, "favorite")}>
+                    <Heart size={16} className={cur.favorite ? "fill-kumkum text-kumkum" : ""} /> {cur.favorite ? "Favorited" : "Favorite"}
+                  </button>
+                  <a className="btn btn-sm bg-white text-ink" href={`/api/img?u=${encodeURIComponent(cur.url!)}`} download>
+                    <Download size={16} /> Download
+                  </a>
+                  {album.paid ? (
+                    <button type="button" className="btn btn-sm bg-white/15 text-white" disabled={updating} onClick={() => shotAction(cur, "regenerate")}>
+                      <RefreshCw size={16} /> Start over
+                    </button>
+                  ) : null}
+                  {album.paid ? <span className="text-xs text-white/70">{album.regensLeft} free changes left</span> : null}
+                </div>
+                {cur.versions?.length ? (
+                  <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1">
+                    <span className="flex-none text-xs text-white/70">Earlier versions</span>
+                    {cur.versions.map((v) => (
+                      <button
+                        key={v.url}
+                        type="button"
+                        disabled={updating}
+                        onClick={() => shotAction(cur, "use", { url: v.url })}
+                        className="group relative h-14 w-20 flex-none overflow-hidden rounded-md ring-1 ring-white/30 hover:ring-2 hover:ring-gold-light"
+                        title={v.note ? `Changed: ${v.note}. Click to use this version.` : "Click to use this version"}
+                        aria-label="Use this earlier version"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={v.url} alt="" className="h-full w-full object-cover" />
+                        <span className="absolute inset-x-0 bottom-0 bg-ink/70 py-0.5 text-[10px] text-white opacity-0 group-hover:opacity-100">Use this</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })()}
         </div>
       ) : null}
     </div>
