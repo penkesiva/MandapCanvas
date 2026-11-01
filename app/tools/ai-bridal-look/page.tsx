@@ -62,7 +62,7 @@ export default function BridalLookPage() {
             example={{
               before: "/samples/look-before.jpg",
               after: "/samples/look-after.jpg",
-              caption: "One everyday photo, North Indian look, classic red, classic jewelry, at the mandap. Same face, glasses and smile.",
+              caption: "One everyday photo, North Indian look, classic red, classic jewelry, at the mandap. Same face, same smile.",
             }}
           />
         </div>
