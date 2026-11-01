@@ -8,6 +8,7 @@ import { FOUNDING_OFFER } from "@/lib/config";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
 import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
 import { Bride, CoupleScene, Groom } from "./Figures";
+import { FreeTrySignup } from "./FreeTrySignup";
 
 const WHO: { id: LookWho; label: string }[] = [
   { id: "bride", label: "Me as a bride" },
@@ -385,7 +386,13 @@ export function BridalLook({ example }: { example?: LookExample }) {
           </figure>
         ) : null}
         {error && error.code !== "signup_for_more" ? <p className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">{error.msg}</p> : null}
-        {outOfTries && quota && !quota.signedIn ? <MoreLooksSignup /> : null}
+        {outOfTries && quota && !quota.signedIn ? <FreeTrySignup
+            next="/tools/ai-bridal-look"
+            source="looks"
+            title="One more look, free"
+            text={`Create a free account to try another tradition or color. You'll also get ${FOUNDING_OFFER.text}.`}
+            cta="Get my free look"
+          /> : null}
         {(outOfTries && quota?.signedIn) || (result && !busy) ? <AlbumUpsell who={who} /> : null}
       </div>
     </div>
@@ -401,57 +408,6 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
       </h2>
       {children}
     </section>
-  );
-}
-
-function MoreLooksSignup() {
-  const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [msg, setMsg] = useState("");
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setState("sending");
-    try {
-      const res = await fetch("/api/auth/request", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, next: "/tools/ai-bridal-look", source: "looks" }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Couldn't send the email.");
-      setState("sent");
-      track("tool_look_signup");
-      if (data.devLink) console.log("[dev] sign-in link:", data.devLink);
-    } catch (err) {
-      setState("error");
-      setMsg(err instanceof Error ? err.message : "Couldn't send the email.");
-    }
-  }
-  return (
-    <div className="mt-4 rounded-[22px] bg-maroon p-5 text-[#fff8ef]">
-      <p className="font-display text-xl text-gold-light">One more look, free</p>
-      {state === "sent" ? (
-        <p className="mt-2 flex gap-2 text-sm">
-          <Check size={18} className="flex-none text-gold-light" /> Check your inbox. The link brings you back here with another free look.
-        </p>
-      ) : (
-        <>
-          <p className="mt-1 text-sm text-[#f3e3d3]">
-            Create a free account to try another tradition or color. You&apos;ll also get {FOUNDING_OFFER.text}.
-          </p>
-          <form onSubmit={submit} className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <label htmlFor="look-email" className="sr-only">
-              Email
-            </label>
-            <input id="look-email" type="email" required className="field min-w-0 flex-1" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-            <button type="submit" className="btn btn-gold btn-sm flex-none" disabled={state === "sending"}>
-              {state === "sending" ? "Sending…" : "Get my free look"}
-            </button>
-          </form>
-          {state === "error" ? <p className="mt-2 text-sm text-gold-light">{msg}</p> : null}
-        </>
-      )}
-    </div>
   );
 }
 

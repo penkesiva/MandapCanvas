@@ -10,8 +10,17 @@
     "fetch-samples": "node scripts/fetch-samples.mjs"
   },
   "dependencies": {
+    "@fontsource/bungee": "^5.3.0",
+    "@fontsource/cinzel": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
     "@fontsource/hind": "^5.3.0",
+    "@fontsource/m-plus-rounded-1c": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
     "@fontsource/rozha-one": "^5.3.0",
+    "@fontsource/unbounded": "^5.3.0",
+    "@fontsource/yatra-one": "^5.3.0",
     "@google/genai": "^1.48.0",
     "@supabase/supabase-js": "^2.118.0",
     "@upstash/redis": "^1.40.0",

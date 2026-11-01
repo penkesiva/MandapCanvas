@@ -15,6 +15,7 @@ export async function recordStat(s: {
   subscriptions?: number;
   leads?: number;
   looks?: number;
+  cards?: number;
 }): Promise<void> {
   const ops: Promise<number>[] = [];
   for (const [field, value] of Object.entries(s)) {

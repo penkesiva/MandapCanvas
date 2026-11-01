@@ -13,7 +13,7 @@ export interface RefImage {
 export interface GenerateInput {
   prompt: string;
   refs: RefImage[];
-  aspectRatio: "4:3" | "3:4" | "16:9";
+  aspectRatio: "4:3" | "3:4" | "16:9" | "9:16";
   hd?: boolean;
   /** Used by mock mode to render a recognizable placeholder. */
   mockLabel?: { title: string; subtitle: string; paletteId: string };
@@ -114,7 +114,7 @@ function esc(s: string): string {
 }
 
 async function mockImage(input: GenerateInput): Promise<GenerateOutput> {
-  const [w, h] = input.aspectRatio === "3:4" ? [768, 1024] : input.aspectRatio === "16:9" ? [1280, 720] : [1024, 768];
+  const [w, h] = input.aspectRatio === "3:4" ? [768, 1024] : input.aspectRatio === "9:16" ? [720, 1280] : input.aspectRatio === "16:9" ? [1280, 720] : [1024, 768];
   const palette = getPalette(input.mockLabel?.paletteId ?? "blush_ivory");
   const [a, b, c] = palette.swatches;
   const title = esc(input.mockLabel?.title ?? "Preview");

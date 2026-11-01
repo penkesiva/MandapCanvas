@@ -31,6 +31,25 @@ export const FREE_TOOLS: FreeTool[] = [
     image: "/samples/couple.jpg",
   },
   {
+    slug: "wedding-invitation-maker",
+    name: "AI wedding invitation maker",
+    blurb: "Type your names, date and venue. Pick from 13 styles, from royal Rajasthani to anime, 3D animated and Gen Z. First card free.",
+    title: "Free AI Indian Wedding Invitation Maker: 13 Styles, WhatsApp Ready",
+    description:
+      "Make an Indian wedding invitation, save the date, Mehndi, Sangeet or Haldi card in seconds. Type your details, choose a style (royal Rajasthani, South Indian, Mughal, watercolor, anime, 3D animated, Gen Z, retro Bollywood, Madhubani and more) and download a card or WhatsApp story. First card free.",
+    keywords: [
+      "Indian wedding invitation maker",
+      "wedding card maker free",
+      "WhatsApp wedding invitation",
+      "save the date Indian wedding",
+      "mehndi invitation card",
+      "sangeet invitation",
+      "anime wedding invitation",
+      "AI wedding invitation",
+    ],
+    image: "/samples/sangeet.jpg",
+  },
+  {
     slug: "outfit-photo-color-palette",
     name: "Palette from your outfit photo",
     blurb: "Upload a photo of a lehenga, saree or sherwani. Get its exact colors, the matching groom and family colors, and decor that frames it.",

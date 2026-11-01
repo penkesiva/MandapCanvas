@@ -10,12 +10,12 @@ import { SITE } from "@/lib/config";
 export const metadata: Metadata = {
   title: "Free Desi Wedding Planning Tools",
   description:
-    "Free tools for Indian and Desi weddings: see yourself as a bride or groom with AI, get a palette from your outfit photo, find color palettes by event and season, match outfit colors for the bride, groom and family, and generate wedding hashtags for every event.",
+    "Free tools for Indian and Desi weddings: see yourself as a bride or groom with AI, make a wedding invitation in 13 styles, get a palette from your outfit photo, find color palettes by event and season, match outfit colors for the bride, groom and family, and generate wedding hashtags for every event.",
   alternates: { canonical: "/tools" },
-  keywords: ["free wedding planning tools", "AI bridal look", "Indian wedding tools", "Desi wedding planner", "Indian wedding color palette", "wedding hashtag generator", "outfit color combination"],
+  keywords: ["free wedding planning tools", "AI bridal look", "wedding invitation maker", "Indian wedding tools", "Desi wedding planner", "Indian wedding color palette", "wedding hashtag generator", "outfit color combination"],
   openGraph: {
     title: "Free Desi Wedding Planning Tools · MandapCanvas",
-    description: "AI bridal look try-on, color palette finder, outfit color matcher and wedding hashtag generator for Desi weddings. Free, no sign-up.",
+    description: "AI bridal look try-on, AI wedding invitation maker, color palette finder, outfit color matcher and wedding hashtag generator for Desi weddings. Free, no sign-up.",
     url: "/tools",
   },
 };

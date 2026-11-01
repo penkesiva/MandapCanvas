@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { anonId, currentUser, isAdmin } from "@/lib/auth";
 import { loadImage, saveImage } from "@/lib/blob";
 import { brandMark, generateImage } from "@/lib/imagegen";
 import { buildLookPrompt, parseLookRequest } from "@/lib/bridalLooks";
@@ -7,34 +6,16 @@ import { dailyCapCents } from "@/lib/albums";
 import { SITE } from "@/lib/config";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { kv } from "@/lib/kv";
+import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
 import { isOurImageUrl } from "@/lib/validate";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
 
-/** One free look per visitor; a free account unlocks one more. */
-const FREE_ANON = 1;
-const FREE_SIGNED_IN = 2;
-
-async function count(key: string | null): Promise<number> {
-  if (!key) return 0;
-  return Number((await kv().get(key)) ?? 0);
-}
-
-async function quota() {
-  const [user, anon] = await Promise.all([currentUser(), anonId(true)]);
-  const anonKey = anon ? `looks:anon:${anon}` : null;
-  const userKey = user ? `looks:user:${user.id}` : null;
-  const [a, u] = await Promise.all([count(anonKey), count(userKey)]);
-  const allowance = user ? FREE_SIGNED_IN : FREE_ANON;
-  const used = user ? Math.max(a, u) : a;
-  return { user, anonKey, userKey, allowance, used, remaining: Math.max(0, allowance - used), admin: isAdmin(user) };
-}
-
 export async function GET() {
-  const q = await quota();
-  return NextResponse.json({ ok: true, signedIn: !!q.user, remaining: q.admin ? 99 : q.remaining, allowance: q.allowance });
+  const q = await freeQuota("looks");
+  return NextResponse.json({ ok: true, signedIn: !!q.user, remaining: q.remaining, allowance: q.allowance });
 }
 
 export async function POST(request: Request) {
@@ -45,7 +26,7 @@ export async function POST(request: Request) {
   const photoUrl = body?.photoUrl;
   if (!isOurImageUrl(photoUrl) || !photoUrl.includes("/faces/")) return jsonError("Upload your photo first.");
 
-  const q = await quota();
+  const q = await freeQuota("looks");
   if (!q.admin && q.remaining <= 0) {
     return jsonError(
       q.user ? "You've used your free looks. See yourself in a full album next." : "You've used your free look. Create a free account for one more.",
@@ -70,13 +51,12 @@ export async function POST(request: Request) {
       mockLabel: { title: `Your ${look.who === "couple" ? "couple" : look.who} look`, subtitle: look.tradition, paletteId: "red_gold" },
     });
     const marked = await brandMark(result.data, new URL(SITE.url).host);
-    const owner = q.user?.id ?? q.anonKey?.split(":")[2] ?? "anon";
+    const owner = q.user?.id ?? q.anon ?? "anon";
     const saved = await saveImage(`faces/${owner}/look`, marked, "image/jpeg");
     // The result shows the person's face, so it is deleted on the same schedule as the photo.
     await kv().lpush("faces:index", JSON.stringify({ url: saved.url, at: Date.now() }));
     await Promise.all([
-      q.anonKey ? kv().incrby(q.anonKey, 1) : null,
-      q.userKey ? kv().incrby(q.userKey, 1) : null,
+      q.spend(),
       recordStat({ looks: 1, images: 1, costMilliCents: result.costMilliCents }),
     ]);
     return NextResponse.json({ ok: true, url: saved.url, remaining: q.admin ? 99 : Math.max(0, q.remaining - 1), signedIn: !!q.user });

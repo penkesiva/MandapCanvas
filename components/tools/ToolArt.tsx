@@ -1,5 +1,8 @@
 "use client";
 
+import "@fontsource/cinzel/400.css";
+import "@fontsource/great-vibes/400.css";
+import "@fontsource/unbounded/400.css";
 import { useEffect, useState } from "react";
 import { Bride, CoupleScene, Family, Groom } from "./Figures";
 
@@ -11,6 +14,8 @@ export function ToolArt({ slug }: { slug: string }) {
   switch (slug) {
     case "ai-bridal-look":
       return <LookArt />;
+    case "wedding-invitation-maker":
+      return <InviteArt />;
     case "outfit-photo-color-palette":
       return <PhotoPaletteArt />;
     case "wedding-color-palette-finder":
@@ -221,6 +226,48 @@ function HashtagArt() {
             <p className="mt-1 text-sm font-semibold text-kumkum">#PriyaKiArjun</p>
           </div>
         </div>
+      </div>
+    </Frame>
+  );
+}
+
+/** Three invitation styles fanned out like cards on a table. */
+function InviteArt() {
+  const cards = [
+    { cls: "-rotate-[9deg] translate-x-[38%] translate-y-[4%]", bg: "linear-gradient(160deg,#6D1A36,#3d0a1c)", border: "#C9A24B", font: "Cinzel", ink: "#F6E3B4", sub: "#E2C27A", label: "Royal" },
+    { cls: "rotate-[8deg] -translate-x-[38%] translate-y-[4%]", bg: "linear-gradient(160deg,#C9B6FF,#FF9AD5 55%,#9EF0FF)", border: "#ffffff", font: "Unbounded", ink: "#2B1650", sub: "#E0388B", label: "Gen Z" },
+    { cls: "z-10", bg: "radial-gradient(circle at 50% 30%,#fffdf7,#f4ecdd)", border: "#C9A24B", font: "Great Vibes", ink: "#5B3440", sub: "#B5677A", label: "Watercolor" },
+  ];
+  return (
+    <Frame bg="bg-[radial-gradient(circle_at_50%_40%,#fff8ee,#f1dccb)]">
+      <div className="absolute inset-0 flex items-center justify-center">
+        {cards.map((c) => (
+          <div
+            key={c.label}
+            className={`absolute flex h-[82%] aspect-[3/4] flex-col items-center justify-center rounded-lg border-2 p-2 text-center shadow-xl ${c.cls}`}
+            style={{ background: c.bg, borderColor: c.border }}
+          >
+            {c.label === "Watercolor" ? (
+              <>
+                <span className="absolute left-1 top-1 h-8 w-8 rounded-full bg-[#F4C6CF] opacity-80 blur-[2px]" />
+                <span className="absolute bottom-2 right-1 h-10 w-10 rounded-full bg-[#9DB89A] opacity-70 blur-[3px]" />
+              </>
+            ) : null}
+            <span className="relative text-[9px] italic" style={{ color: c.sub }}>
+              Together with their families
+            </span>
+            <span className="relative leading-none" style={{ fontFamily: `"${c.font}"`, color: c.ink, fontSize: c.font === "Great Vibes" ? "2rem" : c.font === "Unbounded" ? "0.95rem" : "1.15rem" }}>
+              Priya
+              <br />
+              <span style={{ color: c.sub }}>&amp;</span>
+              <br />
+              Arjun
+            </span>
+            <span className="relative mt-1 text-[9px] font-semibold" style={{ color: c.ink }}>
+              February 14, 2027
+            </span>
+          </div>
+        ))}
       </div>
     </Frame>
   );
