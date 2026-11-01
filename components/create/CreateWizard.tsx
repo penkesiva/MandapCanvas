@@ -148,7 +148,6 @@ export function CreateWizard({
   const total = mixTotal(s.mix);
   // Per-event palettes, venue and light, kept within the pack's palette limit.
   const perEvent = useMemo(() => resolveSettings(s), [s]);
-  const mainEvent: EventId | undefined = s.events.includes("ceremony") ? "ceremony" : s.events[0];
   const current: EventId | undefined = activeEvent && s.events.includes(activeEvent) ? activeEvent : s.events[0];
   const setEvent = (e: EventId, patch: Partial<EventSetting>) =>
     setS((cur) => {
@@ -383,28 +382,49 @@ export function CreateWizard({
     return () => window.removeEventListener("keydown", onKey);
   }, [paywall]);
 
-  // Locked teasers on the preview step: shots their album will include, shown blurred.
-  const teasers = useMemo(() => {
-    const samples: Partial<Record<keyof ShotMix, string>> = {
+  // The rest of the album, laid out as locked tiles on the preview step (nothing is generated).
+  const lockedTiles = useMemo(() => {
+    const people: Partial<Record<keyof ShotMix, string>> = {
       bride: "/samples/bride.jpg",
-      couple: "/samples/couple.jpg",
-      family: "/samples/family.jpg",
       groom: "/samples/groom.jpg",
+      couple: "/samples/couple.jpg",
+      couple_stage: "/samples/couple.jpg",
+      family: "/samples/family.jpg",
     };
-    const ev = s.events.find((e) => e !== mainEvent) ?? mainEvent;
-    const evLabel = ev ? eventLabel(ev, s.tradition) : "";
-    const out: { key: string; label: string; image: string }[] = [];
-    for (const c of ["bride", "couple", "family", "groom"] as (keyof ShotMix)[]) {
-      if (out.length >= 2) break;
-      if ((s.mix[c] ?? 0) > 0 && samples[c]) out.push({ key: c, label: `${CATEGORIES.find((x) => x.id === c)?.name}${evLabel ? `, ${evLabel}` : ""}`, image: samples[c]! });
+    const designImage = (e: EventId) => {
+      const d = perEvent.eventSettings[e]?.design;
+      return (d?.source === "preset" ? DECOR_PRESETS.find((p) => p.id === d.presetId)?.image : d?.imageUrl) ?? "/samples/hero-after.jpg";
+    };
+    const events = s.events.length ? s.events : (["ceremony"] as EventId[]);
+    const order = CATEGORIES.map((c) => c.id);
+    const left = { ...s.mix };
+    // The two free previews are one wide decor shot and one couple-at-the-stage shot.
+    left.decor = Math.max(0, (left.decor ?? 0) - 1);
+    left.couple_stage = Math.max(0, (left.couple_stage ?? 0) - 1);
+    const seen: Partial<Record<keyof ShotMix, number>> = {};
+    const tiles: { key: string; label: string; image: string; portrait: boolean }[] = [];
+    let guard = 0;
+    while (tiles.length < pack.images - 2 && guard++ < 2000) {
+      let placed = false;
+      for (const c of order) {
+        if ((left[c] ?? 0) <= 0 || tiles.length >= pack.images - 2) continue;
+        left[c] -= 1;
+        const i = seen[c] ?? 0;
+        seen[c] = i + 1;
+        const e = events[(i + 1) % events.length];
+        tiles.push({
+          key: `${c}-${i}`,
+          label: `${CATEGORIES.find((x) => x.id === c)?.name}, ${eventLabel(e, s.tradition)}`,
+          image: c === "decor" || c === "decor_detail" ? designImage(e) : people[c]!,
+          portrait: c === "bride" || c === "groom",
+        });
+        placed = true;
+      }
+      if (!placed) break;
     }
-    if (out.length < 2 && ev) {
-      const d = perEvent.eventSettings[ev]?.design;
-      const img = d?.source === "preset" ? DECOR_PRESETS.find((p) => p.id === d.presetId)?.image : d?.imageUrl;
-      if (img) out.push({ key: "decor-other", label: `Decor, ${evLabel}`, image: img });
-    }
-    return out.slice(0, 2);
-  }, [s.events, s.mix, s.tradition, perEvent, mainEvent]);
+    return tiles;
+  }, [s.events, s.mix, s.tradition, perEvent, pack.images]);
+  const SHOWN_LOCKED = 23; // + one closing tile = a full 3-, 4- or 6-column grid
 
   /* -------- render */
 
@@ -901,35 +921,65 @@ export function CreateWizard({
                     </div>
                   );
                 })}
-                {previews.length > 0 &&
-                  teasers.map((t) => (
-                    <button
-                      key={t.key}
-                      type="button"
-                      onClick={() => setPaywall({ url: t.image, reason: "more", label: t.label })}
-                      className="sheen group relative aspect-[4/3] overflow-hidden rounded-[18px] border border-gold/50 bg-maroon text-left"
-                      aria-label={`${t.label}: locked, included in your album`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={t.image} alt="" className="h-full w-full scale-110 object-cover blur-[14px] brightness-90" aria-hidden="true" />
-                      <span className="absolute inset-0 bg-gradient-to-t from-maroon/85 via-maroon/30 to-transparent" />
-                      <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-[#fff8ef]">
-                        <span className="grid h-12 w-12 place-items-center rounded-full border border-gold-light/70 bg-maroon/70 shadow-lg">
-                          <Lock size={20} className="text-gold-light" />
-                        </span>
-                        <span className="font-display text-xl">{t.label}</span>
-                        <span className="text-sm text-[#f3e3d3]">In your album</span>
-                      </span>
-                      <span className="absolute bottom-3 right-3 rounded-full bg-gold-light px-3 py-1 text-xs font-semibold text-maroon-deep transition group-hover:bg-white">
-                        Unlock
-                      </span>
-                    </button>
-                  ))}
               </div>
               {previews.length > 0 ? (
-                <p className="text-center text-sm font-medium text-kumkum-deep">
-                  + {Math.max(0, pack.images - 2 - teasers.length)} more images of {s.events.map((e) => eventLabel(e, s.tradition)).join(", ")} are waiting in your {pack.name} album.
-                </p>
+                <div className="rounded-[24px] border border-gold/40 bg-white p-4 sm:p-6">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="font-display text-2xl text-maroon">Your full album: {pack.images} images</p>
+                      <p className="text-sm text-ink-soft">
+                        2 free previews above. These {pack.images - 2} unlock in HD, without watermarks, across {s.events.map((e) => eventLabel(e, s.tradition)).join(", ")}.
+                      </p>
+                    </div>
+                    <button type="button" className="btn btn-primary btn-sm" onClick={checkout} disabled={!!busy || !albumId}>
+                      <Lock size={14} /> Unlock all {pack.images}, {formatUSD(pack.priceCents)}
+                    </button>
+                  </div>
+                  <ul className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-2.5 lg:grid-cols-6">
+                    {lockedTiles.slice(0, SHOWN_LOCKED).map((t, i) => (
+                      <li key={t.key}>
+                        <button
+                          type="button"
+                          onClick={() => setPaywall({ url: t.image, reason: "more", label: t.label })}
+                          className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-xl bg-maroon ${i < 2 ? "sheen" : ""}`}
+                          aria-label={`${t.label}: locked, in your album`}
+                          title={t.label}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={t.image} alt="" loading="lazy" className={`h-full w-full scale-125 object-cover blur-[10px] brightness-90 ${t.portrait ? "object-top" : ""}`} aria-hidden="true" />
+                          <span className="absolute inset-0 bg-gradient-to-t from-maroon/80 via-maroon/20 to-transparent" />
+                          <Lock size={14} className="absolute right-2 top-2 text-gold-light" aria-hidden="true" />
+                          <span className="absolute inset-x-2 bottom-1.5 truncate text-left text-[0.72rem] font-medium text-[#fff8ef]">{t.label}</span>
+                        </button>
+                      </li>
+                    ))}
+                    <li>
+                      {lockedTiles.length > SHOWN_LOCKED ? (
+                        <button
+                          type="button"
+                          onClick={() => setPaywall({ url: lockedTiles[0].image, reason: "more", label: `${lockedTiles.length - SHOWN_LOCKED} more images` })}
+                          className="grid aspect-[4/3] w-full place-items-center rounded-xl border-2 border-dashed border-gold/60 bg-silk text-center font-display text-xl text-maroon hover:border-gold"
+                        >
+                          <span>
+                            +{lockedTiles.length - SHOWN_LOCKED}
+                            <span className="block font-sans text-xs font-medium text-ink-soft">more images</span>
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={checkout}
+                          disabled={!!busy || !albumId}
+                          className="grid aspect-[4/3] w-full place-items-center rounded-xl border-2 border-dashed border-gold/60 bg-silk text-center text-sm font-semibold text-maroon hover:border-gold"
+                        >
+                          <span className="flex flex-col items-center gap-1">
+                            <Lock size={16} className="text-gold" /> Unlock all {pack.images}
+                          </span>
+                        </button>
+                      )}
+                    </li>
+                  </ul>
+                </div>
               ) : null}
               <p className="text-xs text-ink-soft">{AI_LABEL} Free previews are watermarked and lower resolution.</p>
               {!busy && previews.length === 0 && albumId ? (
