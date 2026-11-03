@@ -21,7 +21,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "ai-bridal-look",
     name: "AI bridal and groom look",
-    blurb: "Upload a selfie or a couple photo. See yourself as a North Indian, South Indian, Bengali, Punjabi or Nikah bride or groom. First look free.",
+    blurb: "Upload a selfie. See yourself as a bride or groom in 8 traditions. First look free.",
     title: "AI Bridal Look Try-On: See Yourself as an Indian Bride or Groom (Free)",
     description:
       "Free AI wedding look try-on for Desi brides and grooms. Upload your photo and see yourself in a bridal lehenga, Kanjeevaram saree, sherwani and safa or a couple portrait, in the tradition and color you choose. Your first look is free.",
@@ -40,7 +40,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "wedding-invitation-maker",
     name: "AI wedding invitation maker",
-    blurb: "Type your names, date and venue. Pick from 13 styles, from royal Rajasthani to anime, 3D animated and Gen Z. First card free.",
+    blurb: "Type your details, pick one of 13 styles, from royal to anime. First card free.",
     title: "Free AI Indian Wedding Invitation Maker: 13 Styles, WhatsApp Ready",
     description:
       "Make an Indian wedding invitation, save the date, Mehndi, Sangeet or Haldi card in seconds. Type your details, choose a style (royal Rajasthani, South Indian, Mughal, watercolor, anime, 3D animated, Gen Z, retro Bollywood, Madhubani and more) and download a card or WhatsApp story. First card free.",
@@ -59,7 +59,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "outfit-photo-color-palette",
     name: "Palette from your outfit photo",
-    blurb: "Upload a photo of a lehenga, saree or sherwani. Get its exact colors, the matching groom and family colors, and decor that frames it.",
+    blurb: "Upload an outfit photo. Get its colors, plus matching groom, family and decor colors.",
     title: "Get a Wedding Color Palette From Your Lehenga or Saree Photo",
     description:
       "Free tool: upload a photo of your lehenga, saree, sherwani or fabric and get its exact colors with names and hex codes, matching groom and family colors, and mandap decor palettes. Your photo never leaves your device.",
@@ -76,7 +76,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "wedding-color-palette-finder",
     name: "Wedding color palette finder",
-    blurb: "Pick the event, the season and the time of day. Get the three palettes that suit it best, with in-season flowers.",
+    blurb: "Pick the event and season. Get the 3 best palettes, with flowers in season.",
     title: "Indian Wedding Color Palette Finder: Colors by Event and Season",
     description:
       "Free Desi wedding color palette finder. Choose Haldi, Mehndi, Sangeet, the ceremony or the reception, plus the season, time of day and outfit color, and get the best decor palettes with flowers in season.",
@@ -93,7 +93,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "outfit-color-matcher",
     name: "Outfit color matcher",
-    blurb: "Pick the bride's outfit color. Get the groom's colors, the family's colors and a decor palette that won't swallow her.",
+    blurb: "Pick the bride's color. Get the groom's, the family's and the decor's.",
     title: "Indian Wedding Outfit Color Matcher: Groom, Family and Decor Colors",
     description:
       "Free tool for Desi weddings: choose the bride's lehenga or saree color and get matching groom colors, bridal party colors and a mandap decor palette for Haldi, Mehndi, Sangeet, the wedding and the reception.",
@@ -110,7 +110,7 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "wedding-hashtag-generator",
     name: "Desi wedding hashtag generator",
-    blurb: "Type two names. Get classic, Desi and name-blend hashtags, plus one for every event from Haldi to the reception.",
+    blurb: "Type two names. Get hashtags for the wedding and every event.",
     title: "Desi Wedding Hashtag Generator: Indian Wedding Hashtags in Seconds",
     description:
       "Free Indian wedding hashtag generator. Enter both names and get #NameWedsName classics, Shaadi hashtags, name blends and event hashtags for Haldi, Mehndi, Sangeet, Baraat and the reception.",

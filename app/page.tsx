@@ -33,33 +33,30 @@ export default function Home() {
       <section className="relative overflow-hidden">
         <div className="bg-jaali absolute inset-0 [mask-image:linear-gradient(180deg,#000_0%,transparent_80%)]" aria-hidden="true" />
         <Mandala className="absolute -right-56 -top-48 hidden h-[760px] w-[760px] md:block" opacity={0.22} />
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 md:pt-16">
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-6 sm:pb-16 md:pt-16">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-[2.6rem] text-maroon sm:text-[3.4rem] md:text-[4rem]">See your Desi wedding before it happens.</h1>
             <Divider className="mt-5" />
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-ink-soft">Two ways to start. Both free to try, no account needed.</p>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-ink-soft">Two ways to start, both free.</p>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid gap-5 md:mt-10 md:grid-cols-2 md:gap-6">
             <Door
               href="/looks"
               title="See yourself"
-              text="Upload a selfie. See yourself as a bride or groom, or the two of you, at every event from the Haldi to the reception."
+              text="Upload a selfie. See yourself as a bride, groom or couple at every event."
               meta={`First look free · Look Packs from ${formatUSD(PACKS.look12.priceCents)}`}
               cta="Try your look free"
               more={{ href: "/looks", label: "How it works" }}
             >
-              <div className="grid h-full grid-cols-[0.8fr_1fr] items-center gap-2 p-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/samples/look-before.jpg" alt="An everyday selfie" className="aspect-[3/4] w-full -rotate-2 rounded-lg border-4 border-white object-cover shadow-md" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/samples/look-after.jpg" alt="The same woman as a bride" className="aspect-[3/4] w-full rotate-1 rounded-xl border-4 border-gold-light object-cover shadow-lg" />
+              <div className="p-4">
+                <LookExamples compact />
               </div>
             </Door>
             <Door
               href="/create"
               title="See your mandap"
-              text="Sketch it, upload a photo you love, or pick a style. See your decor photo-real for every event, with the two of you in it."
+              text="Sketch it, upload a photo or pick a style. See your decor photo-real, event by event."
               meta={`Two previews free · Albums from ${formatUSD(PACKS.starter.priceCents)}`}
               cta="Design my mandap free"
               more={{ href: "/mandap", label: "How it works" }}
@@ -73,12 +70,12 @@ export default function Home() {
             </Door>
           </div>
 
-          <ul className="mx-auto mt-10 grid max-w-5xl gap-4 text-center text-sm text-ink-soft sm:grid-cols-4">
+          <ul className="mx-auto mt-8 grid max-w-5xl grid-cols-2 gap-x-4 gap-y-4 text-center text-sm text-ink-soft sm:mt-10 sm:grid-cols-4">
             {[
               ["Made for Desi weddings", "in the U.S."],
-              ["Every tradition", "Pheras, Muhurtham, Nikah, Anand Karaj"],
-              ["Try it free", "no account, no card"],
-              ["Private", "your photos are deleted after 7 days"],
+              ["Every tradition", "Pheras to Nikah"],
+              ["Free to try", "no card needed"],
+              ["Private", "photos deleted in 7 days"],
             ].map(([a, b]) => (
               <li key={a}>
                 <span className="block font-semibold text-ink">{a}</span>
@@ -91,14 +88,11 @@ export default function Home() {
 
       {/* Product 1: Looks */}
       <section className="relative border-y border-gold/30 bg-silk">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.05fr]">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
           <div>
             <p className="font-semibold text-kumkum">Bridal looks</p>
-            <h2 className="mt-2 text-[2.2rem] sm:text-[2.8rem]">You, at every event. Still unmistakably you.</h2>
-            <p className="mt-4 text-ink-soft">
-              One photo becomes portraits of you in your wedding look: yellow and flowers for the Haldi, mehndi on your hands, sparkle for the Sangeet, your
-              tradition&apos;s finest for the wedding, couture for the reception. For the bride, the groom, or the two of you.
-            </p>
+            <h2 className="mt-2 text-[2.1rem] sm:text-[2.8rem]">You, at every event. Still you.</h2>
+            <p className="mt-4 text-ink-soft">One photo, a portrait for each event, in the outfit made for it. For the bride, the groom, or both.</p>
             <ul className="mt-6 grid grid-cols-5 gap-2" aria-label="Events in a Look Pack">
               {LOOK_EVENTS.map((e) => (
                 <li key={e.name} className="flex flex-col items-center rounded-2xl pb-2 pt-2 text-xs font-semibold" style={{ background: e.bg }}>
@@ -115,7 +109,7 @@ export default function Home() {
                 Try your look free
               </Link>
               <span className="text-sm text-ink-soft">
-                Then {PACKS.look12.images} portraits for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
+                Then {PACKS.look12.images} for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
               </span>
             </div>
           </div>
@@ -124,8 +118,8 @@ export default function Home() {
       </section>
 
       {/* Product 2: Mandap designs */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr]">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
           <div className="frame-gold">
             <BeforeAfter
               before="/samples/hero-before.jpg"
@@ -136,10 +130,9 @@ export default function Home() {
           </div>
           <div>
             <p className="font-semibold text-kumkum">Mandap designs</p>
-            <h2 className="mt-2 text-[2.2rem] sm:text-[2.8rem]">See your mandap before the first flower is ordered.</h2>
+            <h2 className="mt-2 text-[2.1rem] sm:text-[2.8rem]">See your mandap before you book.</h2>
             <p className="mt-4 text-ink-soft">
-              Draw it, upload an Instagram photo, or start from one of {DECOR_PRESETS.length} styles from simple to grand. Get a photo-real album of every event,
-              in the palettes you&apos;re torn between, with the two of you in it. Then send the link to everyone with an opinion.
+              Draw it, upload a photo or pick one of {DECOR_PRESETS.length} styles. Compare palettes for every event, then share the link with the family.
             </p>
             <ul className="mt-6 grid grid-cols-4 gap-2">
               {MANDAP_EVENTS.map((e) => (
@@ -165,9 +158,9 @@ export default function Home() {
       {/* Pricing at a glance */}
       <section className="relative overflow-hidden bg-maroon text-[#fff8ef]">
         <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <SectionTitle tone="light" title="Try free. Pay once if you love it." intro="No subscriptions for couples. Every pack is a one-time price." />
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+          <SectionTitle tone="light" title="Try free. Pay once if you love it." intro="No subscriptions for couples." />
+          <div className="mt-10 grid gap-5 md:mt-12 md:grid-cols-2 md:gap-6">
             <PriceColumn
               title="Bridal looks"
               note="Portraits of you at every event"
@@ -192,9 +185,9 @@ export default function Home() {
       </section>
 
       {/* Free tools */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-        <SectionTitle title="Free planning tools" intro="For the decisions every family argues about. Free, instant, and most need no sign-up." />
-        <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <SectionTitle title="Free planning tools" intro="For the decisions every family argues about." />
+        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
           {freeTools.map((t) => (
             <li key={t.slug}>
               <Link href={toolHref(t)} className="group block overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
@@ -215,17 +208,15 @@ export default function Home() {
       </section>
 
       {/* Decorators */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-20">
         <div className="relative overflow-hidden rounded-[30px] bg-maroon p-2">
-          <div className="relative overflow-hidden rounded-[24px] border border-gold-light/50 p-8 sm:p-12">
+          <div className="relative overflow-hidden rounded-[24px] border border-gold-light/50 p-6 sm:p-12">
             <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
             <Mandala className="absolute -right-24 -top-24 h-[360px] w-[360px]" color="#ecd08a" opacity={0.25} />
             <div className="relative grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
               <div>
-                <h2 className="text-[2rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
-                <p className="mt-4 text-[#f3e3d3]">
-                  Sketch while the couple talks, show them a photo-real mandap before they leave, and send a proposal with your logo. Plans from $99 a month.
-                </p>
+                <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
+                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From $99 a month.</p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">
@@ -238,10 +229,10 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-4 pb-24 sm:px-6">
+      <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 sm:pb-24">
         <SectionTitle title="Questions couples ask" />
         <div className="mt-8 divide-y divide-gold/30 border-y border-gold/40">
-          {FAQ.slice(0, 5).map((f) => (
+          {FAQ.slice(0, 4).map((f) => (
             <details key={f.q} className="group py-4">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-medium">
                 {f.q}
@@ -282,9 +273,7 @@ function Door({
 }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-[28px] border border-gold/50 bg-white shadow-[0_30px_60px_-40px_rgba(74,13,26,0.55)]">
-      <Link href={href} className="block bg-[linear-gradient(135deg,#fbf1ee,#f6e7c8)]" tabIndex={-1} aria-hidden="true">
-        {children}
-      </Link>
+      <div className="bg-[linear-gradient(135deg,#fbf1ee,#f6e7c8)]">{children}</div>
       <div className="flex flex-1 flex-col p-6 sm:p-7">
         <h2 className="text-[2rem] text-maroon">{title}</h2>
         <p className="mt-2 text-ink-soft">{text}</p>

@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 export default function Pricing() {
   return (
     <PageShell>
-      <div className="mx-auto max-w-6xl px-4 pb-24 pt-12 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pb-24 sm:pt-12">
         <h1 className="text-[2.6rem] sm:text-[3.2rem]">Pricing</h1>
         <p className="mt-3 max-w-2xl text-lg text-ink-soft">
-          Try both for free first. If you love what you see, pay once. No subscriptions for couples.
+          Try free first. Pay once if you love it. No subscriptions for couples.
         </p>
         <nav className="mt-6 flex flex-wrap gap-2" aria-label="Products">
           <a href="#looks" className="chip">Bridal looks</a>
@@ -26,7 +26,7 @@ export default function Pricing() {
         <section id="looks" className="mt-12 scroll-mt-24">
           <h2 className="text-[2rem] text-maroon">Bridal looks</h2>
           <p className="mt-1 max-w-2xl text-ink-soft">
-            Portraits of you, the groom or the two of you at every event, from your own photos. One free look first, no sign-up.{" "}
+            Portraits of you at every event, from your own photos. One free look first.{" "}
             <Link href="/looks" className="font-medium text-kumkum underline">How it works</Link>
           </p>
           <div className="mt-10">
@@ -37,7 +37,7 @@ export default function Pricing() {
         <section id="mandap" className="mt-20 scroll-mt-24">
           <h2 className="text-[2rem] text-maroon">Mandap designs</h2>
           <p className="mt-1 max-w-2xl text-ink-soft">
-            Your decor for every event, photo-real, in the palettes you&apos;re choosing between, with the two of you in it. Two free previews first.{" "}
+            Your decor for every event, photo-real, with the two of you in it. Two free previews first.{" "}
             <Link href="/mandap" className="font-medium text-kumkum underline">How it works</Link>
           </p>
           <div className="mt-10">

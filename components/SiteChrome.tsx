@@ -36,7 +36,7 @@ export async function SiteHeader() {
           </Link>
         </div>
       </div>
-      <nav className="flex gap-5 overflow-x-auto px-4 pb-2.5 text-sm font-medium text-ink-soft md:hidden" aria-label="Main mobile">
+      <nav className="flex gap-4 overflow-x-auto whitespace-nowrap px-4 pb-2.5 text-sm font-medium text-ink-soft [scrollbar-width:none] md:hidden" aria-label="Main mobile">
         <Link href="/looks">Bridal looks</Link>
         <Link href="/mandap">Mandap designs</Link>
         <Link href="/tools">Free tools</Link>
@@ -55,19 +55,19 @@ export function SiteFooter() {
     <footer className="no-print relative mt-auto overflow-hidden bg-maroon text-[#f3e3d3]">
       <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
       <div className="toran relative" aria-hidden="true" />
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
-        <div>
+      <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:px-6 sm:py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] md:gap-10">
+        <div className="col-span-2 md:col-span-1">
           <p className="flex items-center gap-2 font-display text-2xl text-gold-light">
             <Logo light />
             MandapCanvas
           </p>
           <p className="mt-3 max-w-xs text-sm">
-            Photo-real previews of Desi weddings in the U.S. — for couples, families and the decorators who make it real.
+            See your Desi wedding before it happens: your looks, your mandap, every event.
           </p>
         </div>
-        <FooterCol title="Couples" links={[["Bridal looks", "/looks"], ["Mandap designs", "/mandap"], ["Design my mandap", "/create"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
-        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Wedding invitation maker", "/tools/wedding-invitation-maker"], ["Palette from your outfit photo", "/tools/outfit-photo-color-palette"], ["Color palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Wedding hashtag generator", "/tools/wedding-hashtag-generator"]]} />
-        <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"], ["My account", "/account"]]} />
+        <FooterCol title="Couples" links={[["Bridal looks", "/looks"], ["Mandap designs", "/mandap"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Invitation maker", "/tools/wedding-invitation-maker"], ["Palette from a photo", "/tools/outfit-photo-color-palette"], ["Palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Hashtag generator", "/tools/wedding-hashtag-generator"]]} />
+        <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>
       <div className="relative border-t border-gold-light/20">

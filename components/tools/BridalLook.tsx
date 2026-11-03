@@ -8,6 +8,7 @@ import { OUTFIT_COLORS } from "@/lib/outfitColors";
 import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
 import { Bride, CoupleScene, Groom } from "./Figures";
 import { FreeTrySignup } from "./FreeTrySignup";
+import { flagField } from "@/lib/flagField";
 import { LookPack } from "./LookPack";
 
 const WHO: { id: LookWho; label: string }[] = [
@@ -34,7 +35,7 @@ export function BridalLook() {
   const [busy, setBusy] = useState(false);
   const [tick, setTick] = useState(0);
   const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<{ msg: string; code?: string } | null>(null);
+  const [error, setError] = useState<{ msg: string; code?: string; field?: "photo" | "consent" } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -72,15 +73,22 @@ export function BridalLook() {
       setPhoto(data.url);
       track("tool_look_upload");
     } catch (e) {
-      setError({ msg: e instanceof Error ? e.message : "Upload failed. Try another photo." });
+      setError({ msg: e instanceof Error ? e.message : "Upload failed. Try another photo.", field: "photo" });
+      flagField('[data-field="photo"]');
     } finally {
       setUploading(false);
     }
   }
 
   async function create() {
-    if (!photo) return setError({ msg: "Add your photo first." });
-    if (!consent) return setError({ msg: "Tick the box to confirm the photo is of you, or that everyone in it agreed." });
+    if (!photo) {
+      setError({ msg: "Add your photo first.", field: "photo" });
+      return flagField('[data-field="photo"]');
+    }
+    if (!consent) {
+      setError({ msg: "Tick the box to confirm the photo is of you, or that everyone in it agreed.", field: "consent" });
+      return flagField('[data-field="consent"]');
+    }
     setError(null);
     setBusy(true);
     setTick(0);
@@ -95,6 +103,7 @@ export function BridalLook() {
       const data = await res.json();
       if (!res.ok) {
         setError({ msg: data.error, code: data.code });
+        flagField(data.code === "signup_for_more" ? "#look-signup" : "#look-error");
         if (data.code === "signup_for_more" || data.code === "looks_used") setQuota((q) => ({ signedIn: q?.signedIn ?? false, remaining: 0 }));
         return;
       }
@@ -103,6 +112,7 @@ export function BridalLook() {
       track("tool_look_done", { who, tradition });
     } catch {
       setError({ msg: "Something went wrong. Please try again." });
+      flagField("#look-error");
     } finally {
       setBusy(false);
     }
@@ -175,7 +185,7 @@ export function BridalLook() {
             className="sr-only"
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
           />
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 p-1 sm:flex-row sm:items-center" data-field="photo">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
@@ -207,6 +217,11 @@ export function BridalLook() {
               </ul>
             </div>
           </div>
+          {error?.field === "photo" ? (
+            <p role="alert" className="mt-2 text-sm font-semibold text-kumkum-deep">
+              {error.msg}
+            </p>
+          ) : null}
         </Step>
 
         <Step n={3} title="Pick a wedding look">
@@ -294,7 +309,7 @@ export function BridalLook() {
           </div>
         </Step>
 
-        <label className="mt-6 flex gap-3 rounded-2xl bg-silk p-4 text-sm">
+        <label className={`mt-6 flex gap-3 rounded-2xl p-4 text-sm ${error?.field === "consent" ? "bg-[#fbeaea] text-kumkum-deep" : "bg-silk"}`} data-field="consent">
           <input type="checkbox" className="mt-0.5 h-4 w-4 flex-none accent-[#9E1B32]" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
           <span>
             This is my photo, or everyone in it said yes, and we&apos;re 18 or older. Your photo and your look are deleted automatically after 7 days.
@@ -357,8 +372,13 @@ export function BridalLook() {
           ) : null}
         </div>
 
-        {error && error.code !== "signup_for_more" ? <p className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">{error.msg}</p> : null}
+        {error && !error.field && error.code !== "signup_for_more" ? (
+          <p id="look-error" role="alert" className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">
+            {error.msg}
+          </p>
+        ) : null}
         {outOfTries && quota && !quota.signedIn ? <FreeTrySignup
+            id="look-signup"
             next="/looks"
             source="looks"
             title="One more look, free"

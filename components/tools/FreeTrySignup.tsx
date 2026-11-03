@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 
 /** "One more free try" card: email in, magic link out, and the link brings them back to the tool. */
-export function FreeTrySignup({ next, source, title, text, cta }: { next: string; source: string; title: string; text: string; cta: string }) {
+export function FreeTrySignup({ id, next, source, title, text, cta }: { id?: string; next: string; source: string; title: string; text: string; cta: string }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [msg, setMsg] = useState("");
@@ -29,7 +29,7 @@ export function FreeTrySignup({ next, source, title, text, cta }: { next: string
     }
   }
   return (
-    <div className="mt-4 rounded-[22px] bg-maroon p-5 text-[#fff8ef]">
+    <div id={id} className="mt-4 rounded-[22px] bg-maroon p-5 text-[#fff8ef]">
       <p className="font-display text-xl text-gold-light">{title}</p>
       {state === "sent" ? (
         <p className="mt-2 flex gap-2 text-sm">

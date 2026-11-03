@@ -6,6 +6,7 @@ import { engage as track } from "@/lib/engage";
 import { LOOK_PACKS, PACKS, formatUSD, type PackId } from "@/lib/config";
 import { defaultLookEvents, getTradition, type LookEvent, type LookJewelry, type LookWho } from "@/lib/bridalLooks";
 import { Bride, Groom } from "./Figures";
+import { flagField } from "@/lib/flagField";
 
 const EVENT_INFO: Record<LookEvent, { name: string; bride: string; dupatta?: string; groom: string; safa: string; bg: string }> = {
   haldi: { name: "Haldi", bride: "#F2C14E", dupatta: "#F2A33A", groom: "#FFF3C4", safa: "#F2A33A", bg: "#FFF4D6" },
@@ -78,9 +79,13 @@ export function LookPack({
   const pack = PACKS[packId];
 
   async function buy() {
-    if (!events.length) return setError("Pick at least one event.");
-    if (!enough) return setError(who === "couple" ? "Add a photo of you both, or one photo of each of you." : "Add at least one photo.");
-    if (!consent) return setError("Tick the box to confirm the photos are of you, or that everyone in them agreed.");
+    const fail = (msg: string, field: string) => {
+      setError(msg);
+      flagField(`[data-field="${field}"]`);
+    };
+    if (!events.length) return fail("Pick at least one event.", "pack-events");
+    if (!enough) return fail(who === "couple" ? "Add a photo of you both, or one photo of each of you." : "Add at least one photo.", "pack-photos");
+    if (!consent) return fail("Tick the box to confirm the photos are of you, or that everyone in them agreed.", "pack-consent");
     setError(null);
     setBusy(true);
     track("look_pack_checkout", { packId, who, events: events.length });
@@ -102,26 +107,27 @@ export function LookPack({
       window.location.href = cd.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
+      flagField("#pack-error");
       setBusy(false);
     }
   }
 
   return (
-    <section id="look-pack" className="mt-10 scroll-mt-24 overflow-hidden rounded-[28px] border border-gold/50 bg-white shadow-[0_30px_60px_-44px_rgba(74,13,26,0.6)]" aria-labelledby="look-pack-h">
-      <div className="bg-maroon px-5 py-6 text-[#fff8ef] sm:px-8">
+    <section id="look-pack" className="mt-10 scroll-mt-24 overflow-hidden rounded-[24px] sm:rounded-[28px] border border-gold/50 bg-white shadow-[0_30px_60px_-44px_rgba(74,13,26,0.6)]" aria-labelledby="look-pack-h">
+      <div className="bg-maroon px-4 py-5 text-[#fff8ef] sm:px-8 sm:py-6">
         <h2 id="look-pack-h" className="text-[1.9rem] text-gold-light sm:text-[2.3rem]">
           {who === "couple" ? "The two of you, at every event" : "You, at every event"}
         </h2>
         <p className="mt-1 max-w-2xl text-[#f3e3d3]">
-          A Wedding Look Pack turns the same photos into portraits for each event, in outfits made for it: yellow for the Haldi, mehndi on your hands, sparkle
-          for the Sangeet, your {t.name} look for the {CEREMONY_NAME[tradition] ?? "wedding"}, and couture for the reception.
+          The same photos, a portrait for each event: yellow for the Haldi, mehndi hands, Sangeet sparkle, your {t.name} look for the{" "}
+          {CEREMONY_NAME[tradition] ?? "wedding"}, couture for the reception.
         </p>
       </div>
 
-      <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-[1.1fr_1fr]">
+      <div className="grid gap-8 p-4 sm:p-8 lg:grid-cols-[1.1fr_1fr]">
         <div className="min-w-0">
           <p className="font-semibold">1. Pick your events</p>
-          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6" data-field="pack-events">
             {ALL_EVENTS.map((e) => {
               const info = EVENT_INFO[e];
               const on = events.includes(e);
@@ -151,9 +157,9 @@ export function LookPack({
 
           <p className="mt-7 font-semibold">2. Add more photos for a closer likeness</p>
           <p className="mt-1 text-sm text-ink-soft">
-            Different angles and light help the faces stay the same in every portrait: a front selfie, a smiling one, one from the side.
+            More angles keep the face consistent: a front selfie, a smile, a side view.
           </p>
-          <div className="mt-3 space-y-4">
+          <div className="mt-3 space-y-4 p-1" data-field="pack-photos">
             {slots.map((s) => (
               <PhotoRow
                 key={s.id}
@@ -200,7 +206,7 @@ export function LookPack({
           <p className="mt-2 text-sm font-semibold text-mehndi">Launch price</p>
 
           {!consented ? (
-            <label className="mt-4 flex gap-3 rounded-2xl bg-silk p-4 text-sm">
+            <label className="mt-4 flex gap-3 rounded-2xl bg-silk p-4 text-sm" data-field="pack-consent">
               <input type="checkbox" className="mt-0.5 h-4 w-4 flex-none accent-[#9E1B32]" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
               <span>These are my photos, or everyone in them said yes, and we&apos;re 18 or older. Photos are deleted after 7 days; your portraits stay in your album.</span>
             </label>
@@ -210,11 +216,15 @@ export function LookPack({
             {busy ? <Loader2 size={18} className="animate-spin" /> : null}
             Get my {pack.images} portraits, {formatUSD(pack.priceCents)}
           </button>
-          {error ? <p className="mt-3 rounded-2xl bg-[#fbeaea] p-3 text-sm text-kumkum-deep">{error}</p> : null}
+          {error ? (
+            <p id="pack-error" role="alert" className="mt-3 rounded-2xl bg-[#fbeaea] p-3 text-sm text-kumkum-deep">
+              {error}
+            </p>
+          ) : null}
           <ul className="mt-4 space-y-1 text-sm text-ink-soft">
             <li>✓ {Math.max(1, Math.floor(pack.images / Math.max(1, events.length)))}+ portraits for each of your {events.length} events</li>
-            <li>✓ No watermark, private album, share link for family</li>
-            <li>✓ Ready in about 10 minutes; we email you when it&apos;s done</li>
+            <li>✓ No watermark, private album to share</li>
+            <li>✓ Ready in about 10 minutes</li>
           </ul>
         </div>
       </div>

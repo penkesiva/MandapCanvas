@@ -34,7 +34,7 @@ export default function ToolsPage() {
         <div className="mt-8">
           <SectionTitle
             title="Free tools for your Desi wedding"
-            intro="Small, useful tools for the decisions every family argues about. Free, instant, and most need no sign-up."
+            intro="For the decisions every family argues about. Free and instant."
           />
         </div>
         <ul className="mt-12 grid gap-6 md:grid-cols-2">

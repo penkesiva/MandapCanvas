@@ -35,8 +35,10 @@ export function imageModel(): string {
 function estimatedCost(model: string, hd: boolean): number {
   const override = Number(process.env.COST_PER_IMAGE_CENTS);
   if (Number.isFinite(override) && override > 0) return Math.round(override * 1000);
-  if (model.includes("pro")) return hd ? 24000 : 13400;
-  if (model.includes("3.1") || model.includes("2.1")) return hd ? 10100 : 6700;
+  // List prices per image (thousandths of a cent), Standard tier, 1K (or 2K when hd).
+  if (model.includes("pro")) return hd ? 13400 : 13400;
+  if (model.includes("nano-banana-2.1") || model.includes("flash-lite-image")) return hd ? 5040 : 3360;
+  if (model.includes("3.1")) return hd ? 10100 : 6700;
   return 3900;
 }
 

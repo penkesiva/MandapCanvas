@@ -53,28 +53,26 @@ const FAQ = [
 export default function BridalLookPage() {
   return (
     <PageShell>
-      <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-8">
         <Breadcrumbs items={[["Home", "/"], ["Bridal looks", path]]} />
-        <header className="mt-6 grid items-center gap-10 lg:grid-cols-[1fr_440px]">
+        <header className="mt-5 grid items-center gap-10 lg:mt-6 lg:grid-cols-[1fr_440px]">
           <div>
-            <h1 className="text-[2.4rem] text-maroon sm:text-[3.4rem]">See yourself as a bride or groom</h1>
-            <p className="mt-4 max-w-xl text-lg text-ink-soft">
-              Upload a selfie, or a photo of you both. Get photo-real portraits of you in your wedding look, still unmistakably you, at every event from the
-              Haldi to the reception.
-            </p>
-            <ul className="mt-6 grid max-w-xl gap-3 sm:grid-cols-2">
-              <li className="rounded-2xl border border-gold/50 bg-white p-4">
-                <span className="block font-display text-xl text-maroon">First look free</span>
-                <span className="text-sm text-ink-soft">One portrait, no sign-up. One more with a free account.</span>
+            <h1 className="text-[2.3rem] leading-tight text-maroon sm:text-[3.4rem]">See yourself as a bride or groom</h1>
+            <p className="mt-3 max-w-xl text-lg text-ink-soft">Upload a selfie. Get photo-real portraits of you at every event, still unmistakably you.</p>
+            <div className="mt-6 lg:hidden">
+              <LookExamples compact />
+            </div>
+            <ul className="mt-6 grid max-w-xl grid-cols-2 gap-3">
+              <li className="rounded-2xl border border-gold/50 bg-white p-3 sm:p-4">
+                <span className="block font-display text-lg text-maroon sm:text-xl">First look free</span>
+                <span className="text-sm text-ink-soft">No sign-up needed</span>
               </li>
-              <li className="rounded-2xl border border-gold/50 bg-white p-4">
-                <span className="block font-display text-xl text-maroon">Every event from {formatUSD(PACKS.look12.priceCents)}</span>
-                <span className="text-sm text-ink-soft">
-                  {PACKS.look12.images} or {PACKS.look30.images} portraits, no watermark.
-                </span>
+              <li className="rounded-2xl border border-gold/50 bg-white p-3 sm:p-4">
+                <span className="block font-display text-lg text-maroon sm:text-xl">Every event from {formatUSD(PACKS.look12.priceCents)}</span>
+                <span className="text-sm text-ink-soft">No watermark</span>
               </li>
             </ul>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <a href="#try" className="btn btn-primary">
                 Try your look free
               </a>
@@ -83,43 +81,31 @@ export default function BridalLookPage() {
               </a>
             </div>
           </div>
-          <LookExamples />
+          <div className="hidden lg:block">
+            <LookExamples />
+          </div>
         </header>
 
-        <div id="try" className="mt-16 scroll-mt-24">
-          <h2 className="mb-6 text-[2rem]">Try your look, free</h2>
+        <div id="try" className="mt-12 scroll-mt-24 sm:mt-16">
+          <h2 className="mb-5 text-[1.9rem] sm:text-[2rem]">Try your look, free</h2>
           <BridalLook />
         </div>
 
-        <section className="mt-16 grid gap-8 md:grid-cols-3" aria-labelledby="how-h">
+        <section className="mt-14 grid gap-6 sm:grid-cols-3" aria-labelledby="how-h">
           <h2 id="how-h" className="sr-only">How it works</h2>
           {[
-            ["Add a clear photo", "A selfie or a photo of you both, face to the camera, in good light. It's deleted after 7 days."],
-            ["Choose your look", "Eight traditions, from a red North Indian lehenga to a Kanjeevaram saree, a Bengali shola mukut or a Nikah sharara. Add your color, jewelry and setting."],
-            ["Save and share", "Your portrait is ready in about 20 seconds. Save it, send it to the family group, or take it to your designer."],
-          ].map(([t, d]) => (
-            <div key={t}>
-              <h3 className="text-xl">{t}</h3>
-              <p className="mt-2 text-ink-soft">{d}</p>
+            ["Add a clear photo", "Face to the camera, good light. Deleted after 7 days."],
+            ["Choose your look", "8 traditions, your color, jewelry and setting."],
+            ["Save and share", "Ready in about 20 seconds. Send it to the family."],
+          ].map(([t, d], i) => (
+            <div key={t} className="flex gap-3">
+              <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-maroon text-sm font-semibold text-gold-light">{i + 1}</span>
+              <span>
+                <h3 className="text-lg">{t}</h3>
+                <p className="text-ink-soft">{d}</p>
+              </span>
             </div>
           ))}
-        </section>
-
-        <section className="mt-16" aria-labelledby="ideas-h">
-          <h2 id="ideas-h" className="text-[2rem]">Ways couples use it</h2>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-            {[
-              ["Settle the color debate", "Try your lehenga in red, then in pastel, before the first designer appointment."],
-              ["Mix two traditions", "Planning a Punjabi and South Indian wedding? Try one look for each ceremony."],
-              ["Plan the groom's look", "See the sherwani and safa colors that go with the bride's outfit."],
-              ["Share the excitement", "A fun surprise for the family group chat or a save-the-date teaser."],
-            ].map(([t, d]) => (
-              <li key={t} className="rounded-2xl bg-silk p-5">
-                <h3 className="text-lg">{t}</h3>
-                <p className="mt-1 text-ink-soft">{d}</p>
-              </li>
-            ))}
-          </ul>
         </section>
 
         <ToolFaq faq={FAQ} />

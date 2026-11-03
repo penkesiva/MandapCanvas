@@ -38,13 +38,12 @@ export default function MandapPage() {
       <section className="relative overflow-hidden">
         <div className="bg-jaali absolute inset-0 [mask-image:linear-gradient(180deg,#000_0%,transparent_85%)]" aria-hidden="true" />
         <Mandala className="absolute -right-48 -top-40 hidden h-[760px] w-[760px] md:block" opacity={0.28} />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-[0.9fr_1.1fr] md:pt-20">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-8 sm:px-6 sm:pb-20 md:grid-cols-[0.9fr_1.1fr] md:gap-12 md:pt-20">
           <div>
-            <h1 className="text-[2.7rem] text-maroon sm:text-[3.5rem] md:text-[4rem]">See your mandap before the first flower is ordered.</h1>
+            <h1 className="text-[2.4rem] leading-tight text-maroon sm:text-[3.5rem] md:text-[4rem]">See your mandap before you book.</h1>
             <Divider className="mt-6 !justify-start" />
             <p className="mt-5 max-w-[34rem] text-lg text-ink-soft">
-              Sketch your mandap, upload a photo you love, or pick a style. MandapCanvas turns it into a photo-real album of every
-              event — decor, outfits and the two of you — in the colors you&apos;re choosing between.
+              Sketch it, upload a photo or pick a style. Get a photo-real album of every event, in the colors you&apos;re choosing between.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link href="/create" className="btn btn-primary">Make a free preview</Link>
@@ -71,10 +70,10 @@ export default function MandapPage() {
 
       {/* From simple to grand */}
       <section className="relative border-y border-gold/30 bg-silk">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
           <SectionTitle
             title="From simple to grand"
-            intro="Twelve starting styles, from a garden frame with a few white roses to a ceiling of hanging flowers. Pick one, or start from your own sketch."
+            intro="Twelve starting styles, from a few white roses to a ceiling of flowers. Or start from your own sketch."
           />
           <div className="mt-12 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {STYLE_TIERS.map((t, ti) => (
@@ -113,10 +112,10 @@ export default function MandapPage() {
       </section>
 
       {/* One sketch, every palette */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <SectionTitle
           title="One design. Every palette you're torn between."
-          intro="Families debate colors for months. Put the options side by side on your actual mandap, then send the link to everyone who has an opinion."
+          intro="Put the options side by side on your mandap, then send the link to the family."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {PALETTE_COMPARE.map(({ src, id }) => {
@@ -147,7 +146,7 @@ export default function MandapPage() {
           <SectionTitle
             tone="light"
             title="The whole week, not just the mandap"
-            intro="Named and styled the way your family does it — Pheras or Muhurtham, Anand Karaj or Nikah, Garba or Sangeet."
+            intro="Named the way your family does it: Pheras or Muhurtham, Anand Karaj or Nikah."
           />
         </div>
         <div className="relative mx-auto mt-10 flex max-w-6xl snap-x scroll-px-4 gap-5 overflow-x-auto px-4 pb-20 sm:scroll-px-6 sm:px-6">
@@ -167,13 +166,13 @@ export default function MandapPage() {
       </section>
 
       {/* How it works */}
-      <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
         <SectionTitle title="How it works" />
         <ol className="mt-12 grid gap-10 md:grid-cols-3">
           {[
-            ["Start from your idea", "Draw on screen, upload a sketch or a photo from Instagram, or pick one of our twelve styles. No drawing skills needed."],
-            ["Tell us about your wedding", "Your tradition, the events you're having, up to six palettes, indoor or outdoor — and, if you like, photos of the two of you."],
-            ["Get your album", "See two free previews in about a minute. Choose a pack and your full album fills in while you watch."],
+            ["Start from your idea", "Draw it, upload a photo, or pick one of 12 styles."],
+            ["Tell us about the wedding", "Your tradition, events, colors and, if you like, your photos."],
+            ["Get your album", "Two free previews in a minute. Then pick a pack."],
           ].map(([t, d], i) => (
             <li key={t} className="text-center">
               <span className="relative mx-auto grid h-16 w-16 place-items-center">
@@ -190,7 +189,7 @@ export default function MandapPage() {
 
       {/* Outfits */}
       <section className="border-y border-gold/30 bg-silk">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 md:grid-cols-2">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 md:grid-cols-2">
           <div className="grid grid-cols-2 gap-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/samples/bride.jpg" alt="Bride in an emerald lehenga for the Sangeet" className="arch aspect-[3/4] w-full border-4 border-white object-cover shadow-[0_24px_40px_-24px_rgba(74,13,26,0.55)]" loading="lazy" />
@@ -201,8 +200,7 @@ export default function MandapPage() {
             <Divider className="!justify-start" />
             <h2 className="mt-4 text-[2.2rem] sm:text-[2.8rem]">The two of you, in your decor</h2>
             <p className="mt-4 text-ink-soft">
-              Every look is matched to the decor palette of its event: a lehenga that doesn&apos;t disappear into the backdrop, a safa
-              that picks up the florals, a bridal party that photographs as one family.
+              Outfits matched to each event&apos;s decor, so the lehenga stands out and the family photographs as one.
             </p>
             <ul className="mt-6 space-y-3">
               {[
@@ -227,8 +225,8 @@ export default function MandapPage() {
       {/* Pricing */}
       <section className="relative" id="pricing">
         <div className="bg-jaali absolute inset-0 opacity-70 [mask-image:linear-gradient(180deg,transparent,#000_30%,#000_70%,transparent)]" aria-hidden="true" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <SectionTitle title="Simple, one-time pricing" intro="Less than a single decor consultation. Try two images free before you choose." />
+        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+          <SectionTitle title="Simple, one-time pricing" intro="Try two images free before you choose." />
           <div className="mt-14">
             <PricingCards />
           </div>
@@ -237,18 +235,15 @@ export default function MandapPage() {
 
       {/* Decorators */}
       {/* (kept on the product page too: decorators land here from search) */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6 sm:pb-20">
         <div className="relative overflow-hidden rounded-[30px] bg-maroon p-2">
-          <div className="relative overflow-hidden rounded-[24px] border border-gold-light/50 p-8 sm:p-12">
+          <div className="relative overflow-hidden rounded-[24px] border border-gold-light/50 p-6 sm:p-12">
             <div className="bg-jaali-dark absolute inset-0" aria-hidden="true" />
             <Mandala className="absolute -right-24 -top-24 h-[360px] w-[360px]" color="#ecd08a" opacity={0.25} />
             <div className="relative grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
               <div>
-                <h2 className="text-[2rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
-                <p className="mt-4 text-[#f3e3d3]">
-                  Sketch while the couple talks, show them a photo-real mandap before they leave, and send a proposal with your logo.
-                  Plans from $99 a month.
-                </p>
+                <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
+                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From $99 a month.</p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">See MandapCanvas Pro</Link>

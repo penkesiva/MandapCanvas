@@ -1,6 +1,7 @@
 "use client";
 
 import { readJson } from "@/lib/readJson";
+import { flagField, scrollToTopOf } from "@/lib/flagField";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@vercel/analytics";
@@ -199,8 +200,20 @@ export function CreateWizard({
   const go = (n: number) => {
     setError(null);
     setStep(n);
-    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToTopOf(topRef.current);
   };
+
+  // Errors scroll to the field they're about (or the error banner) and nudge it.
+  const flagged = useRef(false);
+  const fail = (msg: string, target?: string) => {
+    flagged.current = true;
+    setError(msg);
+    flagField(target ?? "#wizard-error");
+  };
+  useEffect(() => {
+    if (error && !flagged.current) flagField("#wizard-error");
+    flagged.current = false;
+  }, [error]);
 
   const setDesign = (e: EventId, design: EventDesign) => setEvent(e, { design });
 
@@ -248,7 +261,7 @@ export function CreateWizard({
   /* -------- step validation + side effects */
 
   const finishWedding = () => {
-    if (!s.events.length) return setError("Pick at least one event.");
+    if (!s.events.length) return fail("Pick at least one event.", '[data-field="events"]');
     setActiveEvent(s.events[0]);
     go(1);
   };
@@ -261,26 +274,31 @@ export function CreateWizard({
         const d = await saveSketch(e);
         if (!d || (d.source !== "preset" && !d.imageUrl)) {
           setActiveEvent(e);
-          throw new Error(
+          setBusy(null);
+          return fail(
             d?.source === "sketch"
               ? `Draw something for ${eventLabel(e, s.tradition)}, start from an outline, or pick a template.`
               : `Upload a reference image for ${eventLabel(e, s.tradition)}, or pick a template.`,
+            `[data-field="design-${e}"]`,
           );
         }
       }
-      if (!perEvent.palettes.length) throw new Error("Pick at least one palette.");
+      if (!perEvent.palettes.length) {
+        setBusy(null);
+        return fail("Pick at least one palette.", `[data-field="palettes-${current ?? s.events[0]}"]`);
+      }
       setBusy(null);
       go(2);
     } catch (e) {
       setBusy(null);
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      fail(e instanceof Error ? e.message : "Something went wrong.");
     }
   };
 
   const finishPeople = () => {
     if (s.peopleMode === "likeness") {
-      if (!s.brideUrl && !s.groomUrl) return setError("Add at least one photo, or choose soft faces.");
-      if (!s.consent) return setError("Please confirm you have permission to use these photos.");
+      if (!s.brideUrl && !s.groomUrl) return fail("Add at least one photo, or choose soft faces.", '[data-field="people-photos"]');
+      if (!s.consent) return fail("Please confirm you have permission to use these photos.", '[data-field="consent"]');
     }
     go(3);
   };
@@ -464,10 +482,10 @@ export function CreateWizard({
   /* -------- render */
 
   return (
-    <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-24 px-4 pb-24 pt-8 sm:px-6">
-      <div className="mb-8">
-        <h1 className="text-[2.2rem] sm:text-[2.8rem]">{mode === "proposal" ? "New client proposal" : "Create your wedding album"}</h1>
-        <ol className="mt-5 flex flex-wrap gap-2" aria-label="Steps">
+    <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-24 px-4 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-[2rem] leading-tight sm:text-[2.8rem]">{mode === "proposal" ? "New client proposal" : "Create your wedding album"}</h1>
+        <ol className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto whitespace-nowrap px-4 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:gap-2 sm:px-0" aria-label="Steps">
           {STEPS.map((label, i) => (
             <li key={label}>
               <button
@@ -475,7 +493,7 @@ export function CreateWizard({
                 onClick={() => i < step && go(i)}
                 disabled={i > step}
                 aria-current={i === step ? "step" : undefined}
-                className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium ${
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium sm:gap-2 sm:px-3.5 ${
                   i === step ? "bg-ink text-white" : i < step ? "bg-white text-ink hover:bg-silk" : "text-ink-soft"
                 }`}
               >
@@ -490,7 +508,7 @@ export function CreateWizard({
       </div>
 
       {error ? (
-        <div role="alert" className="mb-6 flex items-start gap-3 rounded-2xl border border-kumkum/30 bg-[#fdecee] px-4 py-3 text-kumkum-deep">
+        <div id="wizard-error" role="alert" className="mb-6 flex items-start gap-3 rounded-2xl border border-kumkum/30 bg-[#fdecee] px-4 py-3 text-kumkum-deep">
           <AlertCircle className="mt-0.5 flex-none" size={18} />
           <p>{error}</p>
         </div>
@@ -532,7 +550,7 @@ export function CreateWizard({
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Events, pick one or more">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Events, pick one or more" data-field="events">
               {tradition.events.map((e) => {
                 const on = s.events.includes(e);
                 return (
@@ -566,7 +584,7 @@ export function CreateWizard({
           <Field label="Anything else? (optional)" hint="Flowers you love or hate, a venue name, family must-haves.">
             <textarea className="field min-h-24" maxLength={600} value={s.notes} onChange={(e) => update("notes", e.target.value)} placeholder="e.g. no lilies, lots of jasmine, venue is a garden estate in Sonoma" />
           </Field>
-          <StepNav onNext={finishWedding} busy={busy} nextLabel="Next: design each event" />
+          <StepNav error={error} onNext={finishWedding} busy={busy} nextLabel="Next: design each event" />
         </section>
       )}
 
@@ -575,7 +593,7 @@ export function CreateWizard({
           <h2 id="designs-h" className="text-2xl">Design each event</h2>
           <p className="mt-1 text-ink-soft">Every event gets its own backdrop, colors, venue and light. Set one up, then copy it to others if you like.</p>
 
-          <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Events">
+          <div id="event-tabs" className="mt-5 flex scroll-mt-28 flex-wrap gap-2" role="tablist" aria-label="Events">
             {tradition.events
               .filter((e) => s.events.includes(e))
               .map((e) => {
@@ -618,7 +636,7 @@ export function CreateWizard({
               const nextEvent = tradition.events.filter((x) => s.events.includes(x)).find((x, i, arr) => arr.indexOf(e) + 1 === i);
               return (
                 <div key={e} role="tabpanel" hidden={current !== e} className="mt-6 space-y-8 rounded-[24px] border border-gold/40 bg-white p-4 sm:p-6" data-index={idx}>
-                  <div>
+                  <div data-field={`design-${e}`}>
                     <h3 className="text-2xl text-maroon">Backdrop for {label}</h3>
                     <div className="mt-4 grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={`How to start the ${label} design`}>
                       {(
@@ -725,7 +743,9 @@ export function CreateWizard({
                     <p className="mb-3 font-semibold">
                       Colors for {label} <span className="font-normal text-ink-soft">(pick one, or two to compare)</span>
                     </p>
-                    <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
+                    <div data-field={`palettes-${e}`}>
+                      <PaletteGrid selected={set.palettes} onToggle={(id) => toggleEventPalette(e, id)} />
+                    </div>
                     <p className="mt-3 text-sm text-ink-soft">
                       {perEvent.palettes.length} of up to {MAX_PALETTES} palettes used across the album. Reusing one for several events counts once.
                     </p>
@@ -767,7 +787,7 @@ export function CreateWizard({
                         onClick={() => {
                           setCopyMsg(null);
                           setActiveEvent(nextEvent);
-                          topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          scrollToTopOf(document.getElementById("event-tabs") ?? topRef.current);
                         }}
                       >
                         Next event: {eventLabel(nextEvent, s.tradition)}
@@ -777,7 +797,7 @@ export function CreateWizard({
                 </div>
               );
             })}
-          <StepNav onBack={() => go(0)} onNext={finishDesigns} busy={busy} nextLabel="Next: people" />
+          <StepNav error={error} onBack={() => go(0)} onNext={finishDesigns} busy={busy} nextLabel="Next: people" />
         </section>
       )}
 
@@ -806,11 +826,11 @@ export function CreateWizard({
           </div>
           {s.peopleMode === "likeness" && (
             <div className="space-y-5 rounded-2xl border border-line bg-silk p-5">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2" data-field="people-photos">
                 <ImageDrop label="Bride's photo" kind="bride" value={s.brideUrl} onUploaded={(u) => update("brideUrl", u)} onError={setError} compact />
                 <ImageDrop label="Groom's photo" kind="groom" value={s.groomUrl} onUploaded={(u) => update("groomUrl", u)} onError={setError} compact />
               </div>
-              <label className="flex items-start gap-3">
+              <label className="flex items-start gap-3" data-field="consent">
                 <input type="checkbox" className="mt-1 h-4 w-4 accent-kumkum" checked={s.consent} onChange={(e) => update("consent", e.target.checked)} />
                 <span className="text-[0.97rem]">
                   These photos are of adults (18+), and I have their permission to use them for wedding previews. I understand photos are deleted within 7 days and never used to train AI.
@@ -818,7 +838,7 @@ export function CreateWizard({
               </label>
             </div>
           )}
-          <StepNav onBack={() => go(1)} onNext={finishPeople} busy={busy} nextLabel="Next: your album" />
+          <StepNav error={error} onBack={() => go(1)} onNext={finishPeople} busy={busy} nextLabel="Next: your album" />
         </section>
       )}
 
@@ -929,7 +949,7 @@ export function CreateWizard({
               <input className="field max-w-md" value={s.title} onChange={(e) => update("title", e.target.value)} placeholder="Priya & Arjun, June 2027" maxLength={80} />
             </Field>
           )}
-          <StepNav onBack={() => go(2)} onNext={finishAlbum} busy={busy} nextLabel={mode === "couple" ? "See my free preview" : "Review proposal"} />
+          <StepNav error={error} onBack={() => go(2)} onNext={finishAlbum} busy={busy} nextLabel={mode === "couple" ? "See my free preview" : "Review proposal"} />
         </section>
       )}
 
@@ -1201,9 +1221,15 @@ function Stepper({ value, onChange, max, canAdd, label }: { value: number; onCha
   );
 }
 
-function StepNav({ onBack, onNext, busy, nextLabel }: { onBack?: () => void; onNext: () => void; busy: string | null; nextLabel: string }) {
+function StepNav({ onBack, onNext, busy, nextLabel, error }: { onBack?: () => void; onNext: () => void; busy: string | null; nextLabel: string; error?: string | null }) {
   return (
     <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-line pt-6">
+      {error ? (
+        <p className="flex w-full items-start gap-2 text-sm font-semibold text-kumkum-deep">
+          <AlertCircle className="mt-0.5 flex-none" size={16} aria-hidden="true" />
+          {error}
+        </p>
+      ) : null}
       {onBack ? (
         <button type="button" className="btn btn-ghost" onClick={onBack} disabled={!!busy}>
           Back

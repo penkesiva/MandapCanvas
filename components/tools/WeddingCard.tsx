@@ -34,6 +34,7 @@ import {
 } from "@/lib/weddingCards";
 import { drawCard, loadCardFonts, loadImage } from "@/lib/cardRender";
 import { FreeTrySignup } from "./FreeTrySignup";
+import { flagField } from "@/lib/flagField";
 
 const STORE = "mc:card:v1";
 const WAITING = ["Mixing the colors…", "Painting the border…", "Adding the marigolds…", "Gilding the details…", "Almost ready…"];
@@ -57,7 +58,7 @@ export function WeddingCard() {
   const [quota, setQuota] = useState<{ signedIn: boolean; remaining: number; admin: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [tick, setTick] = useState(0);
-  const [error, setError] = useState<{ msg: string; code?: string } | null>(null);
+  const [error, setError] = useState<{ msg: string; code?: string; field?: "names" } | null>(null);
   const [seeding, setSeeding] = useState<string | null>(null);
   const loaded = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -129,7 +130,10 @@ export function WeddingCard() {
   const outOfTries = quota !== null && quota.remaining <= 0;
 
   async function paint() {
-    if (!ready) return setError({ msg: "Add both names first." });
+    if (!ready) {
+      setError({ msg: "Add both names first.", field: "names" });
+      return flagField(details.name1.trim() ? '[data-field="name2"]' : '[data-field="name1"]');
+    }
     setError(null);
     setBusy(true);
     setTick(0);
@@ -144,6 +148,7 @@ export function WeddingCard() {
       const data = await res.json();
       if (!res.ok) {
         setError({ msg: data.error, code: data.code });
+        flagField(data.code === "signup_for_more" ? "#card-signup" : "#card-error");
         if (data.code === "signup_for_more" || data.code === "cards_used") setQuota((q) => (q ? { ...q, remaining: 0 } : q));
         return;
       }
@@ -152,6 +157,7 @@ export function WeddingCard() {
       track("tool_card_done", { template, format });
     } catch {
       setError({ msg: "Something went wrong. Please try again." });
+      flagField("#card-error");
     } finally {
       setBusy(false);
     }
@@ -226,12 +232,17 @@ export function WeddingCard() {
         <Step n={1} title="The couple and the event">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="First name" hint="As it should appear">
-              <input className="field" value={details.name1} onChange={set("name1")} placeholder="Priya" maxLength={28} />
+              <input className="field" value={details.name1} onChange={set("name1")} placeholder="Priya" maxLength={28} data-field="name1" />
             </Field>
             <Field label="Partner's first name">
-              <input className="field" value={details.name2} onChange={set("name2")} placeholder="Arjun" maxLength={28} />
+              <input className="field" value={details.name2} onChange={set("name2")} placeholder="Arjun" maxLength={28} data-field="name2" />
             </Field>
           </div>
+          {error?.field === "names" ? (
+            <p role="alert" className="mt-2 text-sm font-semibold text-kumkum-deep">
+              {error.msg}
+            </p>
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Event">
             {CARD_EVENTS.map((e) => (
               <button key={e.id} type="button" role="radio" aria-checked={details.event === e.id} className="chip" onClick={() => setDetails((d) => ({ ...d, event: e.id }))}>
@@ -400,9 +411,14 @@ export function WeddingCard() {
           </div>
         ) : null}
 
-        {error && error.code !== "signup_for_more" ? <p className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">{error.msg}</p> : null}
+        {error && !error.field && error.code !== "signup_for_more" ? (
+          <p id="card-error" role="alert" className="mt-3 rounded-2xl bg-[#fbeaea] p-4 text-sm text-kumkum-deep">
+            {error.msg}
+          </p>
+        ) : null}
         {outOfTries && quota && !quota.signedIn ? (
           <FreeTrySignup
+            id="card-signup"
             next="/tools/wedding-invitation-maker"
             source="cards"
             title="One more card, free"
