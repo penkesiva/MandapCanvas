@@ -40,6 +40,15 @@ export interface CardTemplate {
   panel: { fill: string; stroke?: string; radius: number } | null;
   /** Placeholder colors for the gallery before a sample exists. */
   swatch: [string, string, string];
+  /** Keyword ideas for the "make it yours" field, matched to the style. */
+  ideas: string[];
+}
+
+/** A finished invitation saved for sharing at /c/[id]. */
+export interface SharedCard {
+  url: string;
+  template: string;
+  at: number;
 }
 
 export const CARD_TEMPLATES: CardTemplate[] = [
@@ -57,6 +66,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#9A6B1F",
     panel: { fill: "rgba(255,248,236,0.9)", stroke: "#C9A24B", radius: 18 },
     swatch: ["#6D1A36", "#C9A24B", "#FFF3E0"],
+    ideas: ["peacocks", "elephants", "palace arches", "lotus pond"],
   },
   {
     id: "marigold",
@@ -72,6 +82,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#B5560F",
     panel: { fill: "rgba(255,250,238,0.88)", stroke: "#E3A21A", radius: 20 },
     swatch: ["#E3A21A", "#2F6B2A", "#FFF6E0"],
+    ideas: ["marigold garlands", "brass diyas", "mango leaves", "rangoli"],
   },
   {
     id: "ganesha",
@@ -87,6 +98,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#F2C66D",
     panel: { fill: "rgba(120,10,20,0.55)", stroke: "#E2B657", radius: 16 },
     swatch: ["#A3131B", "#E2B657", "#7A0E14"],
+    ideas: ["lotus flowers", "diyas", "kalash", "temple bells"],
   },
   {
     id: "mughal",
@@ -102,6 +114,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#9A7A2A",
     panel: { fill: "rgba(250,247,238,0.9)", stroke: "#B8963E", radius: 140 },
     swatch: ["#0F4D36", "#C9A24B", "#F6F1E4"],
+    ideas: ["domes and minarets", "roses", "lanterns", "crescent moon"],
   },
   {
     id: "minimal",
@@ -117,6 +130,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#A57D3B",
     panel: null,
     swatch: ["#F7F2E8", "#A57D3B", "#2C2420"],
+    ideas: ["olive branch", "a single lotus", "our initials", "gold line art"],
   },
   {
     id: "watercolor",
@@ -132,6 +146,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#B5677A",
     panel: null,
     swatch: ["#F4C6CF", "#9DB89A", "#FFFFFF"],
+    ideas: ["peonies", "our city skyline", "hummingbirds", "eucalyptus"],
   },
   {
     id: "boho",
@@ -147,6 +162,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#B5603A",
     panel: { fill: "rgba(250,240,228,0.82)", radius: 200 },
     swatch: ["#C96B45", "#E8CFB2", "#F7EEE3"],
+    ideas: ["pampas grass", "desert sunset", "our dog", "string lights"],
   },
   {
     id: "anime",
@@ -162,6 +178,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#C2477A",
     panel: { fill: "rgba(255,255,255,0.78)", radius: 22 },
     swatch: ["#F7B6C8", "#8EC5FF", "#FFF4E6"],
+    ideas: ["cherry blossoms", "a scooter ride", "our cat", "city lights at night"],
   },
   {
     id: "animated3d",
@@ -177,6 +194,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#D2405F",
     panel: { fill: "rgba(255,255,255,0.82)", radius: 26 },
     swatch: ["#FFB347", "#E8506E", "#FFF2DD"],
+    ideas: ["our dog", "hot air balloons", "fireworks", "a vintage car"],
   },
   {
     id: "genz",
@@ -192,6 +210,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#E0388B",
     panel: { fill: "rgba(255,255,255,0.7)", stroke: "rgba(255,255,255,0.95)", radius: 28 },
     swatch: ["#C9B6FF", "#FF9AD5", "#9EF0FF"],
+    ideas: ["disco ball", "boba tea", "our playlist", "sparkles"],
   },
   {
     id: "bollywood",
@@ -207,6 +226,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#FFD15C",
     panel: { fill: "rgba(40,10,10,0.62)", radius: 10 },
     swatch: ["#D7261E", "#F59E1B", "#1E6E6E"],
+    ideas: ["film reel", "a vintage car", "dancing in the rain", "marquee lights"],
   },
   {
     id: "madhubani",
@@ -222,6 +242,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#B3261E",
     panel: { fill: "rgba(255,246,226,0.92)", stroke: "#2A1408", radius: 8 },
     swatch: ["#D9341F", "#F2B705", "#1F7A4D"],
+    ideas: ["fish and peacocks", "sun and moon", "tree of life", "lotus"],
   },
   {
     id: "chibi",
@@ -237,6 +258,7 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     accent: "#E26D8F",
     panel: { fill: "rgba(255,255,255,0.8)", radius: 24 },
     swatch: ["#FFD1DC", "#BDE6D8", "#FFF7EC"],
+    ideas: ["our cat", "bubble tea", "floating hearts", "a tiny scooter"],
   },
 ];
 

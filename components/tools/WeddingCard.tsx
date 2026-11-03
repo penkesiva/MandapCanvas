@@ -19,7 +19,7 @@ import "@fontsource/cormorant-garamond/500-italic.css";
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, Download, Loader2, Paintbrush, Share2, Sparkles, Wand2 } from "lucide-react";
+import { Check, Copy, Download, Link2, Loader2, Paintbrush, Share2, Sparkles, Wand2 } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 import { FOUNDING_OFFER } from "@/lib/config";
 import {
@@ -57,6 +57,9 @@ export function WeddingCard() {
   const [samples, setSamples] = useState<Record<string, string>>({});
   const [quota, setQuota] = useState<{ signedIn: boolean; remaining: number; admin: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [copied, setCopied] = useState<"image" | "link" | null>(null);
   const [tick, setTick] = useState(0);
   const [error, setError] = useState<{ msg: string; code?: string; field?: "names" } | null>(null);
   const [seeding, setSeeding] = useState<string | null>(null);
@@ -128,6 +131,16 @@ export function WeddingCard() {
   const set = (k: keyof CardDetails) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setDetails((d) => ({ ...d, [k]: e.target.value }));
   const ready = details.name1.trim() && details.name2.trim();
   const outOfTries = quota !== null && quota.remaining <= 0;
+  const motifList = motifs
+    .split(",")
+    .map((m) => m.trim().toLowerCase())
+    .filter(Boolean);
+  const toggleIdea = (idea: string) => {
+    const parts = motifs.split(",").map((m) => m.trim()).filter(Boolean);
+    const has = parts.some((m) => m.toLowerCase() === idea.toLowerCase());
+    setMotifs((has ? parts.filter((m) => m.toLowerCase() !== idea.toLowerCase()) : [...parts, idea]).join(", ").slice(0, 160));
+    track("tool_card_idea", { template, idea });
+  };
 
   async function paint() {
     if (!ready) {
@@ -202,6 +215,60 @@ export function WeddingCard() {
     } catch {
       /* cancelled or unsupported */
     }
+  }
+
+  // A link is made once per painted card and words; editing the words makes a new one.
+  const linkKey = mine ? `${mine.url}|${format}|${JSON.stringify(details)}` : "";
+  useEffect(() => {
+    setShareLink(null);
+  }, [linkKey]);
+
+  async function copyImage() {
+    track("tool_card_copy_image", { template });
+    const blob = await toBlob();
+    try {
+      if (!blob || typeof ClipboardItem === "undefined") throw new Error("unsupported");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      flash("image");
+    } catch {
+      setError({ msg: "Your browser can't copy images. Use Download or Share instead." });
+    }
+  }
+
+  async function copyLink() {
+    track("tool_card_copy_link", { template });
+    let link = shareLink;
+    if (!link) {
+      setLinking(true);
+      try {
+        const blob = await toBlob();
+        if (!blob) throw new Error();
+        const form = new FormData();
+        form.set("file", blob, "card.png");
+        form.set("template", template);
+        const res = await fetch("/api/tools/wedding-card/share", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        link = data.link as string;
+        setShareLink(link);
+      } catch (e) {
+        setError({ msg: e instanceof Error && e.message ? e.message : "Couldn't make a link. Try again." });
+        return;
+      } finally {
+        setLinking(false);
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+      flash("link");
+    } catch {
+      /* the link is shown under the buttons */
+    }
+  }
+
+  function flash(what: "image" | "link") {
+    setCopied(what);
+    setTimeout(() => setCopied(null), 1800);
   }
 
   async function seedSamples() {
@@ -329,16 +396,52 @@ export function WeddingCard() {
               </button>
             ))}
           </div>
-          <div className="mt-4">
-            <Field label="Add something personal to the artwork" hint="Optional">
-              <input className="field" value={motifs} onChange={(e) => setMotifs(e.target.value)} placeholder="Peacocks, our golden retriever, the Golden Gate Bridge" maxLength={160} />
-            </Field>
+          <div className="mt-5 rounded-2xl border-2 border-dashed border-gold/70 bg-[#fdf6ea] p-4">
+            <label htmlFor="card-motifs" className="flex items-center gap-2 font-semibold text-maroon">
+              <Sparkles size={16} className="text-gold" /> Make it yours: add keywords to the artwork
+            </label>
+            <p className="mt-0.5 text-sm text-ink-soft">The AI paints them into your {t.name} card. Tap an idea or type your own.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {t.ideas.map((idea) => {
+                const on = motifList.includes(idea.toLowerCase());
+                return (
+                  <button
+                    key={idea}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleIdea(idea)}
+                    className={`rounded-full border px-3 py-1 text-sm transition ${on ? "border-kumkum bg-kumkum text-white" : "border-gold/60 bg-white hover:border-kumkum"}`}
+                  >
+                    {on ? "✓ " : "+ "}
+                    {idea}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              id="card-motifs"
+              className="field mt-3"
+              value={motifs}
+              onChange={(e) => setMotifs(e.target.value)}
+              placeholder={`e.g. ${t.ideas.slice(0, 2).join(", ")}`}
+              maxLength={160}
+            />
           </div>
         </Step>
 
         <div className="mt-5 flex flex-col items-start gap-2">
-          <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={paint} disabled={busy || outOfTries}>
-            {busy ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />} {busy ? "Painting your card…" : `Paint my ${t.name} card`}
+          <button
+            type="button"
+            className="btn btn-primary w-full sm:w-auto"
+            onClick={() => {
+              if (!outOfTries) return paint();
+              track("tool_card_out_click", { signedIn: !!quota?.signedIn });
+              flagField(quota?.signedIn ? "#card-next" : "#card-signup");
+            }}
+            disabled={busy}
+          >
+            {busy ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />}{" "}
+            {busy ? "Painting your card…" : outOfTries ? (quota?.signedIn ? "See your mandap next" : "Sign up free for one more card") : `Paint my ${t.name} card`}
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
@@ -371,14 +474,26 @@ export function WeddingCard() {
                 <button type="button" className="btn btn-primary btn-sm" onClick={download}>
                   <Download size={16} /> Download
                 </button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={copyImage}>
+                  {copied === "image" ? <Check size={16} /> : <Copy size={16} />} {copied === "image" ? "Copied" : "Copy image"}
+                </button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={copyLink} disabled={linking}>
+                  {linking ? <Loader2 size={16} className="animate-spin" /> : copied === "link" ? <Check size={16} /> : <Link2 size={16} />}{" "}
+                  {copied === "link" ? "Link copied" : "Copy link"}
+                </button>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={share}>
                   <Share2 size={16} /> Share
                 </button>
+                {shareLink ? (
+                  <p className="w-full truncate text-xs text-ink-soft">
+                    Anyone with this link can see the card: <a href={shareLink} target="_blank" rel="noopener" className="text-kumkum underline">{shareLink.replace(/^https?:\/\//, "")}</a>
+                  </p>
+                ) : null}
               </>
             ) : (
               <p className="text-sm text-ink-soft">
                 <Sparkles size={14} className="mr-1 inline text-gold" />
-                {sampleUrl ? "Your words on a sample artwork. Paint your own to download it." : "Your words, ready for the artwork. Paint it to download."}
+                {sampleUrl ? "Preview on sample artwork. Paint your card to download and share it." : "Preview. Paint your card to download and share it."}
               </p>
             )}
           </div>
@@ -426,8 +541,8 @@ export function WeddingCard() {
             cta="Get my free card"
           />
         ) : null}
-        {mine ? (
-          <div className="mt-4 rounded-[22px] border border-gold/50 bg-white p-5">
+        {mine || (outOfTries && quota?.signedIn) ? (
+          <div id="card-next" className="mt-4 rounded-[22px] border border-gold/50 bg-white p-5">
             <p className="font-display text-xl text-maroon">Now picture the mandap</p>
             <p className="mt-1 text-sm text-ink-soft">See your decor and outfits photo-real, for every event on your card. Two previews are free.</p>
             <Link href="/create" className="btn btn-primary btn-sm mt-3" onClick={() => track("tool_card_cta")}>
