@@ -62,22 +62,12 @@ export default function BridalLookPage() {
             <div className="mt-6 lg:hidden">
               <LookExamples compact />
             </div>
-            <ul className="mt-6 grid max-w-xl grid-cols-2 gap-3">
-              <li className="rounded-2xl border border-gold/50 bg-white p-3 sm:p-4">
-                <span className="block font-display text-lg text-maroon sm:text-xl">First look free</span>
-                <span className="text-sm text-ink-soft">No sign-up needed</span>
-              </li>
-              <li className="rounded-2xl border border-gold/50 bg-white p-3 sm:p-4">
-                <span className="block font-display text-lg text-maroon sm:text-xl">Every event from {formatUSD(PACKS.look12.priceCents)}</span>
-                <span className="text-sm text-ink-soft">No watermark</span>
-              </li>
-            </ul>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="#try" className="btn btn-primary">
                 Try your look free
               </a>
               <a href="#look-pack" className="btn btn-ghost">
-                See the Look Pack
+                Every event from {formatUSD(PACKS.look12.priceCents)}
               </a>
             </div>
           </div>

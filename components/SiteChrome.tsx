@@ -72,7 +72,7 @@ export function SiteFooter() {
       </div>
       <div className="relative border-t border-gold-light/20">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-[#e6cfc0] sm:px-6">
-          © {new Date().getFullYear()} OneCreator LLC. Images are AI concept previews; real decor and outfits will vary. Questions:{" "}
+          © {new Date().getFullYear()} OneCreator LLC. Images are AI concept previews; real decor and outfits will vary. People in our examples are AI models, not customers. Questions:{" "}
           <a className="underline hover:text-white" href={`mailto:${SITE.supportEmail}`}>{SITE.supportEmail}</a>
         </p>
       </div>

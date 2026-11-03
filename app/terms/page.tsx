@@ -16,6 +16,11 @@ export default function Terms() {
           people from inputs you provide. Images are illustrations for planning. They are not guarantees of how any decor, outfit, venue
           or person will look, and vendors are not bound by them.
         </p>
+        <h2>Example images on this site</h2>
+        <p>
+          The before-and-after examples, sample portraits and sample decor on our website are AI-generated. The people shown are AI models,
+          not real customers, and the venues and decor are illustrations.
+        </p>
         <h2>Your content and permission</h2>
         <ul>
           <li>You may only upload sketches, photos and logos you own or have permission to use.</li>

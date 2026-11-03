@@ -128,7 +128,7 @@ export function LookExamples({ initial = "bride", compact = false }: { initial?:
       ) : null}
       {!compact ? (
         <figcaption className="mt-2 text-center text-sm text-ink-soft" aria-live="polite">
-          {ex.caption} <span className="text-xs">AI models, not customers.</span>
+          {ex.caption}
         </figcaption>
       ) : null}
     </figure>

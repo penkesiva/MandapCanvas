@@ -169,7 +169,7 @@ export function BridalLook() {
                 }`}
               >
                 <span className="flex h-20 items-end" aria-hidden="true">
-                  {w.id !== "bride" ? <Groom outfit={t.groomHex} safa={t.safaHex} className={`h-20 w-10 ${w.id === "couple" ? "-mr-3" : ""}`} /> : null}
+                  {w.id !== "bride" ? <Groom outfit={t.groomHex} safa={t.safaHex} stole={t.stoleHex} className={`h-20 w-10 ${w.id === "couple" ? "-mr-3" : ""}`} /> : null}
                   {w.id !== "groom" ? <Bride outfit={t.brideHex} className="h-20 w-10" /> : null}
                 </span>
                 {w.label}
@@ -240,7 +240,7 @@ export function BridalLook() {
               >
                 <span className="flex flex-none items-end" aria-hidden="true">
                   {who === "groom" ? (
-                    <Groom outfit={x.groomHex} safa={x.safaHex} className="h-14 w-7" />
+                    <Groom outfit={x.groomHex} safa={x.safaHex} stole={x.stoleHex} className="h-14 w-7" />
                   ) : (
                     <Bride outfit={x.brideHex} className="h-14 w-7" />
                   )}

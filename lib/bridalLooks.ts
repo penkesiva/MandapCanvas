@@ -19,6 +19,8 @@ export interface LookTradition {
   brideHex: string;
   groomHex: string;
   safaHex: string;
+  /** The stole or shawl color on the little groom figure. */
+  stoleHex?: string;
 }
 
 export const LOOK_TRADITIONS: LookTradition[] = [
@@ -30,8 +32,9 @@ export const LOOK_TRADITIONS: LookTradition[] = [
       "a heavily embroidered bridal lehenga with zardozi and gota work, a matching fitted blouse, and a sheer net dupatta pinned over the head with a scalloped embroidered border; red and gold chooda bangles with kaleere",
     groom: "a hand-embroidered sherwani with churidar, a draped dupatta stole over one shoulder, a pleated safa turban with a jeweled kalgi brooch, and embroidered mojari shoes",
     brideHex: "#B3131B",
-    groomHex: "#F6EFE2",
+    groomHex: "#F4ECDD",
     safaHex: "#B3131B",
+    stoleHex: "#B3131B",
   },
   {
     id: "south",
@@ -41,8 +44,9 @@ export const LOOK_TRADITIONS: LookTradition[] = [
       "a Kanjeevaram silk saree with a broad contrasting zari border, draped in the traditional South Indian style, with temple jewelry: a gold oddiyanam waist belt, layered gold necklaces, jhumkas and a nethi chutti; hair in a long braid decorated with jasmine flowers",
     groom: "a crisp silk veshti with a gold zari border, a matching angavastram draped over the shoulders, a simple gold chain, and a sandalwood and kumkum tilak",
     brideHex: "#7A1F3D",
-    groomHex: "#F6EFE2",
-    safaHex: "#C9A24B",
+    groomHex: "#EFE3C2",
+    safaHex: "#2B1B17",
+    stoleHex: "#C9A24B",
   },
   {
     id: "bengali",
@@ -52,8 +56,9 @@ export const LOOK_TRADITIONS: LookTradition[] = [
       "a red Banarasi silk saree with gold brocade, a white shola mukut crown, delicate white and red chandan dots above the eyebrows, shakha-pola bangles and gold jewelry",
     groom: "an ivory silk dhoti and panjabi kurta, a draped silk shawl, and a tall white conical shola topor headpiece",
     brideHex: "#B3131B",
-    groomHex: "#F6EFE2",
+    groomHex: "#FFFDF7",
     safaHex: "#FFFFFF",
+    stoleHex: "#8E1B2B",
   },
   {
     id: "punjabi",
@@ -63,8 +68,9 @@ export const LOOK_TRADITIONS: LookTradition[] = [
       "an embroidered bridal lehenga with a dupatta over the head, a red and ivory chooda on both wrists with golden kaleere hanging from them, a maang tikka and a large nath",
     groom: "an embroidered sherwani, a neatly tied pagg turban with a kalgi, a sehra of fresh flowers or pearls pushed back from the face",
     brideHex: "#C2185B",
-    groomHex: "#E9D9B6",
+    groomHex: "#D9B45A",
     safaHex: "#E7849B",
+    stoleHex: "#E7849B",
   },
   {
     id: "gujarati",
@@ -72,10 +78,11 @@ export const LOOK_TRADITIONS: LookTradition[] = [
     hint: "Panetar and gharchola",
     bride:
       "a white and red panetar saree with a red gharchola bandhani dupatta over the head in the Gujarati drape, kundan jewelry, and red and white bangles",
-    groom: "an ivory or cream silk kurta with a bandhani-print safa turban, a dupatta stole and mojari shoes",
+    groom: "a deep maroon or cream silk kurta-sherwani with a bandhani-print safa turban, a dupatta stole and mojari shoes",
     brideHex: "#B3131B",
-    groomHex: "#F6EFE2",
-    safaHex: "#D9503F",
+    groomHex: "#8E2340",
+    safaHex: "#E2742E",
+    stoleHex: "#E2A72E",
   },
   {
     id: "marathi",
@@ -83,10 +90,11 @@ export const LOOK_TRADITIONS: LookTradition[] = [
     hint: "Nauvari and mundavalya",
     bride:
       "a nine-yard nauvari Paithani silk saree with a peacock border, a Maharashtrian nath nose ring, green glass bangles, and strings of pearls (mundavalya) tied across the forehead",
-    groom: "an ivory silk kurta and dhoti, a traditional pheta turban, and pearl mundavalya tied across the forehead",
+    groom: "a cream and pale gold silk kurta and dhoti, a traditional pheta turban, and pearl mundavalya tied across the forehead",
     brideHex: "#0F6E5C",
-    groomHex: "#F6EFE2",
+    groomHex: "#EAD29A",
     safaHex: "#E2A72E",
+    stoleHex: "#B3131B",
   },
   {
     id: "nikah",
@@ -94,10 +102,11 @@ export const LOOK_TRADITIONS: LookTradition[] = [
     hint: "Sharara and jhoomar",
     bride:
       "an embroidered sharara or gharara with a long kurta, a dupatta over the head, a jhoomar (passa) ornament on one side of the head, a maang tikka and polki jewelry",
-    groom: "a fitted achkan sherwani with churidar, an embroidered stole, and an optional sehra of flowers framing the face from a matching turban",
+    groom: "a fitted achkan sherwani with churidar, in ivory, emerald or midnight blue,, an embroidered stole, and an optional sehra of flowers framing the face from a matching turban",
     brideHex: "#6D1A36",
-    groomHex: "#EDE3D1",
+    groomHex: "#1F5A4A",
     safaHex: "#C9A24B",
+    stoleHex: "#E9D9B6",
   },
   {
     id: "modern",
@@ -107,8 +116,9 @@ export const LOOK_TRADITIONS: LookTradition[] = [
       "a modern pastel designer lehenga with delicate sequin and thread work, a light organza dupatta on one shoulder, and fine diamond and pearl jewelry",
     groom: "a tailored pastel bandhgala or a sherwani-style jacket with clean lines, a pocket square, and no turban",
     brideHex: "#F4B6C2",
-    groomHex: "#E8E2D6",
-    safaHex: "#F4B6C2",
+    groomHex: "#A9C6DE",
+    safaHex: "#2B1B17",
+    stoleHex: "#F4B6C2",
   },
 ];
 
