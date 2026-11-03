@@ -258,8 +258,18 @@ export function VenueDecor() {
         </Step>
 
         <div className="mt-5 flex flex-col items-start gap-2">
-          <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={create} disabled={busy || uploading || outOfTries}>
-            {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />} {busy ? "Decorating…" : "Decorate my venue"}
+          <button
+            type="button"
+            className="btn btn-primary w-full sm:w-auto"
+            onClick={() => {
+              if (!outOfTries) return create();
+              track("tool_venue_out_click", { signedIn: !!quota?.signedIn });
+              flagField(quota?.signedIn ? "#venue-continue" : "#venue-signup");
+            }}
+            disabled={busy || uploading}
+          >
+            {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}{" "}
+            {busy ? "Decorating…" : outOfTries ? (quota?.signedIn ? "Design every event" : "Sign up free for one more try") : "Decorate my venue"}
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
@@ -325,7 +335,7 @@ export function VenueDecor() {
         ) : null}
 
         {result && !busy ? (
-          <div className="mt-4 rounded-[22px] bg-maroon p-5 text-white">
+          <div id="venue-continue" className="mt-4 rounded-[22px] bg-maroon p-5 text-white">
             <p className="font-display text-xl text-gold-light">Design every event in this venue</p>
             <p className="mt-1 text-sm text-white/85">
               A full album of your mandap, stage, entrance and details, from this look, for each event you pick.
@@ -335,7 +345,7 @@ export function VenueDecor() {
             </Link>
           </div>
         ) : outOfTries && quota?.signedIn ? (
-          <div className="mt-4 rounded-[22px] bg-maroon p-5 text-white">
+          <div id="venue-continue" className="mt-4 rounded-[22px] bg-maroon p-5 text-white">
             <p className="font-display text-xl text-gold-light">See every event, decorated</p>
             <p className="mt-1 text-sm text-white/85">Design the mandap, stage and details for each of your events.</p>
             <Link href="/create" className="btn btn-gold mt-3">

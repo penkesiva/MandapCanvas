@@ -1,5 +1,6 @@
 import { EVENTS, eventLabel, getPalette, getPreset, getTradition } from "./catalog";
 import type { AlbumConfig, EventDesign, Shot } from "./types";
+import { glassesRule } from "./bridalLooks";
 
 /**
  * Builds the image-model prompt for one shot. Kept deterministic and readable so it can be
@@ -73,6 +74,7 @@ function peopleRules(config: AlbumConfig, refs: PromptRefs, shot: Shot): string 
       rules.push("The bride must closely resemble the person in the BRIDE reference photo (face, skin tone, hair), restyled for the event.");
     if (refs.groomImage && ["groom", "couple", "couple_stage", "family"].includes(shot.category))
       rules.push("The groom must closely resemble the person in the GROOM reference photo (face, skin tone, hair, facial hair), restyled for the event.");
+    rules.push(glassesRule(config.people.glasses));
   } else {
     rules.push(
       "Keep faces soft, partially turned, or naturally out of focus so the image reads as a style concept rather than a portrait of specific people.",

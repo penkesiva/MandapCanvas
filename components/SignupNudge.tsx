@@ -49,6 +49,8 @@ export function SignupNudge({ signedIn, offer }: { signedIn: boolean; offer: { c
     if (!s.pages.includes(path)) s.pages.push(path);
     save(s);
     const check = (st: State) => {
+      // A tool's own "one more free try" card is already asking; don't stack a second sign-up prompt on it.
+      if (document.querySelector("[data-signup-card]")) return;
       if (!shown.current && ready(st)) {
         shown.current = true;
         setOpen(true);
@@ -67,7 +69,8 @@ export function SignupNudge({ signedIn, offer }: { signedIn: boolean; offer: { c
       const st = load();
       st.engaged += 1;
       save(st);
-      check(st);
+      // Wait for the tool to render its result (and any sign-up card) before deciding.
+      window.setTimeout(() => check(load()), 400);
     };
     window.addEventListener("mc:engaged", onEngage);
     return () => {

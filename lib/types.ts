@@ -61,6 +61,8 @@ export interface AlbumConfig {
     groomUrls?: string[];
     coupleUrls?: string[];
     consentAt?: number;
+    /** Likeness mode: remove eyeglasses (the default) or keep them. */
+    glasses?: "remove" | "keep";
   };
   /** Set for Wedding Look Pack albums: portraits at every event instead of decor. */
   look?: {
@@ -70,6 +72,8 @@ export interface AlbumConfig {
     /** An outfit color id for the main ceremony, or "". */
     color: string;
     jewelry: "delicate" | "classic" | "royal";
+    /** Remove eyeglasses in the portraits (the default) or keep them. */
+    glasses?: "remove" | "keep";
   };
   mix: ShotMix;
   /** Per-event palettes, venue and light. When set for an event, it overrides the album-wide values. */

@@ -126,6 +126,19 @@ export const LOOK_SETTINGS = [
 ] as const;
 
 export type LookJewelry = (typeof LOOK_JEWELRY)[number]["id"];
+
+/** Glasses come off by default: most couples want their wedding portraits without them. */
+export type LookGlasses = "remove" | "keep";
+
+export function parseGlasses(v: unknown): LookGlasses {
+  return v === "keep" ? "keep" : "remove";
+}
+
+export function glassesRule(g: LookGlasses = "remove"): string {
+  return g === "keep"
+    ? "EYEWEAR: keep any eyeglasses exactly as in the photo, with the same frame shape, color and size."
+    : "EYEWEAR (MUST FOLLOW): if anyone wears eyeglasses or sunglasses in the photo, remove them completely. Show the bare eyes naturally, with the same eye shape, eye color, eyelids and eyebrows, and no marks on the nose. No glasses anywhere in the final image.";
+}
 export type LookSetting = (typeof LOOK_SETTINGS)[number]["id"];
 
 export interface LookRequest {
@@ -135,6 +148,7 @@ export interface LookRequest {
   color: string;
   jewelry: LookJewelry;
   setting: LookSetting;
+  glasses: LookGlasses;
 }
 
 export function getTradition(id: string): LookTradition {
@@ -149,7 +163,7 @@ export function parseLookRequest(raw: unknown): LookRequest | null {
   const jewelry = LOOK_JEWELRY.find((j) => j.id === r.jewelry)?.id ?? null;
   const setting = LOOK_SETTINGS.find((s) => s.id === r.setting)?.id ?? null;
   if (!who || !tradition || color === null || !jewelry || !setting) return null;
-  return { who, tradition, color, jewelry, setting };
+  return { who, tradition, color, jewelry, setting, glasses: parseGlasses(r.glasses) };
 }
 
 /**
@@ -182,14 +196,15 @@ export function buildLookPrompt(req: LookRequest): string {
 
   const styling =
     req.who === "groom"
-      ? "Grooming: neat, natural; keep any beard, mustache or glasses exactly as in the photo."
+      ? "Grooming: neat, natural; keep any beard or mustache exactly as in the photo."
       : `Jewelry: ${jewelry}. Makeup: natural, elegant bridal makeup that suits the person's own skin tone. Hair styled for the look; keep the person's own hair color.`;
 
   return [
     `Create a photo-real ${t.name} wedding portrait of ${subject}.`,
     req.who === "couple"
-      ? "IDENTITY (MUST FOLLOW): these must be unmistakably the same two real people, recognizable to their families. Keep each face exactly: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard, moles or glasses. Do not slim, lighten, smooth or beautify the faces, and do not swap them for models' faces."
-      : "IDENTITY (MUST FOLLOW): this must be unmistakably the same real person, recognizable to their family. Keep the exact face: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard, moles or glasses. Do not slim, lighten, smooth or beautify the face, and do not swap it for a model's face.",
+      ? "IDENTITY (MUST FOLLOW): these must be unmistakably the same two real people, recognizable to their families. Keep each face exactly: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard or moles. Do not slim, lighten, smooth or beautify the faces, and do not swap them for models' faces."
+      : "IDENTITY (MUST FOLLOW): this must be unmistakably the same real person, recognizable to their family. Keep the exact face: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone and complexion, age, ethnicity, body type and any beard or moles. Do not slim, lighten, smooth or beautify the face, and do not swap it for a model's face.",
+    glassesRule(req.glasses),
     outfits,
     styling,
     `Setting: ${setting}.`,
@@ -303,7 +318,7 @@ export function lookMix(who: Person, total: number): { bride: number; groom: num
  * BRIDE PHOTO n, GROOM PHOTO n, or COUPLE PHOTO n (the two of them together).
  */
 export function buildEventLookPrompt(opts: {
-  look: { who: Person; tradition: string; color: string; jewelry: LookJewelry };
+  look: { who: Person; tradition: string; color: string; jewelry: LookJewelry; glasses?: LookGlasses };
   event: LookEvent;
   eventName: string;
   person: Person;
@@ -343,6 +358,7 @@ export function buildEventLookPrompt(opts: {
     `Create a photo-real ${opts.eventName} portrait from an Indian wedding, showing ${who}.`,
     refLine,
     "IDENTITY (MUST FOLLOW): the people must be unmistakably the same real people, recognizable to their families. Keep each face exactly: face shape, eyes, eyebrows, nose, lips, jawline, smile, skin tone, age, ethnicity, body type, and any beard or moles. Do not slim, lighten, smooth or beautify the faces, and do not swap them for models.",
+    glassesRule(opts.look.glasses),
     opts.person !== "groom" ? `BRIDE OUTFIT: ${brideOutfit}. Jewelry: ${jewelry}. Natural, elegant makeup that suits her own skin tone.` : "",
     opts.person !== "bride" ? `GROOM OUTFIT: ${groomOutfit}.` : "",
     `SCENE: ${ev.scene}.`,

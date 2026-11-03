@@ -29,7 +29,7 @@ export function FreeTrySignup({ id, next, source, title, text, cta }: { id?: str
     }
   }
   return (
-    <div id={id} className="mt-4 rounded-[22px] bg-maroon p-5 text-[#fff8ef]">
+    <div id={id} data-signup-card="" className="mt-4 rounded-[22px] bg-maroon p-5 text-[#fff8ef]">
       <p className="font-display text-xl text-gold-light">{title}</p>
       {state === "sent" ? (
         <p className="mt-2 flex gap-2 text-sm">

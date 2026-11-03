@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { anonId, currentUser } from "@/lib/auth";
 import { createAlbum } from "@/lib/albums";
 import { LOOK_PACKS, type PackId } from "@/lib/config";
-import { LOOK_JEWELRY, LOOK_TO_ALBUM_TRADITION, LOOK_TRADITIONS, lookMix } from "@/lib/bridalLooks";
+import { LOOK_JEWELRY, LOOK_TO_ALBUM_TRADITION, LOOK_TRADITIONS, lookMix, parseGlasses } from "@/lib/bridalLooks";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { isOurImageUrl } from "@/lib/validate";
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
   const tradition = LOOK_TRADITIONS.some((t) => t.id === b.tradition) ? (b.tradition as string) : null;
   const color = typeof b.color === "string" && (b.color === "" || OUTFIT_COLORS.some((o) => o.id === b.color)) ? b.color : "";
   const jewelry = LOOK_JEWELRY.find((j) => j.id === b.jewelry)?.id ?? "classic";
+  const glasses = parseGlasses(b.glasses);
   const packId = LOOK_PACKS.includes(b.packId as PackId) ? (b.packId as PackId) : null;
   const events = Array.isArray(b.events) ? [...new Set(b.events.filter((e): e is EventId => EVENT_IDS.includes(e as EventId)))] : [];
   const photos = (b.photos ?? {}) as Record<string, unknown>;
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
     },
     mix: { decor: 0, decor_detail: 0, couple_stage: 0, family: 0, ...mix },
     notes: "",
-    look: { who, tradition, color, jewelry },
+    look: { who, tradition, color, jewelry, glasses },
   };
   const [user, anon] = await Promise.all([currentUser(), anonId(true)]);
   const album = await createAlbum({

@@ -105,8 +105,14 @@ export function PaletteMandap({
       <div className="p-4">
         <div className="flex flex-wrap items-center gap-2">
           {!result || stale ? (
-            <button type="button" className="btn btn-primary btn-sm" onClick={paint} disabled={busy || outOfTries}>
-              {busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} {stale ? "Paint it in the new colors" : "Paint my mandap"}
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => (outOfTries ? flagField(quota?.signedIn ? "#palette-mandap-continue" : "#palette-mandap-signup") : paint())}
+              disabled={busy}
+            >
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}{" "}
+              {outOfTries ? (quota?.signedIn ? "Design my mandap" : "Sign up free for one more") : stale ? "Paint it in the new colors" : "Paint my mandap"}
             </button>
           ) : (
             <button type="button" className="btn btn-ghost btn-sm" onClick={save}>
@@ -139,7 +145,7 @@ export function PaletteMandap({
           />
         ) : null}
         {result || outOfTries ? (
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div id="palette-mandap-continue" className="mt-4 flex flex-wrap gap-2">
             <Link href={`/create?palette=${palette}`} className="btn btn-gold btn-sm" onClick={() => track("tool_palette_mandap_continue")}>
               Design my mandap in these colors <ArrowRight size={15} />
             </Link>

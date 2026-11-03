@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Check, ImagePlus, Loader2, X } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 import { LOOK_PACKS, PACKS, formatUSD, type PackId } from "@/lib/config";
-import { defaultLookEvents, getTradition, type LookEvent, type LookJewelry, type LookWho } from "@/lib/bridalLooks";
+import { defaultLookEvents, getTradition, type LookEvent, type LookGlasses, type LookJewelry, type LookWho } from "@/lib/bridalLooks";
 import { Bride, Groom } from "./Figures";
 import { flagField } from "@/lib/flagField";
 
@@ -37,6 +37,7 @@ export function LookPack({
   tradition,
   color,
   jewelry,
+  glasses = "remove",
   firstPhoto,
   consented,
 }: {
@@ -44,6 +45,7 @@ export function LookPack({
   tradition: string;
   color: string;
   jewelry: LookJewelry;
+  glasses?: LookGlasses;
   firstPhoto: string | null;
   consented: boolean;
 }) {
@@ -93,7 +95,7 @@ export function LookPack({
       const res = await fetch("/api/looks", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ who, tradition, color, jewelry, events, packId, photos, consent }),
+        body: JSON.stringify({ who, tradition, color, jewelry, glasses, events, packId, photos, consent }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");

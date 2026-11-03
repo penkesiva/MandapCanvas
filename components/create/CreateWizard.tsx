@@ -27,6 +27,8 @@ interface WizardState {
   peopleMode: PeopleMode;
   brideUrl?: string;
   groomUrl?: string;
+  /** Keep eyeglasses in likeness images (off by default: glasses are removed). */
+  keepGlasses?: boolean;
   consent: boolean;
   packId: PackId;
   mix: ShotMix;
@@ -133,6 +135,17 @@ export function CreateWizard({
   const [copyMsg, setCopyMsg] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<{ url: string; reason: "view" | "download" | "more"; label?: string } | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
+  // The site header is sticky; the event tabs stick just below it.
+  const [headerH, setHeaderH] = useState(64);
+  useEffect(() => {
+    const h = document.querySelector("header");
+    if (!h) return;
+    const set = () => setHeaderH(h.getBoundingClientRect().height);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(h);
+    return () => ro.disconnect();
+  }, []);
 
   // Restore an in-progress draft (per-browser convenience only).
   useEffect(() => {
@@ -348,7 +361,7 @@ export function CreateWizard({
       eventSettings: perEvent.eventSettings,
       notes: s.notes,
       decor: { source: "preset", presetId: DEFAULT_PRESET, applyToAllEvents: false },
-      people: { mode: s.peopleMode, brideUrl: s.brideUrl, groomUrl: s.groomUrl, consent: s.consent },
+      people: { mode: s.peopleMode, brideUrl: s.brideUrl, groomUrl: s.groomUrl, glasses: s.keepGlasses ? "keep" : "remove", consent: s.consent },
       mix: s.mix,
       inventoryUrls: mode === "proposal" ? s.inventoryUrls : [],
     }),
@@ -618,7 +631,13 @@ export function CreateWizard({
           <h2 id="designs-h" className="text-2xl">Design each event</h2>
           <p className="mt-1 text-ink-soft">Every event gets its own backdrop, colors, venue and light. Set one up, then copy it to others if you like.</p>
 
-          <div id="event-tabs" className="mt-5 flex scroll-mt-28 flex-wrap gap-2" role="tablist" aria-label="Events">
+          <div
+            id="event-tabs"
+            style={{ top: headerH }}
+            className="sticky z-30 -mx-4 mt-5 flex gap-2 overflow-x-auto border-b border-gold/30 bg-milk/95 px-4 py-2.5 backdrop-blur [scrollbar-width:none] sm:-mx-6 sm:flex-wrap sm:px-6 [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label="Events"
+          >
             {tradition.events
               .filter((e) => s.events.includes(e))
               .map((e) => {
@@ -636,7 +655,7 @@ export function CreateWizard({
                       setCopyMsg(null);
                       setActiveEvent(e);
                     }}
-                    className={`flex items-center gap-2.5 rounded-full border-2 py-1 pl-1 pr-4 text-[0.95rem] font-medium transition ${
+                    className={`flex flex-none items-center gap-2.5 whitespace-nowrap rounded-full border-2 py-1 pl-1 pr-4 text-[0.95rem] font-medium transition ${
                       on ? "border-kumkum bg-white text-kumkum-deep" : "border-line bg-white hover:border-gold"
                     }`}
                   >
@@ -812,7 +831,7 @@ export function CreateWizard({
                         onClick={() => {
                           setCopyMsg(null);
                           setActiveEvent(nextEvent);
-                          scrollToTopOf(document.getElementById("event-tabs") ?? topRef.current);
+                          scrollToTopOf(document.getElementById("designs-h") ?? topRef.current, headerH + 12);
                         }}
                       >
                         Next event: {eventLabel(nextEvent, s.tradition)}
@@ -854,6 +873,17 @@ export function CreateWizard({
               <div className="grid gap-4 sm:grid-cols-2" data-field="people-photos">
                 <ImageDrop label="Bride's photo" kind="bride" value={s.brideUrl} onUploaded={(u) => update("brideUrl", u)} onError={setError} compact />
                 <ImageDrop label="Groom's photo" kind="groom" value={s.groomUrl} onUploaded={(u) => update("groomUrl", u)} onError={setError} compact />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Glasses</p>
+                <div className="mt-1.5 flex flex-wrap gap-2" role="radiogroup" aria-label="Glasses">
+                  <button type="button" className="chip" role="radio" aria-checked={!s.keepGlasses} onClick={() => update("keepGlasses", false)}>
+                    Remove glasses
+                  </button>
+                  <button type="button" className="chip" role="radio" aria-checked={!!s.keepGlasses} onClick={() => update("keepGlasses", true)}>
+                    Keep our glasses
+                  </button>
+                </div>
               </div>
               <label className="flex items-start gap-3" data-field="consent">
                 <input type="checkbox" className="mt-1 h-4 w-4 accent-kumkum" checked={s.consent} onChange={(e) => update("consent", e.target.checked)} />

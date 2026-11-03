@@ -5,7 +5,7 @@ import { Check, Download, ImageUp, Loader2, RefreshCw, Share2, Sparkles } from "
 import { engage as track } from "@/lib/engage";
 import { FOUNDING_OFFER, PACKS, formatUSD } from "@/lib/config";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
-import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
+import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookGlasses, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
 import { Bride, CoupleScene, Groom } from "./Figures";
 import { FreeTrySignup } from "./FreeTrySignup";
 import { flagField } from "@/lib/flagField";
@@ -27,6 +27,7 @@ export function BridalLook() {
   const [color, setColor] = useState("");
   const [jewelry, setJewelry] = useState<LookJewelry>("classic");
   const [setting, setSetting] = useState<LookSetting>("mandap");
+  const [glasses, setGlasses] = useState<LookGlasses>("remove");
   const [consent, setConsent] = useState(false);
 
   const [photo, setPhoto] = useState<string | null>(null);
@@ -98,7 +99,7 @@ export function BridalLook() {
       const res = await fetch("/api/tools/bridal-look", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ who, tradition, color, jewelry, setting, consent, photoUrl: photo }),
+        body: JSON.stringify({ who, tradition, color, jewelry, setting, glasses, consent, photoUrl: photo }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -299,7 +300,16 @@ export function BridalLook() {
               </div>
             </>
           ) : null}
-          <p className={`text-sm font-semibold ${who !== "groom" ? "mt-4" : ""}`}>Setting</p>
+          <p className={`text-sm font-semibold ${who !== "groom" ? "mt-4" : ""}`}>Glasses</p>
+          <div className="mt-1.5 flex flex-wrap gap-2" role="radiogroup" aria-label="Glasses">
+            <button type="button" className="chip" role="radio" aria-checked={glasses === "remove"} onClick={() => setGlasses("remove")}>
+              Remove glasses
+            </button>
+            <button type="button" className="chip" role="radio" aria-checked={glasses === "keep"} onClick={() => setGlasses("keep")}>
+              Keep my glasses
+            </button>
+          </div>
+          <p className="mt-4 text-sm font-semibold">Setting</p>
           <div className="mt-1.5 flex flex-wrap gap-2">
             {LOOK_SETTINGS.map((s) => (
               <button key={s.id} type="button" className="chip" role="radio" aria-checked={setting === s.id} onClick={() => setSetting(s.id)}>
@@ -317,8 +327,19 @@ export function BridalLook() {
         </label>
 
         <div className="mt-5 flex flex-col items-start gap-2">
-          <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={create} disabled={busy || uploading || outOfTries}>
-            {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />} {busy ? "Creating your look…" : cta}
+          <button
+            type="button"
+            className="btn btn-primary w-full sm:w-auto"
+            onClick={() => {
+              if (!outOfTries) return create();
+              track("tool_look_out_click", { signedIn: !!quota?.signedIn });
+              if (quota?.signedIn) document.getElementById("look-pack")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              else flagField("#look-signup");
+            }}
+            disabled={busy || uploading}
+          >
+            {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}{" "}
+            {busy ? "Creating your look…" : outOfTries ? (quota?.signedIn ? "See yourself at every event" : "Sign up free for one more look") : cta}
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
@@ -388,7 +409,7 @@ export function BridalLook() {
         {(outOfTries && quota?.signedIn) || (result && !busy) ? <AlbumUpsell who={who} /> : null}
       </div>
     </div>
-    <LookPack who={who} tradition={tradition} color={color} jewelry={jewelry} firstPhoto={photo} consented={consent} />
+    <LookPack who={who} tradition={tradition} color={color} jewelry={jewelry} glasses={glasses} firstPhoto={photo} consented={consent} />
     </>
   );
 }

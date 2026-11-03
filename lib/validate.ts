@@ -96,7 +96,10 @@ export function parseConfig(raw: unknown, packId: PackId): { config: AlbumConfig
     if (isOurImageUrl(p.brideUrl)) people.brideUrl = p.brideUrl;
     if (isOurImageUrl(p.groomUrl)) people.groomUrl = p.groomUrl;
     if (!people.brideUrl && !people.groomUrl) people.mode = "silhouette";
-    else people.consentAt = Date.now();
+    else {
+      people.consentAt = Date.now();
+      people.glasses = p.glasses === "keep" ? "keep" : "remove";
+    }
   }
 
   const m = (r.mix ?? {}) as Record<string, unknown>;
