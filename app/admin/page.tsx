@@ -16,11 +16,15 @@ export const dynamic = "force-dynamic";
 export default async function Admin() {
   const user = await currentUser();
   if (!isAdmin(user)) notFound();
-  const { total, daily } = await readStats(14);
-  const ids = (await listAlbumIds("albums:all")).slice(0, 25);
-  const albums = (await Promise.all(ids.map(getAlbum))).filter(Boolean);
-  const users = (await kv().lrange("users:all", 0, -1)).length;
-  const leads = (await kv().lrange("leads", 0, 49))
+  // Everything the page needs, fetched in parallel (it used to be ~19 round trips in a row).
+  const [{ total, daily }, albums, userList, leadRows] = await Promise.all([
+    readStats(14),
+    listAlbumIds("albums:all").then(async (ids) => (await Promise.all(ids.slice(0, 25).map(getAlbum))).filter(Boolean)),
+    kv().lrange("users:all", 0, -1),
+    kv().lrange("leads", 0, 49),
+  ]);
+  const users = userList.length;
+  const leads = leadRows
     .map((l) => {
       try {
         return JSON.parse(l) as { email: string; source: string; path: string; at: number };

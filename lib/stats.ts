@@ -35,11 +35,8 @@ export async function todayCostCents(): Promise<number> {
 
 export async function readStats(days = 14): Promise<{ total: Record<string, number>; daily: { day: string; v: Record<string, number> }[] }> {
   const toNum = (h: Record<string, string>) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k, Number(v)]));
-  const total = toNum(await kv().hgetall("stats:all"));
-  const daily = [];
-  for (let i = 0; i < days; i++) {
-    const d = day(new Date(Date.now() - i * 86400000));
-    daily.push({ day: d, v: toNum(await kv().hgetall(`stats:${d}`)) });
-  }
-  return { total, daily };
+  const dayKeys = Array.from({ length: days }, (_, i) => day(new Date(Date.now() - i * 86400000)));
+  // One round trip per key, all at once, instead of one after another.
+  const [total, ...perDay] = await Promise.all([kv().hgetall("stats:all"), ...dayKeys.map((d) => kv().hgetall(`stats:${d}`))]);
+  return { total: toNum(total), daily: dayKeys.map((d, i) => ({ day: d, v: toNum(perDay[i]) })) };
 }
