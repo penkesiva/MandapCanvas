@@ -31,6 +31,28 @@ export function ToolArt({ slug }: { slug: string }) {
   }
 }
 
+/** True once both photos have loaded; false (keep the drawing) if either is missing. */
+function usePhotos(a: string, b: string): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const load = (src: string) =>
+      new Promise<void>((res, rej) => {
+        const img = new Image();
+        img.onload = () => res();
+        img.onerror = () => rej();
+        img.src = src;
+      });
+    Promise.all([load(a), load(b)])
+      .then(() => alive && setOk(true))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [a, b]);
+  return ok;
+}
+
 function Frame({ children, bg = "bg-silk" }: { children: React.ReactNode; bg?: string }) {
   return <div className={`relative aspect-[16/9] w-full overflow-hidden ${bg}`}>{children}</div>;
 }
@@ -139,7 +161,27 @@ function Hall({ decorated }: { decorated: boolean }) {
   );
 }
 
+/** Empty hall → decorated hall. Uses the real AI example pair when it exists, the drawing otherwise. */
 function VenueArt() {
+  const photos = usePhotos("/samples/venue-before.jpg", "/samples/venue-after.jpg");
+  if (photos) {
+    return (
+      <Frame bg="bg-[linear-gradient(135deg,#f3efe8,#f6e7c8)]">
+        <div className="absolute inset-0 flex items-center justify-center gap-3 px-5 sm:gap-4">
+          <div className="relative h-[62%] -rotate-2 overflow-hidden rounded-lg border-4 border-white shadow-lg">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/samples/venue-before.jpg" alt="" className="h-full w-auto object-cover" loading="lazy" />
+            <span className="absolute bottom-1 left-1.5 rounded-full bg-white/90 px-1.5 text-[10px] font-semibold text-ink-soft">your venue</span>
+          </div>
+          <Arrow />
+          <div className="frame-gold relative h-[84%] rotate-1 overflow-hidden rounded-xl shadow-xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/samples/venue-after.jpg" alt="" className="h-full w-auto object-cover" loading="lazy" />
+          </div>
+        </div>
+      </Frame>
+    );
+  }
   return (
     <Frame bg="bg-[linear-gradient(135deg,#f3efe8,#f6e7c8)]">
       <div className="absolute inset-0 flex items-center justify-center gap-3 px-5 sm:gap-4">

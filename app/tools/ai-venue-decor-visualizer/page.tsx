@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { VenueDecor } from "@/components/tools/VenueDecor";
+import { VenueExamples } from "@/components/tools/VenueExamples";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
 import { VENUE_STYLES } from "@/lib/venueDecor";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "Is it free?",
-    a: "Yes. Your first try is free with no sign-up. Create a free account for one more, to try another style or event.",
+    a: "Yes. Try for free, no sign-up. A free account gets you one more, to try another style or event.",
   },
   {
     q: "Will it change my venue?",
@@ -52,13 +53,15 @@ export default function VenueDecorPage() {
         <header className="mt-6 max-w-3xl">
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">See your venue, decorated</h1>
           <p className="mt-4 text-lg text-ink-soft">
-            Upload a photo of your hall, backyard or temple. Pick the event and a style, and AI decorates your own space, walls and all. Your first try is free.
+            Upload a photo of your hall, backyard or temple. Pick the event and a style, and AI decorates your own space, walls and all. Try for free.
           </p>
         </header>
 
         <div className="mt-10">
           <VenueDecor />
         </div>
+
+        <VenueExamples />
 
         <section className="mt-16 grid gap-8 md:grid-cols-3" aria-labelledby="how-h">
           <h2 id="how-h" className="sr-only">How it works</h2>

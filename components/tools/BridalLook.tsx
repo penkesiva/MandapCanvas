@@ -343,7 +343,7 @@ export function BridalLook() {
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
-              ? "Free, no sign-up for your first look."
+              ? "Try for free, no sign-up."
               : quota.remaining > 0
                 ? `${quota.remaining} free ${quota.remaining === 1 ? "look" : "looks"} left${quota.signedIn ? "" : ". No sign-up needed"}.`
                 : quota.signedIn

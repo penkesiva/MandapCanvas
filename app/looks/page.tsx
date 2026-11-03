@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "Is it really free?",
-    a: "Yes. Your first look is free with no sign-up. Create a free account and you get one more, so you can try a second tradition or color.",
+    a: "Yes. Try for free, no sign-up. A free account gets you one more, to try a second tradition or color.",
   },
   {
     q: "Will it still look like me?",

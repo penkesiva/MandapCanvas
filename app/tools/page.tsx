@@ -39,13 +39,13 @@ export default function ToolsPage() {
         </div>
         <ul className="mt-12 grid gap-6 md:grid-cols-2">
           {FREE_TOOLS.map((t) => (
-            <li key={t.slug}>
-              <Link href={toolHref(t)} className="group block overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">
+            <li key={t.slug} className="flex">
+              <Link href={toolHref(t)} className="group flex w-full flex-col overflow-hidden rounded-[24px] border border-gold/40 bg-white transition hover:border-gold hover:shadow-[0_30px_60px_-40px_rgba(74,13,26,0.6)]">
                 <ToolArt slug={t.slug} />
-                <span className="block p-6">
+                <span className="flex flex-1 flex-col p-6">
                   <span className="block font-display text-2xl text-maroon group-hover:text-kumkum">{t.name}</span>
                   <span className="mt-2 block text-ink-soft">{t.blurb}</span>
-                  <span className="mt-4 inline-block font-semibold text-kumkum underline underline-offset-4">Open the tool</span>
+                  <span className="mt-auto self-end pt-4 font-semibold text-kumkum underline underline-offset-4">Open the tool</span>
                 </span>
               </Link>
             </li>

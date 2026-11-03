@@ -47,6 +47,7 @@ export function VenueDecor() {
 
   const outOfTries = quota !== null && quota.remaining <= 0;
   const ev = VENUE_EVENTS.find((e) => e.id === event)!;
+  const styleInfo = VENUE_STYLES.find((x) => x.id === style)!;
 
   async function upload(file: File) {
     setError(null);
@@ -217,6 +218,13 @@ export function VenueDecor() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={s.image} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
+                <span
+                  className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                    s.scale === "simple" ? "bg-white/90 text-ink" : "bg-maroon/90 text-gold-light"
+                  }`}
+                >
+                  {s.scale === "simple" ? "Simple" : "Grand"}
+                </span>
                 <span className={`block px-2.5 py-2 ${style === s.id ? "bg-[#fbf1ee]" : "bg-white"}`}>
                   <span className="block text-sm font-semibold leading-tight">{s.name}</span>
                   <span className="block text-xs leading-tight text-ink-soft">{s.hint}</span>
@@ -231,10 +239,19 @@ export function VenueDecor() {
           </div>
         </Step>
 
-        <Step n={4} title="Colors (optional)">
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Colors">
-            <button type="button" role="radio" aria-checked={palette === ""} className="chip" onClick={() => setPalette("")}>
-              The style&apos;s own
+        <Step n={4} title="Pick your colors">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5" role="radiogroup" aria-label="Colors">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={palette === ""}
+              onClick={() => setPalette("")}
+              className={`overflow-hidden rounded-xl border-2 text-left transition ${palette === "" ? "border-kumkum" : "border-line hover:border-gold"}`}
+            >
+              {/* The colors in the chosen style's own photo. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={styleInfo.image} alt="" className="h-10 w-full object-cover" />
+              <span className="block px-2 py-1.5 text-xs font-semibold leading-tight">Same as the style</span>
             </button>
             {VENUE_PALETTES.map((p) => (
               <button
@@ -243,15 +260,14 @@ export function VenueDecor() {
                 role="radio"
                 aria-checked={palette === p.id}
                 onClick={() => setPalette(p.id)}
-                title={p.name}
-                className={`flex items-center gap-1.5 rounded-full border-2 py-1 pl-1 pr-2.5 text-sm ${palette === p.id ? "border-kumkum bg-[#fbf1ee] text-maroon" : "border-line"}`}
+                className={`overflow-hidden rounded-xl border-2 text-left transition ${palette === p.id ? "border-kumkum" : "border-line hover:border-gold"}`}
               >
-                <span className="flex" aria-hidden="true">
+                <span className="flex h-10" aria-hidden="true">
                   {p.swatches.map((h, i) => (
-                    <span key={i} className="-ml-1 h-5 w-5 rounded-full ring-2 ring-white first:ml-0" style={{ background: h }} />
+                    <span key={i} className={i === 0 ? "flex-[2]" : "flex-1"} style={{ background: h }} />
                   ))}
                 </span>
-                {p.name}
+                <span className="block px-2 py-1.5 text-xs font-semibold leading-tight">{p.name}</span>
               </button>
             ))}
           </div>
@@ -273,7 +289,7 @@ export function VenueDecor() {
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
-              ? "Free, no sign-up for your first try."
+              ? "Try for free, no sign-up."
               : quota.remaining > 0
                 ? `${quota.remaining} free ${quota.remaining === 1 ? "try" : "tries"} left${quota.signedIn ? "" : ". No sign-up needed"}.`
                 : quota.signedIn

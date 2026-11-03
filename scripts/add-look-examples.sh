@@ -1,10 +1,11 @@
 #!/bin/bash
-# Copies the groom and couple before/after example photos from ~/Downloads into public/samples,
+# Copies the groom, couple and venue before/after example photos from ~/Downloads into public/samples,
 # resized to 900px tall JPEGs. The rotating examples on /looks and the home page show any pair
 # whose two photos exist.
 #
 # Save the four images to ~/Downloads with these names (any of .png .jpg .jpeg .webp):
 #   groom-before   groom-after   couple-before   couple-after
+#   venue-before   venue-after   venue-backyard-before   venue-backyard-after
 #
 # Then run from the project folder:  bash scripts/add-look-examples.sh
 set -e
@@ -19,14 +20,15 @@ find_src() {
 }
 
 added=0
-for name in groom-before groom-after couple-before couple-after; do
+for name in groom-before groom-after couple-before couple-after venue-before venue-after venue-backyard-before venue-backyard-after; do
   f=$(find_src "$name")
   if [ -z "$f" ]; then
     echo "missing: $SRC/$name.(png|jpg|webp)"
     continue
   fi
-  sips -s format jpeg -s formatOptions 82 --resampleHeight 900 "$f" --out "$OUT/look-$name.jpg" >/dev/null
-  echo "added:   $OUT/look-$name.jpg"
+  case "$name" in venue-*) dest="$OUT/$name.jpg" ;; *) dest="$OUT/look-$name.jpg" ;; esac
+  sips -s format jpeg -s formatOptions 82 --resampleHeight 900 "$f" --out "$dest" >/dev/null
+  echo "added:   $dest"
   added=$((added + 1))
 done
-echo "$added of 4 photos added."
+echo "$added photos added."

@@ -342,7 +342,7 @@ export function WeddingCard() {
           </button>
           <p className="text-sm text-ink-soft">
             {quota === null
-              ? "Your first card is free, no sign-up."
+              ? "Try for free, no sign-up."
               : quota.remaining > 0
                 ? `${quota.admin ? "Admin: unlimited" : `${quota.remaining} free ${quota.remaining === 1 ? "card" : "cards"} left`}. Words stay editable for free after painting.`
                 : quota.signedIn

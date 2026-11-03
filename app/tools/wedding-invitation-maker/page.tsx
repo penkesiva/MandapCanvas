@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "Is it free?",
-    a: "Yes. Your first card is free with no sign-up. Create a free account and you can paint one more, for another event or another style.",
+    a: "Yes. Try for free, no sign-up. A free account gets you one more, for another event or style.",
   },
   {
     q: "Will the names be spelled correctly?",
@@ -53,7 +53,7 @@ export default function WeddingInvitationPage() {
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">Make your wedding invitation</h1>
           <p className="mt-4 text-lg text-ink-soft">
             Type your names, date and venue, pick one of {CARD_TEMPLATES.length} styles, and get a one-of-a-kind card painted by AI, with every word spelled exactly
-            right. For the wedding, the save the date, or every event from Haldi to the reception. Your first card is free.
+            right. For the wedding, the save the date, or every event from Haldi to the reception. Try for free.
           </p>
         </header>
 

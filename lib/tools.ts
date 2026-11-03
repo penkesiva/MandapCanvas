@@ -21,10 +21,10 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "ai-bridal-look",
     name: "AI bridal and groom look",
-    blurb: "Upload a selfie. See yourself as a bride or groom in 8 traditions. First look free.",
+    blurb: "Upload a selfie. See yourself as a bride or groom in 8 traditions. Try for free.",
     title: "AI Bridal Look Try-On: See Yourself as an Indian Bride or Groom (Free)",
     description:
-      "Free AI wedding look try-on for Desi brides and grooms. Upload your photo and see yourself in a bridal lehenga, Kanjeevaram saree, sherwani and safa or a couple portrait, in the tradition and color you choose. Your first look is free.",
+      "Free AI wedding look try-on for Desi brides and grooms. Upload your photo and see yourself in a bridal lehenga, Kanjeevaram saree, sherwani and safa or a couple portrait, in the tradition and color you choose. Try for free.",
     keywords: [
       "AI bridal look",
       "see yourself as an Indian bride",
@@ -40,10 +40,10 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "ai-venue-decor-visualizer",
     name: "AI venue decor visualizer",
-    blurb: "Upload a photo of your hall or backyard. See it decorated for your wedding. First try free.",
+    blurb: "Upload a photo of your hall or backyard. See it decorated for your wedding. Try for free.",
     title: "AI Wedding Venue Decor Visualizer: See Your Hall or Backyard Decorated (Free)",
     description:
-      "Free AI wedding decor visualizer. Upload a photo of your empty banquet hall, backyard, lawn or temple and see it decorated for the mandap, reception, Sangeet, Mehndi or Haldi in Royal, South Indian, Floral, Modern, Mughal or Boho style. Drag the slider to compare before and after. First try free.",
+      "Free AI wedding decor visualizer. Upload a photo of your empty banquet hall, backyard, lawn or temple and see it decorated for the mandap, reception, Sangeet, Mehndi or Haldi in Royal, South Indian, Floral, Modern, Mughal or Boho style. Drag the slider to compare before and after. Try for free.",
     keywords: [
       "wedding venue decor visualizer",
       "AI wedding decoration",
@@ -58,10 +58,10 @@ export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "wedding-invitation-maker",
     name: "AI wedding invitation maker",
-    blurb: "Type your details, pick one of 13 styles, from royal to anime. First card free.",
+    blurb: "Type your details, pick one of 13 styles, from royal to anime. Try for free.",
     title: "Free AI Indian Wedding Invitation Maker: 13 Styles, WhatsApp Ready",
     description:
-      "Make an Indian wedding invitation, save the date, Mehndi, Sangeet or Haldi card in seconds. Type your details, choose a style (royal Rajasthani, South Indian, Mughal, watercolor, anime, 3D animated, Gen Z, retro Bollywood, Madhubani and more) and download a card or WhatsApp story. First card free.",
+      "Make an Indian wedding invitation, save the date, Mehndi, Sangeet or Haldi card in seconds. Type your details, choose a style (royal Rajasthani, South Indian, Mughal, watercolor, anime, 3D animated, Gen Z, retro Bollywood, Madhubani and more) and download a card or WhatsApp story. Try for free.",
     keywords: [
       "Indian wedding invitation maker",
       "wedding card maker free",

@@ -45,7 +45,7 @@ export default function Home() {
               href="/looks"
               title="See yourself"
               text="Upload a selfie. See yourself as a bride, groom or couple at every event."
-              meta={`First look free · Look Packs from ${formatUSD(PACKS.look12.priceCents)}`}
+              meta={`Try for free · Look Packs from ${formatUSD(PACKS.look12.priceCents)}`}
               cta="Try your look free"
               more={{ href: "/looks", label: "How it works" }}
             >
@@ -189,12 +189,13 @@ export default function Home() {
         <SectionTitle title="Free planning tools" intro="For the decisions every family argues about." />
         <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
           {freeTools.map((t) => (
-            <li key={t.slug}>
-              <Link href={toolHref(t)} className="group block overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
+            <li key={t.slug} className="flex">
+              <Link href={toolHref(t)} className="group flex w-full flex-col overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
                 <ToolArt slug={t.slug} />
-                <span className="block p-4">
+                <span className="flex flex-1 flex-col p-4">
                   <span className="block font-display text-xl text-maroon group-hover:text-kumkum">{t.name}</span>
                   <span className="mt-1 line-clamp-2 block text-sm text-ink-soft">{t.blurb}</span>
+                  <span className="mt-auto self-end pt-3 text-sm font-semibold text-kumkum underline underline-offset-4">Open the tool</span>
                 </span>
               </Link>
             </li>

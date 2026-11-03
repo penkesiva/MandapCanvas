@@ -1,6 +1,8 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
+import opentype from "opentype.js";
+import { BODY_WOFF, DISPLAY_WOFF } from "./fonts/markFonts";
 import { flags } from "./config";
 import { getPalette } from "./catalog";
 
@@ -159,21 +161,42 @@ export async function watermark(data: Buffer): Promise<Buffer> {
  * Lighter mark for the free AI look tool: a faint diagonal tile plus a corner badge with the site name,
  * so the picture stays shareable and still says where it came from.
  */
+type MarkFonts = { display: opentype.Font; body: opentype.Font };
+let markFonts: MarkFonts | null = null;
+function fonts(): MarkFonts {
+  if (!markFonts) {
+    const ab = (b64: string) => {
+      const buf = Buffer.from(b64, "base64");
+      return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    };
+    markFonts = { display: opentype.parse(ab(DISPLAY_WOFF)), body: opentype.parse(ab(BODY_WOFF)) };
+  }
+  return markFonts;
+}
+
+/** Text as SVG path data, so it renders the same on any server (no system fonts needed). */
+function textPath(font: opentype.Font, text: string, x: number, y: number, size: number): string {
+  return font.getPath(text, x, y, size).toPathData(2);
+}
+
 export async function brandMark(data: Buffer, site: string): Promise<Buffer> {
   const img = sharp(data).resize({ width: 960, withoutEnlargement: true });
   const meta = await img.toBuffer({ resolveWithObject: true });
   const { width, height } = meta.info;
-  const label = esc(site);
-  const badgeW = Math.round(14 + label.length * 9.6 + 150);
+  const f = fonts();
+  const brandW = f.display.getAdvanceWidth("MandapCanvas", 17);
+  const siteW = f.body.getAdvanceWidth(site, 14);
+  const badgeW = Math.round(18 + brandW + 12 + siteW + 18);
+  const tile = textPath(f.display, "MandapCanvas preview", 10, 130, 28);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <defs><pattern id="p" width="420" height="260" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
-      <text x="10" y="130" font-family="Georgia, serif" font-size="28" fill="rgba(255,255,255,0.22)" stroke="rgba(0,0,0,0.08)" stroke-width="1">MandapCanvas preview</text>
+      <path d="${tile}" fill="rgba(255,255,255,0.22)" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
     </pattern></defs>
     <rect width="100%" height="100%" fill="url(#p)"/>
     <g transform="translate(${width - badgeW - 18} ${height - 54})">
       <rect width="${badgeW}" height="38" rx="19" fill="rgba(50,8,17,0.78)"/>
-      <text x="18" y="25" font-family="Georgia, serif" font-size="17" fill="#ecd08a">MandapCanvas</text>
-      <text x="138" y="25" font-family="Arial, sans-serif" font-size="15" fill="#fff8ef">${label}</text>
+      <path d="${textPath(f.display, "MandapCanvas", 18, 25, 17)}" fill="#ecd08a"/>
+      <path d="${textPath(f.body, site, 18 + brandW + 12, 25, 14)}" fill="#fff8ef"/>
     </g>
   </svg>`;
   return sharp(meta.data)

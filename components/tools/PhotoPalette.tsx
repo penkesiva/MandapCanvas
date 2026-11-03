@@ -135,18 +135,52 @@ export function PhotoPalette() {
     void load(objectUrl.current, "upload");
   };
 
-  const main = useMemo(() => picked ?? mainOutfitColor(colors), [picked, colors]);
+  const [hover, setHover] = useState<{ c: ExtractedColor; x: number; y: number } | null>(null);
+  const [pin, setPin] = useState<{ x: number; y: number } | null>(null);
+  const frame = useRef(0);
+  const hoverColor = hover?.c ?? null;
+  // The kept color (ignores hover), for things that shouldn't flicker while the pointer moves.
+  const keptMain = useMemo(() => picked ?? mainOutfitColor(colors), [picked, colors]);
+  const main = useMemo(() => hoverColor ?? picked ?? mainOutfitColor(colors), [hoverColor, picked, colors]);
   const match = main ? nearestOutfit(main.hex) : null;
   const decor = useMemo(() => (main ? rankPalettes(colors, main) : []), [colors, main]);
   const metal = colors.find((c) => c.metal);
 
+  // Hovering previews the color under the pointer (shown in a ring, like a loupe); a click or tap keeps it.
+
+  const sampleEvent = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!pixels) return null;
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    // The image is object-contain: map the pointer into the drawn picture, ignoring the letterbox.
+    const scale = Math.min(r.width / el.naturalWidth, r.height / el.naturalHeight);
+    const w = el.naturalWidth * scale;
+    const h = el.naturalHeight * scale;
+    const left = (r.width - w) / 2;
+    const top = (r.height - h) / 2;
+    const fx = (e.clientX - r.left - left) / w;
+    const fy = (e.clientY - r.top - top) / h;
+    if (fx < 0 || fx > 1 || fy < 0 || fy > 1) return null;
+    const rgb = sampleAt(pixels.data, pixels.width, pixels.height, Math.round(fx * (pixels.width - 1)), Math.round(fy * (pixels.height - 1))).map(Math.round) as [
+      number,
+      number,
+      number,
+    ];
+    return { c: { rgb, hex: toHex(rgb), share: 0, name: nameColor(rgb) } as ExtractedColor, x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 };
+  };
+
+  const hoverAt = (e: React.MouseEvent<HTMLImageElement>) => {
+    const ev = { clientX: e.clientX, clientY: e.clientY, currentTarget: e.currentTarget } as React.MouseEvent<HTMLImageElement>;
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => setHover(sampleEvent(ev)));
+  };
+
   const pickAt = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (!pixels) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const x = Math.round(((e.clientX - r.left) / r.width) * (pixels.width - 1));
-    const y = Math.round(((e.clientY - r.top) / r.height) * (pixels.height - 1));
-    const rgb = sampleAt(pixels.data, pixels.width, pixels.height, x, y).map(Math.round) as [number, number, number];
-    setPicked({ rgb, hex: toHex(rgb), share: 0, name: nameColor(rgb) });
+    const hit = sampleEvent(e);
+    if (!hit) return;
+    setPicked(hit.c);
+    setPin({ x: hit.x, y: hit.y });
+    setHover(null);
     track("tool_photo_palette_pick");
   };
 
@@ -217,10 +251,27 @@ export function PhotoPalette() {
           <div className="min-w-0">
             <div className="relative overflow-hidden rounded-2xl bg-silk">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="Your outfit photo" onClick={pickAt} className="max-h-[520px] w-full cursor-crosshair object-contain" />
+              <img
+                src={src}
+                alt="Your outfit photo"
+                onClick={pickAt}
+                onMouseMove={hoverAt}
+                onMouseLeave={() => {
+                  cancelAnimationFrame(frame.current);
+                  setHover(null);
+                }}
+                className="max-h-[520px] w-full cursor-crosshair object-contain"
+              />
+              {hover || (pin && picked) ? (
+                <span
+                  className="pointer-events-none absolute h-11 w-11 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-[0_0_0_2px_rgba(0,0,0,0.25),0_6px_14px_rgba(0,0,0,0.25)]"
+                  style={{ left: `${(hover ?? pin)!.x}%`, top: `${(hover ?? pin)!.y}%`, background: (hover?.c ?? picked)!.hex }}
+                  aria-hidden="true"
+                />
+              ) : null}
             </div>
             <p className="mt-2 flex items-center gap-2 text-sm text-ink-soft">
-              <Pipette size={15} className="text-gold" /> Tap the outfit to pick its exact color.
+              <Pipette size={15} className="text-gold" /> Move over the outfit to see its colors. Tap to keep one.
             </p>
             <button
               type="button"
@@ -230,6 +281,7 @@ export function PhotoPalette() {
                 setPixels(null);
                 setColors([]);
                 setPicked(null);
+                setPin(null);
               }}
             >
               Use a different photo
@@ -246,7 +298,7 @@ export function PhotoPalette() {
             <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {colors.map((c) => (
                 <li key={c.hex}>
-                  <button type="button" onClick={() => setPicked(c)} className={`flex w-full items-center gap-2 rounded-xl border p-2 text-left ${main?.hex === c.hex ? "border-kumkum" : "border-line hover:border-gold"}`}>
+                  <button type="button" onClick={() => { setPicked(c); setPin(null); }} className={`flex w-full items-center gap-2 rounded-xl border p-2 text-left ${main?.hex === c.hex ? "border-kumkum" : "border-line hover:border-gold"}`}>
                     <span className="h-8 w-8 flex-none rounded-lg ring-1 ring-ink/10" style={{ background: c.hex }} />
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">{c.name}</span>
@@ -328,7 +380,7 @@ export function PhotoPalette() {
                   ))}
                 </div>
                 <PaletteMandap
-                  colors={[main, ...colors.filter((c) => c.hex !== main.hex && !c.metal)].slice(0, 5).map((c) => ({ hex: c.hex, name: c.name }))}
+                  colors={[keptMain ?? main, ...colors.filter((c) => c.hex !== (keptMain ?? main).hex && !c.metal)].slice(0, 5).map((c) => ({ hex: c.hex, name: c.name }))}
                   metal={metal?.metal === "silver" ? "silver" : "gold"}
                   palette={decor[0]?.id ?? match.decorPalette}
                 />

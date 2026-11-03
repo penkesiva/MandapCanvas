@@ -22,15 +22,50 @@ export interface VenueStyle {
   art: string;
   /** A sample photo for the style card. */
   image: string;
+  /** Simple setups cost less but still look full; grand ones go all out. */
+  scale: "simple" | "grand";
 }
 
 export const VENUE_STYLES: VenueStyle[] = [
+  {
+    id: "classic",
+    name: "Classic white",
+    hint: "White drapes, roses, candles",
+    art: "simple but elegant: a clean four-pillar structure with flowing white drapes, white and blush roses at the corners, rows of candles and a petal aisle; uncluttered, so the room still breathes, yet it looks expensive",
+    image: "/samples/mandap-classic.jpg",
+    scale: "simple",
+  },
+  {
+    id: "jasmine",
+    name: "Jasmine & brass",
+    hint: "Flower strings, brass lamps",
+    art: "simple traditional: strings of jasmine and marigold hung in rows, brass lamps and urlis with floating flowers, banana leaves at the entrance; a few strong pieces done beautifully rather than lots of decor",
+    image: "/samples/style-jasmine-brass.jpg",
+    scale: "simple",
+  },
+  {
+    id: "garden",
+    name: "Garden fresh",
+    hint: "Greenery, white flowers, light",
+    art: "simple and fresh: a frame wrapped in greenery and white flowers, potted plants and lanterns along the sides, soft fairy lights; natural and airy",
+    image: "/samples/style-garden-minimal.jpg",
+    scale: "simple",
+  },
+  {
+    id: "rosedome",
+    name: "Rose dome",
+    hint: "Domed canopy, rose walls",
+    art: "grand and romantic: a domed canopy covered in roses, walls of roses behind the stage, crystal chandeliers and a long petal aisle",
+    image: "/samples/style-rose-dome.jpg",
+    scale: "grand",
+  },
   {
     id: "royal",
     name: "Royal",
     hint: "Carved arches, gold, chandeliers",
     art: "royal and grand: carved gold and ivory structures, jharokha-style arches, rich drapes, crystal chandeliers and abundant roses",
     image: "/samples/style-rajasthani-royal.jpg",
+    scale: "grand",
   },
   {
     id: "south",
@@ -38,6 +73,7 @@ export const VENUE_STYLES: VenueStyle[] = [
     hint: "Temple pillars, jasmine, banana leaves",
     art: "South Indian temple style: carved brass or wooden pillars, jasmine and marigold strings, banana leaves, mango-leaf torans and brass lamps",
     image: "/samples/style-temple-south.jpg",
+    scale: "grand",
   },
   {
     id: "floral",
@@ -45,6 +81,7 @@ export const VENUE_STYLES: VenueStyle[] = [
     hint: "Roses, hanging flowers, soft drapes",
     art: "lush floral romance: a ceiling of hanging flowers, roses and hydrangeas, soft sheer drapes and candles",
     image: "/samples/style-floral-ceiling.jpg",
+    scale: "grand",
   },
   {
     id: "modern",
@@ -52,6 +89,7 @@ export const VENUE_STYLES: VenueStyle[] = [
     hint: "Clean shapes, minimal, elegant",
     art: "modern minimal: clean geometric frames, a restrained palette, sculptural florals, lots of breathing room",
     image: "/samples/style-modern-hexagon.jpg",
+    scale: "simple",
   },
   {
     id: "mughal",
@@ -59,6 +97,7 @@ export const VENUE_STYLES: VenueStyle[] = [
     hint: "Jaali arches, emerald and gold",
     art: "Mughal elegance: white jaali screens and arches, emerald and gold accents, lanterns and climbing roses; suits a Nikah",
     image: "/samples/style-mughal-emerald.jpg",
+    scale: "grand",
   },
   {
     id: "boho",
@@ -66,6 +105,7 @@ export const VENUE_STYLES: VenueStyle[] = [
     hint: "Pampas, greenery, warm light",
     art: "boho garden: pampas grass, greenery, rattan and macramé, warm string lights and earthy tones",
     image: "/samples/style-boho-pampas.jpg",
+    scale: "simple",
   },
 ];
 
