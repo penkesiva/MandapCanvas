@@ -6,7 +6,7 @@ import { clientIp, IMAGE_TYPES, jsonError, MAX_UPLOAD_BYTES, rateLimit } from "@
 
 export const runtime = "nodejs";
 
-const KINDS = new Set(["sketch", "decor", "bride", "groom", "logo", "inventory", "look"]);
+const KINDS = new Set(["sketch", "decor", "bride", "groom", "logo", "inventory", "look", "venue"]);
 
 export async function POST(request: Request) {
   const ip = await clientIp();

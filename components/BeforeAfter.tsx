@@ -12,12 +12,19 @@ export function BeforeAfter({
   beforeAlt,
   afterAlt,
   priority = false,
+  beforeLabel = "Your sketch",
+  afterLabel = "Your preview",
+  aspect = "4 / 3",
 }: {
   before: string;
   after: string;
   beforeAlt: string;
   afterAlt: string;
   priority?: boolean;
+  beforeLabel?: string;
+  afterLabel?: string;
+  /** CSS aspect-ratio, e.g. "16 / 9". */
+  aspect?: string;
 }) {
   const [pos, setPos] = useState(50);
   const box = useRef<HTMLDivElement>(null);
@@ -32,7 +39,8 @@ export function BeforeAfter({
   return (
     <div
       ref={box}
-      className="relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-[24px] bg-silk"
+      style={{ aspectRatio: aspect }}
+      className="relative w-full touch-pan-y select-none overflow-hidden rounded-[24px] bg-silk"
       onPointerDown={(e) => {
         dragging.current = true;
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -50,10 +58,10 @@ export function BeforeAfter({
       </div>
 
       <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-ink">
-        Your sketch
+        {beforeLabel}
       </span>
       <span className="pointer-events-none absolute right-4 top-4 rounded-full bg-ink/80 px-3 py-1 text-xs font-semibold text-white">
-        Your preview
+        {afterLabel}
       </span>
 
       <div className="pointer-events-none absolute inset-y-0" style={{ left: `calc(${pos}% - 9px)` }}>
@@ -62,7 +70,7 @@ export function BeforeAfter({
       <button
         type="button"
         role="slider"
-        aria-label="Compare sketch and preview"
+        aria-label={`Compare ${beforeLabel.toLowerCase()} and ${afterLabel.toLowerCase()}`}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(pos)}

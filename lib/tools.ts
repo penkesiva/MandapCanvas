@@ -38,6 +38,24 @@ export const FREE_TOOLS: FreeTool[] = [
     href: "/looks",
   },
   {
+    slug: "ai-venue-decor-visualizer",
+    name: "AI venue decor visualizer",
+    blurb: "Upload a photo of your hall or backyard. See it decorated for your wedding. First try free.",
+    title: "AI Wedding Venue Decor Visualizer: See Your Hall or Backyard Decorated (Free)",
+    description:
+      "Free AI wedding decor visualizer. Upload a photo of your empty banquet hall, backyard, lawn or temple and see it decorated for the mandap, reception, Sangeet, Mehndi or Haldi in Royal, South Indian, Floral, Modern, Mughal or Boho style. Drag the slider to compare before and after. First try free.",
+    keywords: [
+      "wedding venue decor visualizer",
+      "AI wedding decoration",
+      "see my venue decorated",
+      "banquet hall decoration ideas",
+      "backyard Indian wedding decor",
+      "mandap decoration AI",
+      "wedding decor preview",
+    ],
+    image: "/samples/hero-after.jpg",
+  },
+  {
     slug: "wedding-invitation-maker",
     name: "AI wedding invitation maker",
     blurb: "Type your details, pick one of 13 styles, from royal to anime. First card free.",

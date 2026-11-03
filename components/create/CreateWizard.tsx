@@ -102,6 +102,7 @@ export function CreateWizard({
   initialPack,
   initialStyle,
   initialPalette,
+  initialRef,
   mode,
   credits,
   plan,
@@ -110,6 +111,8 @@ export function CreateWizard({
   initialPack: PackId;
   initialStyle?: string;
   initialPalette?: string;
+  /** A photo to use as one event's design (from the venue visualizer). */
+  initialRef?: { event: EventId; url: string };
   mode: "couple" | "proposal";
   credits: number;
   plan: string | null;
@@ -150,7 +153,20 @@ export function CreateWizard({
     } catch {
       /* storage unavailable */
     }
+    if (initialRef) {
+      setS((cur) => {
+        const events = cur.events.includes(initialRef.event) ? cur.events : [...cur.events, initialRef.event];
+        const base = resolveSettings({ ...cur, events }).eventSettings;
+        return {
+          ...cur,
+          events,
+          eventSettings: { ...base, [initialRef.event]: { ...base[initialRef.event]!, design: { source: "upload", imageUrl: initialRef.url } } },
+        };
+      });
+      setActiveEvent(initialRef.event);
+    }
     setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialStyle, initialPalette]);
   useEffect(() => {
     if (!hydrated) return;
@@ -517,6 +533,15 @@ export function CreateWizard({
       {step === 0 && (
         <section aria-labelledby="wedding-h" className="space-y-8">
           <h2 id="wedding-h" className="text-2xl">Tell us about your wedding</h2>
+          {initialRef && s.eventSettings[initialRef.event]?.design?.imageUrl === initialRef.url ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-gold/50 bg-silk p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={initialRef.url} alt="" className="h-14 w-20 flex-none rounded-lg object-cover" />
+              <p className="text-sm">
+                <span className="font-semibold">Your decorated venue is in.</span> It&apos;s the design for your {eventLabel(initialRef.event, s.tradition).toLowerCase()}. Pick your other events, then set each one&apos;s design.
+              </p>
+            </div>
+          ) : null}
           <Field label="Tradition">
             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Tradition">
               {TRADITIONS.map((t) => (

@@ -66,7 +66,7 @@ export function SiteFooter() {
           </p>
         </div>
         <FooterCol title="Couples" links={[["Bridal looks", "/looks"], ["Mandap designs", "/mandap"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
-        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Invitation maker", "/tools/wedding-invitation-maker"], ["Palette from a photo", "/tools/outfit-photo-color-palette"], ["Palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Hashtag generator", "/tools/wedding-hashtag-generator"]]} />
+        <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Venue decor visualizer", "/tools/ai-venue-decor-visualizer"], ["Invitation maker", "/tools/wedding-invitation-maker"], ["Palette from a photo", "/tools/outfit-photo-color-palette"], ["Palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>

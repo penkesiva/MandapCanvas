@@ -14,6 +14,8 @@ export function ToolArt({ slug }: { slug: string }) {
   switch (slug) {
     case "ai-bridal-look":
       return <LookArt />;
+    case "ai-venue-decor-visualizer":
+      return <VenueArt />;
     case "wedding-invitation-maker":
       return <InviteArt />;
     case "outfit-photo-color-palette":
@@ -87,6 +89,68 @@ function LookArt() {
             </div>
           </>
         )}
+      </div>
+    </Frame>
+  );
+}
+
+/** The same empty hall, then decorated: the room's arches and floor stay, a mandap and flowers appear. */
+function Hall({ decorated }: { decorated: boolean }) {
+  return (
+    <svg viewBox="0 0 160 120" className="h-full w-auto" aria-hidden="true">
+      <rect width="160" height="120" fill={decorated ? "#fbefe4" : "#ece8e1"} />
+      {/* floor, in perspective */}
+      <path d="M0 120 L40 76 H120 L160 120 Z" fill={decorated ? "#e7d2b8" : "#d8d1c6"} />
+      {/* back wall arches, the same in both */}
+      {[52, 80, 108].map((x) => (
+        <path key={x} d={`M${x - 11} 76 V46 Q${x} 32 ${x + 11} 46 V76`} fill={decorated ? "#f6e3cf" : "#e3ddd4"} stroke="#bfb5a6" strokeWidth="1.4" />
+      ))}
+      <path d="M0 0 L40 28 H120 L160 0" fill="none" stroke="#c9bfb1" strokeWidth="1.4" />
+      {decorated ? (
+        <g>
+          {/* hanging flower strands */}
+          {[44, 56, 68, 92, 104, 116].map((x, i) => (
+            <path key={x} d={`M${x} 28 V${44 + (i % 3) * 6}`} stroke="#E8A33A" strokeWidth="2.4" strokeDasharray="2.4 1.6" strokeLinecap="round" />
+          ))}
+          {/* mandap */}
+          <rect x="60" y="54" width="4" height="30" fill="#C9A24B" />
+          <rect x="96" y="54" width="4" height="30" fill="#C9A24B" />
+          <path d="M55 56 Q80 36 105 56 Z" fill="#9E1B32" />
+          <path d="M55 56 Q80 46 105 56" fill="none" stroke="#C9A24B" strokeWidth="2" />
+          <path d="M64 58 Q80 66 96 58" fill="none" stroke="#F2C4C0" strokeWidth="3" />
+          <rect x="58" y="84" width="44" height="5" rx="1.5" fill="#C9A24B" />
+          {/* flowers at the base */}
+          {[56, 64, 96, 104].map((x) => (
+            <g key={x}>
+              <circle cx={x} cy="86" r="4" fill="#C2185B" />
+              <circle cx={x + 2.5} cy="83.5" r="2.6" fill="#F2C4C0" />
+            </g>
+          ))}
+          {/* aisle chairs */}
+          {[0, 1, 2].map((r) => (
+            <g key={r} fill="#FFF8EE" stroke="#C9A24B" strokeWidth="0.8">
+              <rect x={42 - r * 9} y={92 + r * 9} width="8" height="6" rx="1" />
+              <rect x={110 + r * 9} y={92 + r * 9} width="8" height="6" rx="1" />
+            </g>
+          ))}
+        </g>
+      ) : null}
+    </svg>
+  );
+}
+
+function VenueArt() {
+  return (
+    <Frame bg="bg-[linear-gradient(135deg,#f3efe8,#f6e7c8)]">
+      <div className="absolute inset-0 flex items-center justify-center gap-3 px-5 sm:gap-4">
+        <div className="relative h-[66%] -rotate-2 overflow-hidden rounded-lg border-4 border-white shadow-lg">
+          <Hall decorated={false} />
+          <span className="absolute bottom-1 left-1.5 rounded-full bg-white/90 px-1.5 text-[10px] font-semibold text-ink-soft">your venue</span>
+        </div>
+        <Arrow />
+        <div className="frame-gold relative h-[84%] rotate-1 overflow-hidden rounded-xl shadow-xl">
+          <Hall decorated />
+        </div>
       </div>
     </Frame>
   );

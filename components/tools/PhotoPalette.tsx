@@ -8,6 +8,7 @@ import { colorDistance, extractColors, hexToRgb, mainOutfitColor, nameColor, sam
 import { nearestOutfit } from "@/lib/outfitColors";
 import { PALETTES, getPalette } from "@/lib/catalog";
 import { CoupleScene, Family } from "./Figures";
+import { PaletteMandap } from "./PaletteMandap";
 
 const EXAMPLES = [
   { src: "/samples/bride.jpg", label: "Emerald lehenga" },
@@ -321,11 +322,16 @@ export function PhotoPalette() {
                         className={`btn btn-sm mt-2 w-full ${i === 0 ? "btn-primary" : "btn-ghost"}`}
                         onClick={() => track("tool_photo_palette_cta", { palette: p.id })}
                       >
-                        See it on your mandap
+                        Design with this palette
                       </Link>
                     </div>
                   ))}
                 </div>
+                <PaletteMandap
+                  colors={[main, ...colors.filter((c) => c.hex !== main.hex && !c.metal)].slice(0, 5).map((c) => ({ hex: c.hex, name: c.name }))}
+                  metal={metal?.metal === "silver" ? "silver" : "gold"}
+                  palette={decor[0]?.id ?? match.decorPalette}
+                />
                 <p className="mt-3 text-sm">
                   <span className="font-semibold text-kumkum-deep">Avoid:</span> {match.avoid}
                 </p>
