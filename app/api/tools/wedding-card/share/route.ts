@@ -27,9 +27,15 @@ export async function POST(request: Request) {
   } catch {
     return jsonError("Couldn't read the card. Try again.");
   }
+  // A light preview copy for chat apps: WhatsApp drops images that are large or slow to fetch.
+  const og = await sharp(data).resize({ width: 600, height: 800, fit: "inside" }).jpeg({ quality: 76, mozjpeg: true }).toBuffer({ resolveWithObject: true });
   const id = randomBytes(6).toString("base64url");
-  const saved = await saveImage(`cards/shared/${id}`, data, "image/jpeg");
+  const [saved, ogSaved] = await Promise.all([
+    saveImage(`cards/shared/${id}`, data, "image/jpeg"),
+    saveImage(`cards/shared/${id}-og`, og.data, "image/jpeg"),
+  ]);
   // Shared cards stay up for a year: long enough for the wedding.
-  await setJSON(`card:${id}`, { url: saved.url, template: getCardTemplate(template).id, at: Date.now() } satisfies SharedCard, { ex: 365 * 86400 });
+  const card: SharedCard = { url: saved.url, ogUrl: ogSaved.url, ogW: og.info.width, ogH: og.info.height, template: getCardTemplate(template).id, at: Date.now() };
+  await setJSON(`card:${id}`, card, { ex: 365 * 86400 });
   return NextResponse.json({ ok: true, link: `${SITE.url}/c/${id}`, image: saved.url });
 }

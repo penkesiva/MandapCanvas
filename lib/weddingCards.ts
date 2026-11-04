@@ -47,6 +47,10 @@ export interface CardTemplate {
 /** A finished invitation saved for sharing at /c/[id]. */
 export interface SharedCard {
   url: string;
+  /** A small copy for link previews (WhatsApp skips large images). */
+  ogUrl?: string;
+  ogW?: number;
+  ogH?: number;
   template: string;
   at: number;
 }

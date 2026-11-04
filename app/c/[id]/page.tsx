@@ -11,14 +11,22 @@ async function load(id: string): Promise<SharedCard | null> {
 }
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const card = await load((await props.params).id);
-  if (!card) return { title: "Invitation not found" };
+  const { id } = await props.params;
+  const card = await load(id);
+  if (!card) return { title: "Invitation not found", robots: { index: false } };
+  const title = "You're invited";
+  const description = "Tap to see our wedding invitation.";
+  const img = card.ogUrl ?? card.url;
+  const images = img.startsWith("http")
+    ? [{ url: img, secureUrl: img, width: card.ogW ?? 600, height: card.ogH ?? 800, type: "image/jpeg", alt: "Wedding invitation" }]
+    : undefined;
   return {
-    title: "You're invited",
-    description: "A wedding invitation made with MandapCanvas.",
+    title: { absolute: title },
+    description,
     robots: { index: false },
-    openGraph: card.url.startsWith("http") ? { title: "You're invited", images: [{ url: card.url }] } : undefined,
-    twitter: { card: "summary_large_image", title: "You're invited" },
+    alternates: { canonical: `/c/${id}` },
+    openGraph: { type: "website", siteName: "MandapCanvas", title, description, url: `/c/${id}`, images },
+    twitter: { card: "summary_large_image", title, description, images: images?.map((i) => i.url) },
   };
 }
 
