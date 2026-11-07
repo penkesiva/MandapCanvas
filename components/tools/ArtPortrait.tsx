@@ -245,9 +245,8 @@ export function ArtPortrait() {
                     ) : (
                       <Paintbrush size={22} className="absolute left-1/2 top-[40%] -translate-x-1/2 text-white/90" aria-hidden="true" />
                     )}
-                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-2 pb-1.5 pt-8 text-white">
-                      <span className="block text-sm font-semibold leading-tight">{x.name}</span>
-                      <span className="block text-[11px] leading-tight text-white/85">{x.hint}</span>
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-8 text-sm font-semibold leading-tight text-white">
+                      {x.name}
                     </span>
                     {x.popular ? (
                       <span className="absolute left-1.5 top-1.5 rounded-full bg-gold px-1.5 py-0.5 text-[10px] font-semibold text-maroon-deep">Popular</span>
