@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { anonId, currentUser } from "@/lib/auth";
-import { createAlbum } from "@/lib/albums";
+import { anonId, currentUser, isAdmin } from "@/lib/auth";
+import { createAlbum, fundAlbum } from "@/lib/albums";
 import { parseGlasses } from "@/lib/bridalLooks";
-import type { PackId } from "@/lib/config";
+import { PACKS, type PackId } from "@/lib/config";
 import { getCollection } from "@/lib/lookCollections";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { isOurImageUrl } from "@/lib/validate";
@@ -39,6 +39,12 @@ export async function POST(request: Request) {
     look: { who: "bride", tradition: "north", color: "", jewelry: "royal", glasses: parseGlasses(b.glasses), collection: collection.id },
   };
   const [user, anon] = await Promise.all([currentUser(), anonId(true)]);
+  if (b.adminFree === true && !isAdmin(user)) return jsonError("Not allowed.", 403);
   const album = await createAlbum({ config, packId, kind: "couple", title: collection.albumTitle, user, anon });
+  if (b.adminFree === true) {
+    // Admins skip checkout to test likeness on their own photos: no charge, no revenue recorded.
+    await fundAlbum(album, PACKS[packId].images, PACKS[packId].freeRegens);
+    return NextResponse.json({ ok: true, albumId: album.id, redirect: `/album/${album.id}` });
+  }
   return NextResponse.json({ ok: true, albumId: album.id });
 }

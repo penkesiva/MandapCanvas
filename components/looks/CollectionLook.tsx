@@ -86,9 +86,17 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
   const pack = PACKS[packId];
 
-  async function buy() {
+  useEffect(() => {
+    fetch(`/api/looks/collection/samples?c=${id}`)
+      .then((r) => r.json())
+      .then((d) => setAdmin(!!d.admin))
+      .catch(() => {});
+  }, [id]);
+
+  async function buy(free = false) {
     const fail = (msg: string, field: string) => {
       setError(msg);
       flagField(`[data-field="${field}"]`);
@@ -97,15 +105,19 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
     if (!consent) return fail("Tick the box to confirm these are your photos and you're 18 or older.", "col-consent");
     setError(null);
     setBusy(true);
-    track("collection_checkout", { collection: id, packId, photos: photos.length });
+    track(free ? "collection_admin_free" : "collection_checkout", { collection: id, packId, photos: photos.length });
     try {
       const res = await fetch("/api/looks/collection", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ collection: id, packId, photos, glasses, consent }),
+        body: JSON.stringify({ collection: id, packId, photos, glasses, consent, adminFree: free }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
       const co = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -190,10 +202,15 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
             />
             <span>These are photos of me and I&apos;m 18 or older. Photos are deleted after 7 days; your portraits stay in your album.</span>
           </label>
-          <button type="button" className="btn btn-primary mt-5 w-full" onClick={buy} disabled={busy}>
+          <button type="button" className="btn btn-primary mt-5 w-full" onClick={() => buy()} disabled={busy}>
             {busy ? <Loader2 size={18} className="animate-spin" /> : null}
             Get my {pack.images} portraits, {formatUSD(pack.priceCents)}
           </button>
+          {admin ? (
+            <button type="button" className="btn btn-ghost btn-sm mt-3 w-full" onClick={() => buy(true)} disabled={busy}>
+              Admin: create these {pack.images} portraits free (no payment)
+            </button>
+          ) : null}
           {error ? (
             <p id="col-error" role="alert" className="mt-3 rounded-2xl bg-[#fbeaea] p-3 text-sm text-kumkum-deep">
               {error}
