@@ -186,6 +186,9 @@ export interface User {
   subscriptionId?: string;
   brand?: Brand;
   inventory?: { id: string; url: string; label: string }[];
+  /** Profile: what they'd like to be called, and the wedding date (YYYY-MM-DD) for a countdown. */
+  name?: string;
+  weddingDate?: string;
 }
 
 export interface LedgerEntry {

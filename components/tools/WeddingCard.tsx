@@ -88,6 +88,11 @@ export function WeddingCard() {
       /* storage blocked */
     }
     loaded.current = true;
+    // Signed in with a wedding date on their profile: use it when the date is still empty.
+    fetch("/api/account/profile")
+      .then((r) => r.json())
+      .then((d) => d.weddingDate && setDetails((x) => (x.date ? x : { ...x, date: d.weddingDate })))
+      .catch(() => {});
     fetch("/api/tools/wedding-card")
       .then((r) => r.json())
       .then((d) => {

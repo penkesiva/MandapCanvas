@@ -7,6 +7,7 @@ import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { kv } from "@/lib/kv";
 import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
+import { recordCreation } from "@/lib/creations";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -61,6 +62,10 @@ export async function POST(request: Request) {
     const folder = asSample ? "cards/samples" : `cards/${q.user?.id ?? q.anon ?? "anon"}`;
     const saved = await saveImage(`${folder}/${req.template}`, result.data, result.mimeType);
     await recordStat({ cards: asSample ? 0 : 1, images: 1, costMilliCents: result.costMilliCents });
+    if (!asSample) {
+      const name = CARD_TEMPLATES.find((t) => t.id === req.template)?.name ?? "Invitation";
+      await recordCreation({ userId: q.user?.id, anon: q.anon }, { kind: "card", url: saved.url, title: `${name} background`, href: "/tools/wedding-invitation-maker" });
+    }
     if (asSample) {
       await kv().set(sampleKey(req.template), saved.url);
       return NextResponse.json({ ok: true, url: saved.url });

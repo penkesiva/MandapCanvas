@@ -11,6 +11,7 @@ import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
 import { isOurImageUrl } from "@/lib/validate";
 import { nearestAspect } from "@/lib/venueDecor";
+import { recordCreation } from "@/lib/creations";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -61,7 +62,11 @@ export async function POST(request: Request) {
     const saved = await saveImage(`faces/${owner}/art`, marked, "image/jpeg");
     // The result shows the person's face, so it is deleted on the same schedule as the photo.
     await kv().lpush("faces:index", JSON.stringify({ url: saved.url, at: Date.now() }));
-    await Promise.all([q.spend(), recordStat({ looks: 1, images: 1, costMilliCents: result.costMilliCents })]);
+    await Promise.all([
+      q.spend(),
+      recordStat({ looks: 1, images: 1, costMilliCents: result.costMilliCents }),
+      recordCreation({ userId: q.user?.id, anon: q.anon }, { kind: "art", url: saved.url, title: style.name, href: "/tools/wedding-art-portrait" }),
+    ]);
     return NextResponse.json({
       ok: true,
       url: saved.url,

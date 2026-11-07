@@ -9,6 +9,7 @@ import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
 import { isOurImageUrl } from "@/lib/validate";
+import { recordCreation } from "@/lib/creations";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -61,7 +62,11 @@ export async function POST(request: Request) {
       saveImage(`venues/${owner}/decor`, marked, "image/jpeg"),
       saveImage(`venues/${owner}/ref`, jpeg, "image/jpeg"),
     ]);
-    await Promise.all([q.spend(), recordStat({ venues: 1, images: 1, costMilliCents: result.costMilliCents })]);
+    await Promise.all([
+      q.spend(),
+      recordStat({ venues: 1, images: 1, costMilliCents: result.costMilliCents }),
+      recordCreation({ userId: q.user?.id, anon: q.anon }, { kind: "venue", url: saved.url, title: `${ev.name}, ${st.name}`, href: "/tools/ai-venue-decor-visualizer" }),
+    ]);
     return NextResponse.json({
       ok: true,
       url: saved.url,

@@ -9,6 +9,7 @@ import { kv } from "@/lib/kv";
 import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
 import { isOurImageUrl } from "@/lib/validate";
+import { recordCreation } from "@/lib/creations";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -58,6 +59,10 @@ export async function POST(request: Request) {
     await Promise.all([
       q.spend(),
       recordStat({ looks: 1, images: 1, costMilliCents: result.costMilliCents }),
+      recordCreation(
+        { userId: q.user?.id, anon: q.anon },
+        { kind: "look", url: saved.url, title: look.who === "couple" ? "Couple look" : look.who === "groom" ? "Groom look" : "Bridal look", href: "/looks" },
+      ),
     ]);
     return NextResponse.json({ ok: true, url: saved.url, remaining: q.admin ? 99 : Math.max(0, q.remaining - 1), signedIn: !!q.user });
   } catch (e) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { claimAnonCreations } from "@/lib/creations";
 import { anonId, findOrCreateUser, startSession, verify } from "@/lib/auth";
 import { claimAnonAlbums } from "@/lib/albums";
 import { SITE } from "@/lib/config";
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${SITE.url}/signin?error=expired`);
   }
   const user = await findOrCreateUser(data.email);
-  await claimAnonAlbums(await anonId(false), user.id);
+  await Promise.all([claimAnonAlbums(await anonId(false), user.id), claimAnonCreations(await anonId(false), user.id)]);
   await startSession(user.id);
   const next = data.next?.startsWith("/") && !data.next.startsWith("//") ? data.next : "/account";
   return NextResponse.redirect(`${SITE.url}${next}`);

@@ -7,6 +7,7 @@ import { SITE } from "@/lib/config";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
 import { freeQuota } from "@/lib/freeQuota";
 import { recordStat, todayCostCents } from "@/lib/stats";
+import { recordCreation } from "@/lib/creations";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -73,7 +74,11 @@ export async function POST(request: Request) {
     const marked = await brandMark(result.data, new URL(SITE.url).host);
     const owner = q.user?.id ?? q.anon ?? "anon";
     const saved = await saveImage(`tools/palette-mandap/${owner}`, marked, "image/jpeg");
-    await Promise.all([q.spend(), recordStat({ paletteMandaps: 1, images: 1, costMilliCents: result.costMilliCents })]);
+    await Promise.all([
+      q.spend(),
+      recordStat({ paletteMandaps: 1, images: 1, costMilliCents: result.costMilliCents }),
+      recordCreation({ userId: q.user?.id, anon: q.anon }, { kind: "palette", url: saved.url, title: "Mandap in your colors", href: "/tools/outfit-photo-color-palette" }),
+    ]);
     return NextResponse.json({ ok: true, url: saved.url, remaining: q.admin ? 99 : Math.max(0, q.remaining - 1), signedIn: !!q.user });
   } catch (e) {
     console.error("palette mandap failed", e);

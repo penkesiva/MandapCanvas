@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { claimAnonCreations } from "@/lib/creations";
 import { anonId, startSession } from "@/lib/auth";
 import { claimAnonAlbums } from "@/lib/albums";
 import { stripe } from "@/lib/billing";
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
     const userId = s.metadata?.userId || (email ? await kv().get(`user:email:${email}`) : null);
     const user = userId ? await getJSON<User>(`user:${userId}`) : null;
     if (user) {
-      await claimAnonAlbums(await anonId(false), user.id);
+      await Promise.all([claimAnonAlbums(await anonId(false), user.id), claimAnonCreations(await anonId(false), user.id)]);
       await startSession(user.id);
     }
   }

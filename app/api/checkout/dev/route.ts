@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { claimAnonCreations } from "@/lib/creations";
 import { anonId, currentUser, findOrCreateUser, isValidEmail, startSession } from "@/lib/auth";
 import { claimAnonAlbums as claimAnonAlbumsFor } from "@/lib/albums";
 import { flags, PACKS, PLANS, type PackId, type PlanId } from "@/lib/config";
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     if (!isValidEmail(email)) return jsonError("Enter a valid email.");
     const res = await fulfillPack({ ref, email, packId, albumId: body.albumId, amountCents: PACKS[packId].priceCents });
     if (!res) return jsonError("Order failed.", 500);
-    await claimAnonAlbumsFor(await anonId(false), res.userId);
+    await Promise.all([claimAnonAlbumsFor(await anonId(false), res.userId), claimAnonCreations(await anonId(false), res.userId)]);
     await startSession(res.userId);
     return NextResponse.json({ ok: true, redirect: `/album/${res.albumId}?welcome=1` });
   }

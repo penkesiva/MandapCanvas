@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { currentUser } from "@/lib/auth";
+import { currentUser, isAdmin } from "@/lib/auth";
+import { albumsForUser } from "@/lib/albums";
+import { AccountMenu } from "./AccountMenu";
 import { FOUNDING_OFFER, SITE } from "@/lib/config";
 import { SignupNudge } from "./SignupNudge";
 import { FeedbackButton } from "./FeedbackButton";
 
 export async function SiteHeader() {
   const user = await currentUser();
+  // Unpaid drafts are their cart: a count on the account badge.
+  const drafts = user ? (await albumsForUser(user.id).catch(() => [])).filter((a) => !a.paid).length : 0;
   return (
     <>
     <header className="no-print sticky top-0 z-40 border-b border-gold/40 bg-milk/95 backdrop-blur">
@@ -22,19 +26,16 @@ export async function SiteHeader() {
           <Link href="/pro" className="hover:text-ink">For decorators</Link>
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          {user ? (
-            <Link href="/account" className="hidden text-[0.95rem] font-medium text-ink-soft hover:text-ink sm:inline">
-              My albums
-            </Link>
-          ) : (
+          {user ? null : (
             <Link href="/signin" className="hidden text-[0.95rem] font-medium text-ink-soft hover:text-ink sm:inline">
               Sign in
             </Link>
           )}
-          <Link href="/looks" className="btn btn-primary btn-sm">
+          <Link href="/looks" className={`btn btn-primary btn-sm ${user ? "max-sm:hidden" : ""}`}>
             <span className="sm:hidden">Try free</span>
             <span className="hidden sm:inline">Try your look free</span>
           </Link>
+          {user ? <AccountMenu label={user.name?.trim() || user.email} email={user.email} drafts={drafts} admin={isAdmin(user)} /> : null}
         </div>
       </div>
       <nav className="flex gap-4 overflow-x-auto whitespace-nowrap px-4 pb-2.5 text-sm font-medium text-ink-soft [scrollbar-width:none] md:hidden" aria-label="Main mobile">
@@ -43,7 +44,7 @@ export async function SiteHeader() {
         <Link href="/tools">Free tools</Link>
         <Link href="/pricing">Pricing</Link>
         <Link href="/pro">Decorators</Link>
-        <Link href={user ? "/account" : "/signin"}>{user ? "My albums" : "Sign in"}</Link>
+        {user ? null : <Link href="/signin">Sign in</Link>}
       </nav>
     </header>
     <SignupNudge signedIn={!!user} offer={FOUNDING_OFFER} />
