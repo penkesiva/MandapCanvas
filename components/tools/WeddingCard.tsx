@@ -271,6 +271,22 @@ export function WeddingCard() {
     setTimeout(() => setCopied(null), 1800);
   }
 
+  async function makeSample() {
+    if (!mine) return;
+    try {
+      const res = await fetch("/api/tools/wedding-card/sample", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ template, url: mine.url }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSamples((x) => ({ ...x, [template]: mine.url }));
+    } catch (e) {
+      setError({ msg: e instanceof Error && e.message ? e.message : "Couldn't set the sample. Try again." });
+    }
+  }
+
   async function seedSamples() {
     for (const tpl of CARD_TEMPLATES) {
       if (samples[tpl.id]) continue;
@@ -484,6 +500,18 @@ export function WeddingCard() {
                 <button type="button" className="btn btn-ghost btn-sm" onClick={share}>
                   <Share2 size={16} /> Share
                 </button>
+                {quota?.admin && format === "card" ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={makeSample}
+                    disabled={samples[template] === mine.url}
+                    title="Shown to every visitor in the style list and behind their words before they paint"
+                  >
+                    {samples[template] === mine.url ? <Check size={16} /> : <Sparkles size={16} />}{" "}
+                    {samples[template] === mine.url ? `The ${t.name} sample` : `Admin: use as the ${t.name} sample`}
+                  </button>
+                ) : null}
                 {shareLink ? (
                   <p className="w-full truncate text-xs text-ink-soft">
                     Anyone with this link can see the card: <a href={shareLink} target="_blank" rel="noopener" className="text-kumkum underline">{shareLink.replace(/^https?:\/\//, "")}</a>
