@@ -67,7 +67,7 @@ export default function BridalLookPage() {
             <div className="mt-6 lg:hidden">
               <LookExamples compact />
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="cta-row mt-6 flex flex-wrap gap-3">
               <a href="#try" className="btn btn-primary">
                 Try your look free
               </a>

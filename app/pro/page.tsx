@@ -25,7 +25,7 @@ export default async function Pro(props: { searchParams: Promise<{ interval?: st
             Sketch on an iPad or paper, snap a photo, and in under a minute your client sees it photo-real — in their colors, at their
             venue. Then send a proposal with your logo. Couples book what they can see.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="cta-row mt-8 flex flex-wrap gap-3">
             <a href="#plans" className="btn btn-primary">See plans</a>
             <Link href="/create" className="btn btn-ghost">Try a free preview</Link>
           </div>

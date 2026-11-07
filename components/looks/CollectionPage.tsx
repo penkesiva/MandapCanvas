@@ -37,7 +37,7 @@ export function CollectionPage({
         <header className={id === "maharani" ? "max-w-2xl" : "mt-6 max-w-3xl"}>
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">{title}</h1>
           <p className="mt-4 text-lg text-ink-soft">{intro}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="cta-row mt-6 flex flex-wrap gap-3">
             <a href="#order" className="btn btn-primary">
               Get my portraits from {formatUSD(from)}
             </a>

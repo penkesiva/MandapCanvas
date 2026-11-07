@@ -53,7 +53,8 @@ export function FeedbackButton() {
   if (path.startsWith("/admin") || path.startsWith("/contact")) return null;
 
   return (
-    <div className="no-print fixed bottom-3 left-3 z-40 sm:bottom-5 sm:left-5">
+    // Phones: closed, it's a slim tab on the right edge so it never covers buttons; open, a panel at the bottom.
+    <div className={`no-print fixed z-40 sm:bottom-5 sm:left-5 ${open ? "bottom-3 left-3" : "right-0 top-[58%]"}`}>
       {open ? (
         <div className="pop-in w-[calc(100vw-1.5rem)] max-w-sm rounded-[22px] border border-gold/50 bg-white p-4 shadow-[0_30px_70px_-30px_rgba(74,13,26,0.7)]" role="dialog" aria-label="Send feedback">
           <div className="mb-3 flex items-start justify-between gap-3">
@@ -71,7 +72,7 @@ export function FeedbackButton() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`flex items-center gap-1.5 rounded-full border border-gold/60 bg-white/95 px-3 py-1.5 text-sm font-semibold text-maroon shadow-md backdrop-blur hover:border-kumkum ${nudge ? "mc-nudge" : ""}`}
+          className={`flex items-center gap-1.5 rounded-full border border-gold/60 bg-white/95 px-3 py-1.5 text-sm font-semibold text-maroon shadow-md backdrop-blur hover:border-kumkum max-sm:rotate-180 max-sm:rounded-l-none max-sm:border-l-0 max-sm:px-1.5 max-sm:py-3 max-sm:text-xs max-sm:[writing-mode:vertical-rl] ${nudge ? "mc-nudge" : ""}`}
         >
           <MessageCircleHeart size={16} /> Feedback
         </button>

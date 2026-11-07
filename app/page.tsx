@@ -89,7 +89,7 @@ export default function Home() {
             <p className="mt-3 text-lg text-ink-soft">
               Twelve heritage silk sarees, from Banarasi to Kanjeevaram, at palace halls and temple courtyards. Made from a few of your selfies, so it&apos;s still unmistakably you.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="cta-row mt-7 flex flex-wrap items-center gap-3">
               <Link href="/looks/maharani" className="btn btn-primary">
                 {PACKS.maharani12.images} portraits for {formatUSD(PACKS.maharani12.priceCents)}
               </Link>
@@ -113,7 +113,7 @@ export default function Home() {
                 A Navratri portrait for every day, in that day&apos;s color, from a few of your selfies. Post one each morning.
               </p>
             </div>
-            <div className="flex flex-col items-start gap-2 sm:items-end">
+            <div className="cta-row flex flex-col items-start gap-2 sm:items-end">
               <Link href="/looks/navratri" className="btn btn-gold">
                 {PACKS.navratri9.images} portraits for {formatUSD(PACKS.navratri9.priceCents)}
               </Link>
@@ -152,7 +152,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="cta-row mt-7 flex flex-wrap items-center gap-3">
               <Link href="/create" className="btn btn-primary">
                 Design my mandap free
               </Link>
@@ -228,7 +228,7 @@ export default function Home() {
                 <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
                 <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From {formatUSD(PLANS.pro.monthlyCents)} a month.</p>
               </div>
-              <div className="flex flex-wrap gap-3 md:justify-end">
+              <div className="cta-row flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">
                   See MandapCanvas Pro
                 </Link>
@@ -288,7 +288,7 @@ function Door({
         <h2 className="text-[2rem] text-maroon">{title}</h2>
         <p className="mt-2 text-ink-soft">{text}</p>
         <p className="mt-3 text-sm font-semibold text-mehndi">{meta}</p>
-        <div className="mt-auto flex flex-wrap items-center gap-4 pt-5">
+        <div className="cta-row mt-auto flex flex-wrap items-center gap-4 pt-5">
           <Link href={href} className="btn btn-primary">
             {cta}
           </Link>
@@ -329,7 +329,7 @@ function PriceColumn({
           </li>
         ))}
       </ul>
-      <Link href={href} className="btn btn-gold mt-5 self-start">
+      <Link href={href} className="btn btn-gold mt-5 self-start max-sm:w-full max-sm:self-stretch">
         {cta}
       </Link>
     </div>

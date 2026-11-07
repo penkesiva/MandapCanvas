@@ -46,7 +46,7 @@ export default function MandapPage() {
             <p className="mt-5 max-w-[34rem] text-lg text-ink-soft">
               Sketch it, upload a photo or pick a style. Get a photo-real album of every event, in the colors you&apos;re choosing between.
             </p>
-            <div className="mt-9 flex flex-wrap gap-4">
+            <div className="cta-row mt-9 flex flex-wrap gap-4">
               <Link href="/create" className="btn btn-primary">Make a free preview</Link>
               <Link href="/gallery" className="btn btn-ghost">See sample albums</Link>
             </div>
@@ -215,7 +215,7 @@ export default function MandapPage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="cta-row mt-9 flex flex-wrap gap-3">
               <Link href="/create" className="btn btn-primary">Make a free preview</Link>
               <Link href="/looks" className="btn btn-ghost">Just want portraits? See Looks</Link>
             </div>
@@ -246,7 +246,7 @@ export default function MandapPage() {
                 <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
                 <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From {formatUSD(PLANS.pro.monthlyCents)} a month.</p>
               </div>
-              <div className="flex flex-wrap gap-3 md:justify-end">
+              <div className="cta-row flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">See MandapCanvas Pro</Link>
               </div>
             </div>

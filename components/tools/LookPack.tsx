@@ -301,10 +301,11 @@ export function PhotoRow({
           <button
             type="button"
             onClick={() => ref.current?.click()}
-            className={`grid h-20 w-16 place-items-center rounded-lg border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum ${urls.length === 0 && !busy && attention ? "mc-attention" : ""}`}
+            className={`flex h-20 items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum ${urls.length === 0 ? "w-full px-4 sm:w-auto" : "w-16"} ${urls.length === 0 && !busy && attention ? "mc-attention" : ""}`}
             aria-label={`Add ${label.toLowerCase()}`}
           >
             {busy ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={20} />}
+            {urls.length === 0 ? <span className="text-sm font-semibold">{busy ? "Uploading…" : "Add photos"}</span> : null}
           </button>
         ) : null}
       </div>

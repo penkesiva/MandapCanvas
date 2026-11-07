@@ -58,16 +58,24 @@ function Frame({ children, bg = "bg-silk" }: { children: React.ReactNode; bg?: s
 }
 
 /** A gold medallion arrow, the same mark as the before/after examples on /looks. */
+/** A hand-drawn trail with a loop, ending in a paper plane: "this becomes that". */
 function Arrow() {
   return (
-    <span
-      className="relative z-10 grid h-10 w-10 flex-none place-items-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#f6dc8f,#c9a24b_60%,#a37d2c)] text-maroon-deep shadow-[0_4px_12px_rgba(74,13,26,0.35)] ring-2 ring-white/80 sm:h-11 sm:w-11"
-      aria-hidden="true"
-    >
-      <svg viewBox="0 0 24 24" className="h-5 w-5">
-        <path d="M5 12h12M12 6l6 6-6 6" stroke="currentColor" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </span>
+    <svg viewBox="0 0 64 44" className="relative z-10 h-10 w-14 flex-none -rotate-6 drop-shadow-[0_2px_3px_rgba(74,13,26,0.18)] sm:h-12 sm:w-[4.5rem]" aria-hidden="true">
+      <path
+        d="M3 36 C10 40 17 33 22 27 C27 21 33 21 33 27 C33 33 25 33 25 27 C25 19 33 13 43 13"
+        fill="none"
+        stroke="#8E1B2B"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeDasharray="0.5 4.2"
+      />
+      <g transform="translate(44 4) rotate(12)">
+        <path d="M0 6 L18 0 L11 15 Z" fill="#FFF8EE" stroke="#8E1B2B" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M0 6 L11 8.5 L18 0 M11 8.5 L11 15" fill="none" stroke="#8E1B2B" strokeWidth="1.2" strokeLinejoin="round" />
+        <path d="M11 8.5 L8.5 12 L11 15" fill="#C9A24B" stroke="#8E1B2B" strokeWidth="1" strokeLinejoin="round" />
+      </g>
+    </svg>
   );
 }
 

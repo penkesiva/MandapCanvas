@@ -8,10 +8,17 @@ import { flagField } from "@/lib/flagField";
 import { LOOK_COLLECTIONS, type CollectionId } from "@/lib/lookCollections";
 import { PhotoRow } from "../tools/LookPack";
 
+function bundledSamples(id: CollectionId): Record<number, string> {
+  return Object.fromEntries(
+    LOOK_COLLECTIONS[id].scenes.map((_, i) => [i, id === "maharani" ? `/samples/maharani/scene-${i + 1}.jpg` : `/samples/navratri/day-${i + 1}.jpg`]),
+  );
+}
+
 /** Example gallery for a collection: one portrait per scene, painted once by an admin. */
 export function CollectionGallery({ id }: { id: CollectionId }) {
   const c = LOOK_COLLECTIONS[id];
-  const [samples, setSamples] = useState<Record<number, string>>({});
+  // The example photos that ship with the site; painted samples only fill a scene without one.
+  const [samples, setSamples] = useState<Record<number, string>>(() => bundledSamples(id));
   const [admin, setAdmin] = useState(false);
   const [painting, setPainting] = useState<number | null>(null);
 
@@ -20,7 +27,7 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
       .then((r) => r.json())
       .then((d) => {
         if (d.ok) {
-          setSamples(d.samples ?? {});
+          setSamples({ ...(d.samples ?? {}), ...bundledSamples(id) });
           setAdmin(!!d.admin);
         }
       })

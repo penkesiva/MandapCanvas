@@ -186,37 +186,37 @@ export function BridalLook() {
             className="sr-only"
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
           />
-          <div className="flex flex-col gap-4 p-1 sm:flex-row sm:items-center" data-field="photo">
+          <div data-field="photo">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className={`relative flex h-36 w-28 flex-none items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum ${!photo && !uploading ? "mc-attention" : ""}`}
-              aria-label={photo ? "Change photo" : "Upload photo"}
+              className={`flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-gold/70 bg-silk p-2 pr-4 text-left transition hover:border-kumkum ${!photo && !uploading ? "mc-attention" : ""}`}
             >
-              {photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photo} alt="Your photo" className="h-full w-full object-cover" />
-              ) : uploading ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <ImageUp size={30} />
-              )}
-              {photo && uploading ? (
-                <span className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <span className="relative flex h-28 w-[5.25rem] flex-none items-center justify-center overflow-hidden rounded-xl bg-white text-kumkum">
+                {photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photo} alt="Your photo" className="h-full w-full object-cover" />
+                ) : uploading ? (
                   <Loader2 className="animate-spin" />
-                </span>
-              ) : null}
+                ) : (
+                  <ImageUp size={28} />
+                )}
+                {photo && uploading ? (
+                  <span className="absolute inset-0 flex items-center justify-center bg-white/70">
+                    <Loader2 className="animate-spin" />
+                  </span>
+                ) : null}
+              </span>
+              <span>
+                <span className="block font-semibold text-kumkum">{uploading ? "Uploading…" : photo ? "Change photo" : "Choose a photo"}</span>
+                <span className="mt-0.5 block text-xs text-ink-soft">{photo ? "Tap to use a different one" : "From your phone or computer"}</span>
+              </span>
             </button>
-            <div className="text-sm text-ink-soft">
-              <button type="button" className={`btn btn-ghost btn-sm mb-2 ${!photo && !uploading ? "mc-attention" : ""}`} onClick={() => fileRef.current?.click()}>
-                {photo ? "Change photo" : "Choose a photo"}
-              </button>
-              <ul className="space-y-0.5">
-                <li>✓ Face clearly visible, looking at the camera</li>
-                <li>✓ Good light, no sunglasses or filters</li>
-                <li>✓ {who === "couple" ? "Both of you in one photo" : "Just you, or you in front"}</li>
-              </ul>
-            </div>
+            <ul className="mt-3 space-y-0.5 px-1 text-sm text-ink-soft">
+              <li>✓ Face clearly visible, looking at the camera</li>
+              <li>✓ Good light, no sunglasses or filters</li>
+              <li>✓ {who === "couple" ? "Both of you in one photo" : "Just you, or you in front"}</li>
+            </ul>
           </div>
           {error?.field === "photo" ? (
             <p role="alert" className="mt-2 text-sm font-semibold text-kumkum-deep">

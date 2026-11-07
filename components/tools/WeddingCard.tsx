@@ -68,6 +68,10 @@ export function WeddingCard() {
   const loaded = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const miniRef = useRef<HTMLCanvasElement>(null);
+  // Phones: a small live copy of the card pinned to the bottom while the full preview is off screen.
+  const [previewInView, setPreviewInView] = useState(false);
+  const [started, setStarted] = useState(false);
 
   // restore + quota + samples
   useEffect(() => {
@@ -124,7 +128,26 @@ export function WeddingCard() {
     let art: HTMLImageElement | null = null;
     if (artUrl) art = await cachedImage(artUrl).catch(() => null);
     drawCard(canvas, { art, template: t, details, format, badge: true });
+    const mini = miniRef.current;
+    if (mini) {
+      mini.width = Math.round(canvas.width / 6);
+      mini.height = Math.round(canvas.height / 6);
+      mini.getContext("2d")?.drawImage(canvas, 0, 0, mini.width, mini.height);
+    }
   }, [t, artUrl, details, format]);
+
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setPreviewInView(e.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    const onScroll = () => window.scrollY > 500 && setStarted(true);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(draw, 80);
@@ -518,7 +541,7 @@ export function WeddingCard() {
           </div>
         </Step>
 
-        <div className="mt-5 flex flex-col items-start gap-2">
+        <div className="mt-5 flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
           <button
             type="button"
             className="btn btn-primary w-full sm:w-auto"
@@ -642,6 +665,39 @@ export function WeddingCard() {
             </Link>
           </div>
         ) : null}
+      </div>
+
+      {/* phones: live mini card while the full preview is off screen */}
+      <div
+        className={`fixed inset-x-3 bottom-3 z-30 flex items-center gap-3 rounded-2xl border border-gold/60 bg-white/95 p-2 pr-3 shadow-[0_12px_30px_-12px_rgba(42,11,20,0.55)] backdrop-blur transition duration-300 lg:hidden ${
+          started && !previewInView ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
+        }`}
+        aria-hidden={!started || previewInView}
+      >
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          tabIndex={started && !previewInView ? 0 : -1}
+        >
+          <canvas ref={miniRef} className={`flex-none rounded-md ring-1 ring-line ${format === "story" ? "h-16 w-9" : "h-16 w-12"}`} aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-maroon">
+              {ready ? `${details.name1.trim()} & ${details.name2.trim()}` : "Your card"}
+            </span>
+            <span className="block text-xs text-ink-soft">Tap to see it full size</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm flex-none"
+          onClick={download}
+          disabled={busy || !hasArt}
+          tabIndex={started && !previewInView ? 0 : -1}
+          aria-label="Download my card"
+        >
+          <Download size={16} /> Save
+        </button>
       </div>
     </div>
   );
