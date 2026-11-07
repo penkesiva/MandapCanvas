@@ -56,6 +56,24 @@ export const FREE_TOOLS: FreeTool[] = [
     image: "/samples/hero-after.jpg",
   },
   {
+    slug: "wedding-art-portrait",
+    name: "Art portrait",
+    blurb: "Upload a photo of you two. Get it as dreamy anime, 80s retro, a Bollywood poster and more. Try for free.",
+    title: "Turn Your Photo Into Art: Anime, 80s, Bollywood Poster Couple Portraits (Free)",
+    description:
+      "Free AI couple portrait maker. Upload a photo of the two of you and turn it into a dreamy anime still, an 80s retro glamour shot, a Bollywood poster, a Mughal miniature, Madhubani, Tanjore, a classic oil painting, 3D animated, watercolor or pop art. Dress up for the wedding or keep your clothes. Try for free.",
+    keywords: [
+      "anime couple portrait from photo",
+      "turn photo into anime",
+      "80s style portrait AI",
+      "Bollywood poster from photo",
+      "couple portrait AI free",
+      "Tanjore painting from photo",
+      "save the date portrait",
+    ],
+    image: "/samples/look-couple-after.jpg",
+  },
+  {
     slug: "wedding-invitation-maker",
     name: "Wedding invitation maker",
     blurb: "Type your details, pick one of 13 styles, from royal to anime. Try for free.",

@@ -16,6 +16,8 @@ export function ToolArt({ slug }: { slug: string }) {
       return <LookArt />;
     case "ai-venue-decor-visualizer":
       return <VenueArt />;
+    case "wedding-art-portrait":
+      return <ArtStylesArt />;
     case "wedding-invitation-maker":
       return <InviteArt />;
     case "outfit-photo-color-palette":
@@ -76,6 +78,37 @@ function Arrow() {
         <path d="M11 8.5 L8.5 12 L11 15" fill="#C9A24B" stroke="#8E1B2B" strokeWidth="1" strokeLinejoin="round" />
       </g>
     </svg>
+  );
+}
+
+/** A couple photo, then a fan of three painted style cards. */
+function ArtStylesArt() {
+  const cards = [
+    { name: "Anime", bg: "linear-gradient(160deg,#9CC9E8,#F7E3A1)", rot: "-rotate-6" },
+    { name: "80s", bg: "linear-gradient(160deg,#FF5FA2,#5B3FD1)", rot: "rotate-0" },
+    { name: "Tanjore", bg: "linear-gradient(160deg,#7A1F3D,#E2B43C)", rot: "rotate-6" },
+  ];
+  return (
+    <Frame>
+      <div className="flex h-full items-center justify-center gap-2 px-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/samples/look-couple-before.jpg" alt="" className="h-[78%] w-auto -rotate-3 rounded-lg border-4 border-white object-cover shadow-lg" loading="lazy" />
+        <Arrow />
+        <div className="relative flex h-[82%] items-center">
+          {cards.map((c, i) => (
+            <span
+              key={c.name}
+              className={`relative flex h-full w-[4.5rem] flex-col justify-end overflow-hidden rounded-xl border-[3px] border-white shadow-lg sm:w-20 ${c.rot} ${i ? "-ml-8" : ""}`}
+              style={{ background: c.bg, zIndex: i }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/samples/look-couple-before.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-luminosity" loading="lazy" />
+              <span className="relative bg-black/45 px-1 py-0.5 text-center text-[10px] font-semibold text-white">{c.name}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </Frame>
   );
 }
 
