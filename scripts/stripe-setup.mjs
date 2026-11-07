@@ -4,7 +4,8 @@
  *
  * Creates:
  *  - the webhook endpoint with the 5 events the site listens to (prints its signing secret)
- *  - FOUNDING: 25% off one order, 25 uses (replaces the old $20-off version of the same code)
+ *  - FOUNDING: 25% off one order, 25 uses, created SWITCHED OFF as a backup (turn it on in Stripe → Coupons when wanted);
+ *    the old $20-off version of the code is switched off
  *  - FOUNDINGPRO: 50% off for 6 months, 10 uses (decorator Pro plans)
  *
  * Run from the project folder (the key is typed, not saved in shell history):
@@ -77,11 +78,13 @@ await ensureCoupon("FOUNDING25", { name: "Founding couple: 25% off", percent_off
       console.log("✓ Switched off the old $20-off FOUNDING code.");
     }
   }
-  const now = await stripe.promotionCodes.list({ code: "FOUNDING", active: true, limit: 1 });
-  if (now.data.length) console.log("✓ Promotion code FOUNDING (25% off) already exists.");
+  // Kept as a backup: created switched off. Turn it on in Stripe (Product catalog → Coupons → FOUNDING25 → the code) when wanted.
+  const all = await stripe.promotionCodes.list({ code: "FOUNDING", limit: 10 });
+  const backup = all.data.find((pc) => (typeof pc.promotion?.coupon === "string" ? pc.promotion.coupon : pc.promotion?.coupon?.id ?? pc.coupon?.id) === "FOUNDING25");
+  if (backup) console.log(`✓ Backup code FOUNDING (25% off) exists, currently ${backup.active ? "ON" : "off"}.`);
   else {
-    await stripe.promotionCodes.create({ code: "FOUNDING", promotion: { type: "coupon", coupon: "FOUNDING25" } });
-    console.log("✓ Promotion code FOUNDING created: 25% off.");
+    await stripe.promotionCodes.create({ code: "FOUNDING", active: false, promotion: { type: "coupon", coupon: "FOUNDING25" } });
+    console.log("✓ Backup code FOUNDING (25% off) created, switched off.");
   }
 }
 

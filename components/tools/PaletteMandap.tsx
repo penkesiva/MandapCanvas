@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Download, Loader2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
-import { FOUNDING_OFFER } from "@/lib/config";
+import { offerLine } from "@/lib/config";
 import { flagField } from "@/lib/flagField";
 import { FreeTrySignup } from "./FreeTrySignup";
 
@@ -140,7 +140,7 @@ export function PaletteMandap({
             next="/tools/outfit-photo-color-palette"
             source="palettemandap"
             title="One more mandap, free"
-            text={`Create a free account to paint another outfit's colors. You'll also get ${FOUNDING_OFFER.text}.`}
+            text={`Create a free account to paint another outfit's colors.${offerLine()}`}
             cta="Get my free preview"
           />
         ) : null}

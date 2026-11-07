@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Download, ImageUp, Loader2, RefreshCw, Share2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
-import { FOUNDING_OFFER, PACKS, formatUSD } from "@/lib/config";
+import { PACKS, formatUSD, offerLine } from "@/lib/config";
 import { OUTFIT_COLORS } from "@/lib/outfitColors";
 import { LOOK_JEWELRY, LOOK_SETTINGS, LOOK_TRADITIONS, getTradition, type LookGlasses, type LookJewelry, type LookSetting, type LookWho } from "@/lib/bridalLooks";
 import { Bride, CoupleScene, Groom } from "./Figures";
@@ -403,7 +403,7 @@ export function BridalLook() {
             next="/looks"
             source="looks"
             title="One more look, free"
-            text={`Create a free account to try another tradition or color. You'll also get ${FOUNDING_OFFER.text}.`}
+            text={`Create a free account to try another tradition or color.${offerLine()}`}
             cta="Get my free look"
           /> : null}
         {(outOfTries && quota?.signedIn) || (result && !busy) ? <AlbumUpsell who={who} /> : null}

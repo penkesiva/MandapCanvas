@@ -29,7 +29,7 @@ function shell(body: string): string {
 }
 
 export async function sendLoginEmail(to: string, link: string, opts?: { offer?: boolean }) {
-  const offer = opts?.offer
+  const offer = opts?.offer && FOUNDING_OFFER.active
     ? `<p style="font-size:15px;background:#fbf1ee;border-radius:12px;padding:12px 14px">Welcome! As a founding couple you get <strong>${FOUNDING_OFFER.text}</strong>: use code <strong>${FOUNDING_OFFER.code}</strong> at checkout.</p>`
     : "";
   return send(
@@ -39,7 +39,7 @@ export async function sendLoginEmail(to: string, link: string, opts?: { offer?: 
       <p><a href="${link}" style="display:inline-block;background:#9E1B32;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif">Sign in to MandapCanvas</a></p>
       ${offer}
       <p style="font-size:13px;color:#7a6470">If you didn't ask for this, you can ignore this email.</p>`),
-    `Sign in to MandapCanvas: ${link}\nThis link works for 30 minutes.${opts?.offer ? `\nFounding offer: ${FOUNDING_OFFER.text} with code ${FOUNDING_OFFER.code}.` : ""}`,
+    `Sign in to MandapCanvas: ${link}\nThis link works for 30 minutes.${opts?.offer && FOUNDING_OFFER.active ? `\nFounding offer: ${FOUNDING_OFFER.text} with code ${FOUNDING_OFFER.code}.` : ""}`,
   );
 }
 

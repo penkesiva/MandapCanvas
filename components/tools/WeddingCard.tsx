@@ -21,7 +21,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Copy, Download, Link2, Loader2, Paintbrush, Share2, Sparkles, Wand2 } from "lucide-react";
 import { engage as track } from "@/lib/engage";
-import { FOUNDING_OFFER } from "@/lib/config";
+import { offerLine } from "@/lib/config";
 import {
   CARD_EVENTS,
   CARD_TEMPLATES,
@@ -537,7 +537,7 @@ export function WeddingCard() {
             next="/tools/wedding-invitation-maker"
             source="cards"
             title="One more card, free"
-            text={`Create a free account to paint one more style, for another event or to compare. You'll also get ${FOUNDING_OFFER.text}.`}
+            text={`Create a free account to paint one more style, for another event or to compare.${offerLine()}`}
             cta="Get my free card"
           />
         ) : null}

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Download, ImageUp, Loader2, RefreshCw, Share2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
-import { FOUNDING_OFFER } from "@/lib/config";
+import { offerLine } from "@/lib/config";
 import { VENUE_EVENTS, VENUE_PALETTES, VENUE_STYLES } from "@/lib/venueDecor";
 import type { EventId } from "@/lib/types";
 import { BeforeAfter } from "../BeforeAfter";
@@ -375,7 +375,7 @@ export function VenueDecor() {
             next="/tools/ai-venue-decor-visualizer"
             source="venue"
             title="One more try, free"
-            text={`Create a free account to try another style or event. You'll also get ${FOUNDING_OFFER.text}.`}
+            text={`Create a free account to try another style or event.${offerLine()}`}
             cta="Get my free try"
           />
         ) : null}

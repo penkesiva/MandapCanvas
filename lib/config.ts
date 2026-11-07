@@ -161,9 +161,16 @@ export const PLANS: Record<PlanId, Plan> = {
 
 /** Offer shown to people who sign up from the site (a Stripe promotion code you create in the dashboard). */
 export const FOUNDING_OFFER = {
+  /** Off for now: prices are already low. Flip to true (and switch the code on in Stripe) to bring it back. */
+  active: false,
   code: process.env.NEXT_PUBLIC_FOUNDING_CODE || "FOUNDING",
   text: "25% off your first album",
 };
+
+/** " You'll also get 25% off…" while the founding offer is on; empty otherwise. */
+export function offerLine(): string {
+  return FOUNDING_OFFER.active ? ` You'll also get ${FOUNDING_OFFER.text}.` : "";
+}
 
 /** Free preview limits (no account needed). */
 export const FREE_PREVIEW = {

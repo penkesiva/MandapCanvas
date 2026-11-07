@@ -34,7 +34,7 @@ function ready(s: State) {
 }
 
 /** After someone has spent real time on the site, invite them to save their ideas with a free account. */
-export function SignupNudge({ signedIn, offer }: { signedIn: boolean; offer: { code: string; text: string } }) {
+export function SignupNudge({ signedIn, offer }: { signedIn: boolean; offer: { active: boolean; code: string; text: string } }) {
   const path = usePathname() || "/";
   const skip = signedIn || SKIP.some((p) => path.startsWith(p));
   const [open, setOpen] = useState(false);
@@ -153,9 +153,11 @@ export function SignupNudge({ signedIn, offer }: { signedIn: boolean; offer: { c
           <>
             <ul className="space-y-1 text-[0.95rem]">
               <li>✓ A free account, no password</li>
-              <li>
-                ✓ <strong>{offer.text}</strong> as a founding couple
-              </li>
+              {offer.active ? (
+                <li>
+                  ✓ <strong>{offer.text}</strong> as a founding couple
+                </li>
+              ) : null}
               <li>✓ Your two free previews, saved</li>
             </ul>
             <form onSubmit={submit} className="mt-4 flex flex-col gap-2 sm:flex-row">
