@@ -6,7 +6,7 @@
  *  - the webhook endpoint with the 5 events the site listens to (prints its signing secret)
  *  - FOUNDING: 25% off one order, 25 uses, created SWITCHED OFF as a backup (turn it on in Stripe → Coupons when wanted);
  *    the old $20-off version of the code is switched off
- *  - FOUNDINGPRO: 50% off for 6 months, 10 uses (decorator Pro plans)
+ *  - FOUNDINGPRO: 10% off for 6 months, 10 uses (decorator Pro plans; coupon FOUNDINGPRO10)
  *
  * Run from the project folder (the key is typed, not saved in shell history):
  *   read -s STRIPE_SECRET_KEY && export STRIPE_SECRET_KEY && node scripts/stripe-setup.mjs
@@ -88,7 +88,17 @@ await ensureCoupon("FOUNDING25", { name: "Founding couple: 25% off", percent_off
   }
 }
 
-await ensureCoupon("FOUNDINGPRO", { name: "Founding decorator: 50% off for 6 months", percent_off: 50, duration: "repeating", duration_in_months: 6, max_redemptions: 10 });
-await ensurePromo("FOUNDINGPRO", "FOUNDINGPRO");
+// Was 50% off (coupon "FOUNDINGPRO", now archived). Stripe can't change a coupon's percent, so 10% is a new coupon.
+await ensureCoupon("FOUNDINGPRO10", { name: "Founding decorator: 10% off for 6 months", percent_off: 10, duration: "repeating", duration_in_months: 6, max_redemptions: 10 });
+{
+  const codes = await stripe.promotionCodes.list({ code: "FOUNDINGPRO", active: true, limit: 10 });
+  const on = codes.data.find((pc) => (typeof pc.promotion?.coupon === "string" ? pc.promotion.coupon : pc.promotion?.coupon?.id ?? pc.coupon?.id) === "FOUNDINGPRO10");
+  for (const pc of codes.data) if (pc !== on) await stripe.promotionCodes.update(pc.id, { active: false });
+  if (on) console.log("✓ Promotion code FOUNDINGPRO (10% off) already exists.");
+  else {
+    await stripe.promotionCodes.create({ code: "FOUNDINGPRO", promotion: { type: "coupon", coupon: "FOUNDINGPRO10" } });
+    console.log("✓ Promotion code FOUNDINGPRO created: 10% off for 6 months.");
+  }
+}
 
 console.log("\nDone. Next: add STRIPE_WEBHOOK_SECRET in Vercel, then Redeploy.\n");

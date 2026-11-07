@@ -109,7 +109,7 @@ export default async function Pro(props: { searchParams: Promise<{ interval?: st
             })}
           </div>
           <p className="mt-6 text-sm text-ink-soft">
-            Founding offer for the first 10 decorators: 50% off for 6 months. Email{" "}
+            Founding offer for the first 10 decorators: 10% off for 6 months. Email{" "}
             <a className="underline" href={`mailto:${SITE.supportEmail}?subject=Founding%20decorator`}>{SITE.supportEmail}</a> for your code.
           </p>
         </div>
