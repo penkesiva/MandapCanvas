@@ -54,7 +54,7 @@ export function FeedbackButton() {
 
   return (
     // Phones: closed, it's a slim tab on the right edge so it never covers buttons; open, a panel at the bottom.
-    <div className={`no-print fixed z-40 sm:bottom-5 sm:left-5 ${open ? "bottom-3 left-3" : "right-0 top-[58%]"}`}>
+    <div className={`no-print fixed z-40 sm:bottom-5 sm:left-5 ${open ? "bottom-3 left-3" : "max-sm:right-0 max-sm:top-[58%]"}`}>
       {open ? (
         <div className="pop-in w-[calc(100vw-1.5rem)] max-w-sm rounded-[22px] border border-gold/50 bg-white p-4 shadow-[0_30px_70px_-30px_rgba(74,13,26,0.7)]" role="dialog" aria-label="Send feedback">
           <div className="mb-3 flex items-start justify-between gap-3">
