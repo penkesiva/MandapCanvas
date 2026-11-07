@@ -3,7 +3,7 @@ import type { FeedbackEntry } from "@/app/api/feedback/route";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/components/SiteChrome";
-import { currentUser, isAdmin } from "@/lib/auth";
+import { currentUser, getUserById, isAdmin } from "@/lib/auth";
 import { readStats } from "@/lib/stats";
 import { getAlbum, listAlbumIds } from "@/lib/albums";
 import { kv, kvBackend } from "@/lib/kv";
@@ -35,6 +35,9 @@ export default async function Admin() {
     })
     .filter((f): f is FeedbackEntry => !!f);
   const users = userList.length;
+  // Who owns each recent album (an email, or "signed out" for drafts tied to a browser).
+  const ownerIds = [...new Set(albums.map((a) => a!.ownerUserId).filter((x): x is string => !!x))];
+  const owners = new Map((await Promise.all(ownerIds.map(getUserById))).filter((u) => !!u).map((u) => [u!.id, u!.email]));
   const leads = leadRows
     .map((l) => {
       try {
@@ -158,6 +161,10 @@ export default async function Admin() {
             <li key={a!.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
               <span>
                 {a!.title} <span className="text-ink-soft">({a!.kind}, {a!.paid ? a!.packId : "draft"}, {a!.status})</span>
+                <span className="block text-xs text-ink-soft">
+                  {a!.ownerUserId ? (owners.get(a!.ownerUserId) ?? "unknown account") : "signed out (tied to one browser)"} ·{" "}
+                  {new Date(a!.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" })}
+                </span>
               </span>
               <span className="text-ink-soft">
                 {a!.shots.filter((s) => s.status === "done").length}/{a!.shots.length} images, {formatUSD(Math.round((a!.costMilliCents ?? 0) / 1000))} cost{" "}
