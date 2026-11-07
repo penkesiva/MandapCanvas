@@ -1,10 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+/** The reveal sweep played once when the slider scrolls into view: [position %, ms to get there]. */
+const SWEEP: [number, number][] = [
+  [88, 800],
+  [12, 1300],
+  [50, 800],
+];
+const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
 /**
  * Drag (or use arrow keys) to reveal the photo-real preview over the hand sketch.
- * The divider is a strand of marigolds.
+ * The divider is a strand of marigolds. The first time it comes into view it sweeps
+ * right and left once to show the reveal; touching it stops the sweep. Skipped for reduced motion.
  */
 export function BeforeAfter({
   before,
@@ -29,6 +38,47 @@ export function BeforeAfter({
   const [pos, setPos] = useState(50);
   const box = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  const touched = useRef(false);
+
+  useEffect(() => {
+    const el = box.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    let delay = 0;
+    const play = () => {
+      let seg = 0;
+      let from = 50;
+      let start = performance.now();
+      const step = (now: number) => {
+        if (touched.current) return;
+        const [to, ms] = SWEEP[seg];
+        const t = Math.min(1, (now - start) / ms);
+        setPos(from + (to - from) * ease(t));
+        if (t < 1) return void (raf = requestAnimationFrame(step));
+        seg += 1;
+        if (seg >= SWEEP.length) return;
+        from = to;
+        start = now;
+        raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        delay = window.setTimeout(play, 350);
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      clearTimeout(delay);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const moveTo = useCallback((clientX: number) => {
     const r = box.current?.getBoundingClientRect();
@@ -42,6 +92,7 @@ export function BeforeAfter({
       style={{ aspectRatio: aspect }}
       className="relative w-full touch-pan-y select-none overflow-hidden rounded-[24px] bg-silk"
       onPointerDown={(e) => {
+        touched.current = true;
         dragging.current = true;
         (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
         moveTo(e.clientX);
@@ -75,6 +126,7 @@ export function BeforeAfter({
         aria-valuemax={100}
         aria-valuenow={Math.round(pos)}
         onKeyDown={(e) => {
+          touched.current = true;
           if (e.key === "ArrowLeft") setPos((p) => Math.max(0, p - 5));
           if (e.key === "ArrowRight") setPos((p) => Math.min(100, p + 5));
         }}
