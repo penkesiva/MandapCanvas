@@ -140,14 +140,17 @@ async function mockImage(input: GenerateInput): Promise<GenerateOutput> {
   return { data, mimeType: "image/png", costMilliCents: 0, mocked: true };
 }
 
-/** Burns a tiled watermark into free-preview images and downscales them. */
+/**
+ * Burns a tiled "MandapCanvas preview" watermark into free-preview images and downscales them.
+ * The words are drawn as shapes from the bundled font: servers have no system fonts, so SVG <text> showed as boxes.
+ */
 export async function watermark(data: Buffer): Promise<Buffer> {
   const img = sharp(data).resize({ width: 900, withoutEnlargement: true });
   const meta = await img.toBuffer({ resolveWithObject: true });
   const { width, height } = meta.info;
   const tile = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <defs><pattern id="p" width="360" height="200" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
-      <text x="10" y="110" font-family="Georgia, serif" font-size="30" fill="rgba(255,255,255,0.42)" stroke="rgba(0,0,0,0.18)" stroke-width="1">MandapCanvas preview</text>
+      <path d="${textPath(fonts().display, "MandapCanvas preview", 10, 110, 30)}" fill="rgba(255,255,255,0.42)" stroke="rgba(0,0,0,0.18)" stroke-width="1"/>
     </pattern></defs>
     <rect width="100%" height="100%" fill="url(#p)"/>
   </svg>`;
