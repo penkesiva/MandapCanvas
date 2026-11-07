@@ -13,7 +13,7 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
   const c = LOOK_COLLECTIONS[id];
   const [samples, setSamples] = useState<Record<number, string>>({});
   const [admin, setAdmin] = useState(false);
-  const [seeding, setSeeding] = useState<string | null>(null);
+  const [painting, setPainting] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`/api/looks/collection/samples?c=${id}`)
@@ -30,7 +30,8 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
   async function seed() {
     for (let i = 0; i < c.scenes.length; i++) {
       if (samples[i]) continue;
-      setSeeding(c.scenes[i].name);
+      setPainting(i);
+      document.getElementById(`scene-${id}-${i}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
       try {
         const res = await fetch("/api/looks/collection/samples", {
           method: "POST",
@@ -43,7 +44,7 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
         /* keep going */
       }
     }
-    setSeeding(null);
+    setPainting(null);
   }
 
   const missing = c.scenes.some((_, i) => !samples[i]);
@@ -51,11 +52,22 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
     <div>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {c.scenes.map((s, i) => (
-          <li key={s.name} className="overflow-hidden rounded-2xl border border-gold/40 bg-white">
+          <li
+            key={s.name}
+            id={`scene-${id}-${i}`}
+            className={`overflow-hidden rounded-2xl border bg-white transition ${painting === i ? "border-kumkum ring-2 ring-kumkum/40" : "border-gold/40"}`}
+          >
             <div className="relative aspect-[3/4]" style={{ background: `linear-gradient(160deg, ${s.hex}, #2a0d14)` }}>
               {samples[i] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={samples[i]} alt={`${c.name} portrait: ${s.name}`} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <img src={samples[i]} alt={`${c.name} portrait: ${s.name}`} className="pop-in absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              ) : painting === i ? (
+                <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white" role="status" aria-live="polite">
+                  <span className="sheen pointer-events-none absolute inset-0" aria-hidden="true" />
+                  <Loader2 size={26} className="animate-spin" />
+                  <span className="text-sm font-semibold">Painting…</span>
+                  <span className="text-xs text-white/75">about 15 seconds</span>
+                </span>
               ) : (
                 <span className="absolute inset-x-3 bottom-3 text-sm text-white/85">{s.saree.replace(/^an? /, "")}</span>
               )}
@@ -68,9 +80,11 @@ export function CollectionGallery({ id }: { id: CollectionId }) {
         ))}
       </ul>
       {admin && missing ? (
-        <button type="button" className="btn btn-ghost btn-sm mt-4" onClick={seed} disabled={!!seeding}>
-          {seeding ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}{" "}
-          {seeding ? `Painting the ${seeding} example…` : "Admin: paint the missing examples"}
+        <button type="button" className="btn btn-ghost btn-sm mt-4" onClick={seed} disabled={painting !== null}>
+          {painting !== null ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}{" "}
+          {painting !== null
+            ? `Painting ${c.scenes[painting].name}… ${c.scenes.filter((_, j) => !samples[j]).length} left`
+            : "Admin: paint the missing examples"}
         </button>
       ) : null}
     </div>
