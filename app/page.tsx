@@ -3,6 +3,7 @@ import { PageShell } from "@/components/SiteChrome";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { Divider, Mandala, SectionTitle } from "@/components/Ornaments";
 import { LookExamples } from "@/components/looks/LookExamples";
+import { NavratriStrip } from "@/components/looks/NavratriStrip";
 import { Bride, Groom } from "@/components/tools/Figures";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
@@ -112,18 +113,36 @@ export default function Home() {
                 Then {PACKS.look12.images} for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
               </span>
             </div>
-            <p className="mt-4 text-sm">
-              Also:{" "}
-              <Link href="/looks/maharani" className="font-semibold text-kumkum underline underline-offset-4">
-                Maharani sarees
-              </Link>{" "}
-              ·{" "}
-              <Link href="/looks/navratri" className="font-semibold text-kumkum underline underline-offset-4">
-                Navratri, nine days
-              </Link>
-            </p>
           </div>
           <LookExamples />
+        </div>
+      </section>
+
+      {/* Festival looks: the nine-day strip is the one bold moment for the new collections */}
+      <section className="bg-maroon-deep py-14 text-[#fff8ef] sm:py-20" aria-labelledby="navratri-h">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="max-w-xl">
+              <h2 id="navratri-h" className="text-[2.2rem] text-gold-light sm:text-[2.8rem]">
+                Nine days. Nine sarees. All you.
+              </h2>
+              <p className="mt-3 text-lg text-[#f3e3d3]">
+                A Navratri portrait for every day, in that day&apos;s color, from a few of your selfies. Post one each morning.
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <Link href="/looks/navratri" className="btn btn-gold">
+                {PACKS.navratri9.images} portraits for {formatUSD(PACKS.navratri9.priceCents)}
+              </Link>
+              <Link href="/looks/maharani" className="text-sm font-semibold text-gold-light underline underline-offset-4">
+                Or see yourself as a maharani
+              </Link>
+            </div>
+          </div>
+          <div className="mt-9">
+            <NavratriStrip dark />
+          </div>
+          <p className="mt-4 text-xs text-[#cdb6a8]">Made from one photo of an AI model.</p>
         </div>
       </section>
 

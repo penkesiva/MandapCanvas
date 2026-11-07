@@ -14,7 +14,7 @@ export async function SiteHeader() {
           MandapCanvas
         </Link>
         <nav className="hidden items-center gap-6 text-[0.95rem] font-medium text-ink-soft md:flex" aria-label="Main">
-          <Link href="/looks" className="hover:text-ink">Bridal looks</Link>
+          <Link href="/looks" className="hover:text-ink">Looks</Link>
           <Link href="/mandap" className="hover:text-ink">Mandap designs</Link>
           <Link href="/tools" className="hover:text-ink">Free tools</Link>
           <Link href="/pricing" className="hover:text-ink">Pricing</Link>
@@ -37,7 +37,7 @@ export async function SiteHeader() {
         </div>
       </div>
       <nav className="flex gap-4 overflow-x-auto whitespace-nowrap px-4 pb-2.5 text-sm font-medium text-ink-soft [scrollbar-width:none] md:hidden" aria-label="Main mobile">
-        <Link href="/looks">Bridal looks</Link>
+        <Link href="/looks">Looks</Link>
         <Link href="/mandap">Mandap designs</Link>
         <Link href="/tools">Free tools</Link>
         <Link href="/pricing">Pricing</Link>
@@ -65,7 +65,7 @@ export function SiteFooter() {
             See your Desi wedding before it happens: your looks, your mandap, every event.
           </p>
         </div>
-        <FooterCol title="Couples" links={[["Bridal looks", "/looks"], ["Maharani portraits", "/looks/maharani"], ["Navratri portraits", "/looks/navratri"], ["Mandap designs", "/mandap"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
+        <FooterCol title="Couples" links={[["Wedding looks", "/looks"], ["Maharani portraits", "/looks/maharani"], ["Navratri portraits", "/looks/navratri"], ["Mandap designs", "/mandap"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
         <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Venue decor visualizer", "/tools/ai-venue-decor-visualizer"], ["Invitation maker", "/tools/wedding-invitation-maker"], ["Palette from a photo", "/tools/outfit-photo-color-palette"], ["Palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"]]} />
         <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />

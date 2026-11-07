@@ -3,6 +3,8 @@ import { Breadcrumbs, JsonLd, ToolFaq, breadcrumbLd, faqLd } from "@/components/
 import { PACKS, formatUSD } from "@/lib/config";
 import { LOOK_COLLECTIONS, type CollectionId } from "@/lib/lookCollections";
 import { CollectionGallery, CollectionOrder } from "./CollectionLook";
+import { LooksSwitcher } from "./LooksSwitcher";
+import { NavratriStrip } from "./NavratriStrip";
 
 /** The shared layout for the Maharani and Navratri pages. */
 export function CollectionPage({
@@ -27,6 +29,9 @@ export function CollectionPage({
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-6">
         <Breadcrumbs items={crumbs} />
+        <div className="mt-5">
+          <LooksSwitcher current={c.path as "/looks/maharani" | "/looks/navratri"} />
+        </div>
         <header className="mt-6 max-w-3xl">
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">{title}</h1>
           <p className="mt-4 text-lg text-ink-soft">{intro}</p>
@@ -34,13 +39,20 @@ export function CollectionPage({
             <a href="#order" className="btn btn-primary">
               Get my portraits from {formatUSD(from)}
             </a>
-            <a href="#gallery" className="btn btn-ghost">
-              See the looks
-            </a>
+            {id === "navratri" ? null : (
+              <a href="#gallery" className="btn btn-ghost">
+                See the looks
+              </a>
+            )}
           </div>
         </header>
+        {id === "navratri" ? (
+          <div className="mt-10">
+            <NavratriStrip />
+          </div>
+        ) : null}
 
-        <section id="gallery" className="mt-14 scroll-mt-24" aria-labelledby="gallery-h">
+        <section id="gallery" className={`mt-14 scroll-mt-24 ${id === "navratri" ? "hidden" : ""}`} aria-labelledby="gallery-h">
           <h2 id="gallery-h" className="text-[2rem]">
             {galleryTitle}
           </h2>

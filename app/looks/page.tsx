@@ -3,6 +3,7 @@ import { PageShell } from "@/components/SiteChrome";
 import { BridalLook } from "@/components/tools/BridalLook";
 import { LookExamples } from "@/components/looks/LookExamples";
 import { MoreLooks } from "@/components/looks/MoreLooks";
+import { LooksSwitcher } from "@/components/looks/LooksSwitcher";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
 import { LOOK_TRADITIONS } from "@/lib/bridalLooks";
@@ -56,6 +57,9 @@ export default function BridalLookPage() {
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-8">
         <Breadcrumbs items={[["Home", "/"], ["Bridal looks", path]]} />
+        <div className="mt-5">
+          <LooksSwitcher current="/looks" />
+        </div>
         <header className="mt-5 grid items-center gap-10 lg:mt-6 lg:grid-cols-[1fr_440px]">
           <div>
             <h1 className="text-[2.3rem] leading-tight text-maroon sm:text-[3.4rem]">See yourself as a bride or groom</h1>
