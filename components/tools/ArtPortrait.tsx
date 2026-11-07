@@ -12,6 +12,8 @@ import { flagField } from "@/lib/flagField";
 
 const WAITING = ["Mixing the paints…", "Sketching the outline…", "Laying down color…", "Painting the details…", "Adding the final strokes…"];
 
+const BUNDLED: Record<string, string> = Object.fromEntries(ART_STYLES.map((x) => [x.id, `/samples/art/${x.id}.jpg`]));
+
 type Quota = { signedIn: boolean; remaining: number; admin?: boolean };
 type Made = { style: ArtStyleId; url: string; aspect: string };
 
@@ -22,7 +24,8 @@ export function ArtPortrait() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [quota, setQuota] = useState<Quota | null>(null);
-  const [samples, setSamples] = useState<Record<string, string>>({});
+  // The example portraits that ship with the site (one AI model, every style); painted ones only fill gaps.
+  const [samples, setSamples] = useState<Record<string, string>>(BUNDLED);
   const [seeding, setSeeding] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [tick, setTick] = useState(0);
@@ -39,7 +42,7 @@ export function ArtPortrait() {
       .catch(() => {});
     fetch("/api/tools/art-portrait/samples")
       .then((r) => r.json())
-      .then((d) => d.ok && setSamples(d.samples ?? {}))
+      .then((d) => d.ok && setSamples({ ...(d.samples ?? {}), ...BUNDLED }))
       .catch(() => {});
   }, []);
 

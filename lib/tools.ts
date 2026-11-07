@@ -71,7 +71,7 @@ export const FREE_TOOLS: FreeTool[] = [
       "Tanjore painting from photo",
       "save the date portrait",
     ],
-    image: "/samples/look-couple-after.jpg",
+    image: "/samples/art/anime.jpg",
   },
   {
     slug: "wedding-invitation-maker",
