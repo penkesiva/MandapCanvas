@@ -6,7 +6,7 @@ import { PACKS, PLANS, formatUSD } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Bridal Look Packs from $10. Mandap design albums from $29. Monthly plans for decorators from $99. Two free previews before you pay.",
+  description: `Bridal Look Packs from ${formatUSD(PACKS.look12.priceCents)}. Mandap design albums from ${formatUSD(PACKS.starter.priceCents)}. Monthly plans for decorators from ${formatUSD(PLANS.pro.monthlyCents)}. Two free previews before you pay.`,
 };
 
 export default function Pricing() {

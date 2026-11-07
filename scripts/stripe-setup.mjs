@@ -4,7 +4,7 @@
  *
  * Creates:
  *  - the webhook endpoint with the 5 events the site listens to (prints its signing secret)
- *  - FOUNDING: $20 off once, 25 uses, promotion code needs a $29 minimum (so it can't zero a Look Pack)
+ *  - FOUNDING: 25% off one order, 25 uses (replaces the old $20-off version of the same code)
  *  - FOUNDINGPRO: 50% off for 6 months, 10 uses (decorator Pro plans)
  *
  * Run from the project folder (the key is typed, not saved in shell history):
@@ -65,8 +65,25 @@ async function ensurePromo(code, coupon, restrictions) {
   console.log(`✓ Promotion code ${code} created.`);
 }
 
-await ensureCoupon("FOUNDING", { name: "Founding couple: $20 off", amount_off: 2000, currency: "usd", duration: "once", max_redemptions: 25 });
-await ensurePromo("FOUNDING", "FOUNDING", { minimum_amount: 2900, minimum_amount_currency: "usd" });
+// FOUNDING used to be $20 off (coupon "FOUNDING"). With albums from $9.99 it is now 25% off (coupon "FOUNDING25").
+// Stripe can't change a coupon's amount, so the old promotion code is switched off and the same code re-created.
+await ensureCoupon("FOUNDING25", { name: "Founding couple: 25% off", percent_off: 25, duration: "once", max_redemptions: 25 });
+{
+  const old = await stripe.promotionCodes.list({ code: "FOUNDING", active: true, limit: 10 });
+  for (const pc of old.data) {
+    const couponId = typeof pc.promotion?.coupon === "string" ? pc.promotion.coupon : pc.promotion?.coupon?.id ?? pc.coupon?.id;
+    if (couponId !== "FOUNDING25") {
+      await stripe.promotionCodes.update(pc.id, { active: false });
+      console.log("✓ Switched off the old $20-off FOUNDING code.");
+    }
+  }
+  const now = await stripe.promotionCodes.list({ code: "FOUNDING", active: true, limit: 1 });
+  if (now.data.length) console.log("✓ Promotion code FOUNDING (25% off) already exists.");
+  else {
+    await stripe.promotionCodes.create({ code: "FOUNDING", promotion: { type: "coupon", coupon: "FOUNDING25" } });
+    console.log("✓ Promotion code FOUNDING created: 25% off.");
+  }
+}
 
 await ensureCoupon("FOUNDINGPRO", { name: "Founding decorator: 50% off for 6 months", percent_off: 50, duration: "repeating", duration_in_months: 6, max_redemptions: 10 });
 await ensurePromo("FOUNDINGPRO", "FOUNDINGPRO");

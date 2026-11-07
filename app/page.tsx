@@ -6,7 +6,7 @@ import { LookExamples } from "@/components/looks/LookExamples";
 import { Bride, Groom } from "@/components/tools/Figures";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
-import { ALBUM_PACKS, LOOK_PACKS, PACKS, formatUSD } from "@/lib/config";
+import { ALBUM_PACKS, LOOK_PACKS, PACKS, PLANS, formatUSD } from "@/lib/config";
 import { DECOR_PRESETS } from "@/lib/catalog";
 import { FREE_TOOLS, toolHref } from "@/lib/tools";
 
@@ -217,7 +217,7 @@ export default function Home() {
             <div className="relative grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
               <div>
                 <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
-                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From $99 a month.</p>
+                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From {formatUSD(PLANS.pro.monthlyCents)} a month.</p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">

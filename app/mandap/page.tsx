@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PACKS, PLANS, formatUSD } from "@/lib/config";
 import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 import { BeforeAfter } from "@/components/BeforeAfter";
@@ -26,7 +27,7 @@ const PALETTE_COMPARE = [
 export const metadata: Metadata = {
   title: { absolute: "Mandap Designs: See Your Wedding Decor Photo-Real Before You Book · MandapCanvas" },
   description:
-    "Sketch your mandap, upload a photo you love or pick one of 12 styles. See your decor photo-real for every event, from the Haldi to the reception, with the two of you in it. Two free previews, albums from $29.",
+    `Sketch your mandap, upload a photo you love or pick one of 12 styles. See your decor photo-real for every event, from the Haldi to the reception, with the two of you in it. Two free previews, albums from ${formatUSD(PACKS.starter.priceCents)}.`,
   alternates: { canonical: "/mandap" },
   openGraph: { title: "See your mandap before the first flower is ordered", url: "/mandap", type: "website" },
 };
@@ -49,7 +50,7 @@ export default function MandapPage() {
               <Link href="/create" className="btn btn-primary">Make a free preview</Link>
               <Link href="/gallery" className="btn btn-ghost">See sample albums</Link>
             </div>
-            <p className="mt-6 text-sm text-ink-soft">Two free images, no account needed. Albums from $29.</p>
+            <p className="mt-6 text-sm text-ink-soft">Two free images, no account needed. Albums from {formatUSD(PACKS.starter.priceCents)}.</p>
           </div>
           <div className="relative">
             <div className="frame-gold">
@@ -243,7 +244,7 @@ export default function MandapPage() {
             <div className="relative grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
               <div>
                 <h2 className="text-[1.8rem] text-[#fff8ef] sm:text-[2.5rem]">Decorators: close the booking in the first meeting</h2>
-                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From $99 a month.</p>
+                <p className="mt-3 text-[#f3e3d3]">Sketch with the couple, show a photo-real mandap, send a branded proposal. From {formatUSD(PLANS.pro.monthlyCents)} a month.</p>
               </div>
               <div className="flex flex-wrap gap-3 md:justify-end">
                 <Link href="/pro" className="btn btn-gold">See MandapCanvas Pro</Link>

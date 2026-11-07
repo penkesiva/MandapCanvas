@@ -205,7 +205,6 @@ export function LookPack({
               );
             })}
           </div>
-          <p className="mt-2 text-sm font-semibold text-mehndi">Launch price</p>
 
           {!consented ? (
             <label className="mt-4 flex gap-3 rounded-2xl bg-silk p-4 text-sm" data-field="pack-consent">
