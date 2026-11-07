@@ -82,7 +82,7 @@ const NAVRATRI: LookCollection = {
     { name: "Day 2 · Royal blue", hex: "#2E4FA8", saree: "a royal blue silk saree with silver zari", setting: "a green suburban American lawn decorated with marigold torans and fairy lights, the house softly blurred" },
     { name: "Day 3 · Yellow", hex: "#F2C14E", saree: "a sunny yellow cotton-silk saree with a pink border", setting: "a sunlit balcony with potted plants, the city or neighborhood softly blurred below" },
     { name: "Day 4 · Green", hex: "#2E7D32", saree: "a parrot-green silk saree with a gold border", setting: "an American park in early fall, trees turning orange and red, softly blurred" },
-    { name: "Day 5 · Grey and silver", hex: "#8E949C", saree: "a silver-grey silk saree with shimmering silver zari", setting: "a home living room with a tiered golu or kolu doll display and diyas, softly blurred" },
+    { name: "Day 5 · Silver", hex: "#8E949C", saree: "a silver-grey silk saree with shimmering silver zari", setting: "a home living room with a tiered golu or kolu doll display and diyas, softly blurred" },
     { name: "Day 6 · Orange", hex: "#E8892B", saree: "a vibrant orange Bandhani saree with mirror work", setting: "a garba night in a community hall, colorful lights and dancers blurred into bokeh behind her" },
     { name: "Day 7 · White", hex: "#F7F3EA", saree: "an ivory white saree with a red and gold border", setting: "a temple courtyard in the US at dusk, rows of lit diyas, softly blurred" },
     { name: "Day 8 · Pink", hex: "#E26D9C", saree: "a rani-pink silk saree with gold motifs", setting: "a backyard under warm string lights at dusk, rangoli on the patio, softly blurred" },
