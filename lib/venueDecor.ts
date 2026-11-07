@@ -113,6 +113,22 @@ export const VENUE_PALETTES = ["red_gold", "blush_ivory", "emerald_gold", "marig
   .map((id) => PALETTES.find((p) => p.id === id))
   .filter((p): p is (typeof PALETTES)[number] => !!p);
 
+/** Each event's Venue pack: every style but the one that suits that event least. */
+const PACK_SKIP: Record<string, string> = { ceremony: "boho", reception: "south", sangeet: "south", mehndi: "rosedome", haldi: "mughal" };
+
+export function venuePackStyles(event: EventId): VenueStyle[] {
+  return VENUE_STYLES.filter((s) => s.id !== (PACK_SKIP[event] ?? "boho")).slice(0, 9);
+}
+
+export type VenueAspect = "4:3" | "3:4" | "16:9" | "9:16";
+
+/** The supported ratio closest to the photo's own shape, so the room is not cropped. */
+export function nearestAspect(w: number, h: number): VenueAspect {
+  const r = w / h;
+  const options: [VenueAspect, number][] = [["16:9", 16 / 9], ["4:3", 4 / 3], ["3:4", 3 / 4], ["9:16", 9 / 16]];
+  return options.reduce((best, o) => (Math.abs(Math.log(o[1] / r)) < Math.abs(Math.log(best[1] / r)) ? o : best))[0];
+}
+
 export interface VenueRequest {
   event: EventId;
   style: string;

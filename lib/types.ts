@@ -77,6 +77,16 @@ export interface AlbumConfig {
     /** Set for the Maharani and Navratri collections (lib/lookCollections) instead of wedding events. */
     collection?: "maharani" | "navratri";
   };
+  /** Set for Venue pack albums: their own space, decorated in one style per image. */
+  venuePack?: {
+    photoUrl: string;
+    event: EventId;
+    /** A PALETTES id, or "" for each style's own colors. */
+    palette: string;
+    /** lib/venueDecor style ids, one per image. */
+    styles: string[];
+    aspect: "4:3" | "3:4" | "16:9" | "9:16";
+  };
   mix: ShotMix;
   /** Per-event palettes, venue and light. When set for an event, it overrides the album-wide values. */
   eventSettings?: Partial<Record<EventId, EventSetting>>;

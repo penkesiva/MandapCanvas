@@ -7,6 +7,7 @@ import { track } from "@vercel/analytics";
 import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
 import { AI_LABEL, PACKS, ALBUM_PACKS, LOOK_PACKS, formatUSD, type PackId } from "@/lib/config";
 import { collectionShot, getCollection } from "@/lib/lookCollections";
+import { VENUE_EVENTS, VENUE_STYLES } from "@/lib/venueDecor";
 import { CATEGORIES, eventLabel, getPalette } from "@/lib/catalog";
 import type { PublicAlbum } from "@/lib/albums";
 import type { Shot } from "@/lib/types";
@@ -225,12 +226,50 @@ export function AlbumView({
 
   const isLook = !!album.config.look;
   const collection = getCollection(album.config.look?.collection);
+  const venue = album.config.venuePack;
+  const venueStyle = (s: Shot) => {
+    const id = venue?.styles[(s.scene ?? 0) % Math.max(1, venue.styles.length)];
+    return VENUE_STYLES.find((x) => x.id === id) ?? VENUE_STYLES[0];
+  };
   const caption = (s: Shot) =>
-    collection
+    venue
+      ? `${venueStyle(s).name}, ${eventLabel(s.event, tradition).toLowerCase()}`
+      : collection
       ? collectionShot(collection, s.scene ?? 0).scene.name
       : isLook
       ? `${eventLabel(s.event, tradition)}, ${s.category === "couple" ? "the two of you" : s.category}`
       : `${eventLabel(s.event, tradition)}, ${CATEGORIES.find((c) => c.id === s.category)?.name.toLowerCase()}, ${getPalette(s.paletteId).name}`;
+
+  /* -------- unpaid Venue pack */
+  if (!album.paid && venue) {
+    const pack = PACKS[album.packId];
+    const evName = VENUE_EVENTS.find((e) => e.id === venue.event)?.name ?? "event";
+    return (
+      <div className="mx-auto max-w-3xl px-4 pb-24 pt-8 sm:px-6">
+        <h1 className="text-[2.2rem]">{album.title}</h1>
+        <p className="mt-1 text-ink-soft">
+          Your venue photo is saved. We&apos;ll decorate it for your {evName.toLowerCase()} in these {venue.styles.length} styles, without watermarks.
+        </p>
+        {error ? <ErrorBox msg={error} /> : null}
+        <div className="mt-6 flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={venue.photoUrl} alt="Your venue" className="h-24 w-36 flex-none rounded-2xl object-cover" />
+          <ul className="flex flex-wrap gap-1.5">
+            {venue.styles.map((id) => (
+              <li key={id} className="rounded-full border border-gold/60 px-2.5 py-0.5 text-sm">
+                {VENUE_STYLES.find((x) => x.id === id)?.name ?? id}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <button type="button" className="btn btn-primary mt-6" onClick={() => checkout(album.packId)} disabled={checkingOut}>
+          {checkingOut ? <Loader2 size={18} className="animate-spin" /> : null}
+          Decorate my venue {pack.images} ways, {formatUSD(pack.priceCents)}
+        </button>
+        <p className="mt-2 text-xs text-ink-soft">{AI_LABEL}</p>
+      </div>
+    );
+  }
 
   /* -------- unpaid draft */
   if (!album.paid && isLook) {
@@ -416,7 +455,10 @@ export function AlbumView({
           const portrait = isLook || s.category === "bride" || s.category === "groom";
           return (
             <li key={s.id} className="group relative mb-4 break-inside-avoid">
-              <div className={`relative overflow-hidden rounded-[16px] bg-white ${portrait ? "aspect-[3/4]" : "aspect-[4/3]"}`}>
+              <div
+                className={`relative overflow-hidden rounded-[16px] bg-white ${venue ? "" : portrait ? "aspect-[3/4]" : "aspect-[4/3]"}`}
+                style={venue ? { aspectRatio: venue.aspect.replace(":", " / ") } : undefined}
+              >
                 {s.url && s.status !== "failed" ? (
                   <button type="button" className="relative block h-full w-full" onClick={() => setOpen(idx)} aria-label={`Open ${caption(s)}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { loadImage, saveImage } from "@/lib/blob";
 import { brandMark, generateImage } from "@/lib/imagegen";
-import { buildVenuePrompt, parseVenueRequest, VENUE_EVENTS, VENUE_STYLES } from "@/lib/venueDecor";
+import { buildVenuePrompt, nearestAspect, parseVenueRequest, VENUE_EVENTS, VENUE_STYLES } from "@/lib/venueDecor";
 import { dailyCapCents } from "@/lib/albums";
 import { SITE } from "@/lib/config";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
@@ -13,18 +13,9 @@ import { isOurImageUrl } from "@/lib/validate";
 export const runtime = "nodejs";
 export const maxDuration = 90;
 
-type Aspect = "4:3" | "3:4" | "16:9" | "9:16";
-
-/** The supported ratio closest to the photo's own shape, so the room is not cropped. */
-function nearestAspect(w: number, h: number): Aspect {
-  const r = w / h;
-  const options: [Aspect, number][] = [["16:9", 16 / 9], ["4:3", 4 / 3], ["3:4", 3 / 4], ["9:16", 9 / 16]];
-  return options.reduce((best, o) => (Math.abs(Math.log(o[1] / r)) < Math.abs(Math.log(best[1] / r)) ? o : best))[0];
-}
-
 export async function GET() {
   const q = await freeQuota("venue");
-  return NextResponse.json({ ok: true, signedIn: !!q.user, remaining: q.remaining, allowance: q.allowance });
+  return NextResponse.json({ ok: true, signedIn: !!q.user, remaining: q.remaining, allowance: q.allowance, admin: q.admin });
 }
 
 export async function POST(request: Request) {

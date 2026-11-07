@@ -9,11 +9,12 @@ import { VENUE_EVENTS, VENUE_PALETTES, VENUE_STYLES } from "@/lib/venueDecor";
 import type { EventId } from "@/lib/types";
 import { BeforeAfter } from "../BeforeAfter";
 import { FreeTrySignup } from "./FreeTrySignup";
+import { VenuePackOffer } from "./VenuePackOffer";
 import { flagField } from "@/lib/flagField";
 
 const WAITING = ["Measuring the space…", "Placing the mandap…", "Hanging the flowers…", "Draping the fabric…", "Lighting the room…"];
 
-type Quota = { signedIn: boolean; remaining: number };
+type Quota = { signedIn: boolean; remaining: number; admin?: boolean };
 type Result = { url: string; refUrl: string; aspect: string };
 
 export function VenueDecor() {
@@ -35,7 +36,7 @@ export function VenueDecor() {
   useEffect(() => {
     fetch("/api/tools/venue-decor")
       .then((r) => r.json())
-      .then((d) => d.ok && setQuota({ signedIn: d.signedIn, remaining: d.remaining }))
+      .then((d) => d.ok && setQuota({ signedIn: d.signedIn, remaining: d.remaining, admin: !!d.admin }))
       .catch(() => {});
   }, []);
 
@@ -349,6 +350,18 @@ export function VenueDecor() {
             {error.msg}
           </p>
         ) : null}
+
+        <VenuePackOffer
+          photo={photo}
+          event={event}
+          palette={palette}
+          admin={!!quota?.admin}
+          onNeedPhoto={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setError({ msg: "Add a photo of your venue first.", field: "photo" });
+            flagField('[data-field="photo"]');
+          }}
+        />
 
         {result && !busy ? (
           <div id="venue-continue" className="mt-4 rounded-[22px] bg-maroon p-5 text-white">

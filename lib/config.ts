@@ -10,7 +10,7 @@ export const SITE = {
   supportEmail: process.env.SUPPORT_EMAIL || "hello@mandapcanvas.com",
 } as const;
 
-export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30" | "maharani12" | "navratri9" | "navratri18";
+export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30" | "maharani12" | "navratri9" | "navratri18" | "venue9";
 
 export interface Pack {
   id: PackId;
@@ -92,6 +92,18 @@ export const PACKS: Record<PackId, Pack> = {
     hd: false,
     highlight: true,
   },
+  venue9: {
+    id: "venue9",
+    name: "Venue pack",
+    images: 9,
+    priceCents: 499,
+    freeRegens: 2,
+    blurb: "Your own space, decorated nine ways for one event.",
+    includes: ["9 decorated versions of your space", "9 decor styles, one event", "No watermark, private album"],
+    maxEvents: 1,
+    maxPalettes: 1,
+    hd: false,
+  },
   maharani12: {
     id: "maharani12",
     name: "Maharani 12",
@@ -150,6 +162,9 @@ export const LOOK_PACKS: PackId[] = ["look12", "look30"];
 
 /** Packs for the Maharani and Navratri collections (lib/lookCollections). */
 export const COLLECTION_PACKS: PackId[] = ["maharani12", "navratri9", "navratri18"];
+
+/** The Venue pack: one photo of their space, decorated in nine styles. */
+export const VENUE_PACKS: PackId[] = ["venue9"];
 
 /** Every portrait pack: albums made from the customer's own photos. */
 export function isPortraitPack(id: PackId): boolean {
