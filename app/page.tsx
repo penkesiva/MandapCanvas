@@ -5,20 +5,11 @@ import { Divider, Mandala, SectionTitle } from "@/components/Ornaments";
 import { LookExamples } from "@/components/looks/LookExamples";
 import { NavratriStrip } from "@/components/looks/NavratriStrip";
 import { MaharaniCarousel } from "@/components/looks/MaharaniCarousel";
-import { Bride, Groom } from "@/components/tools/Figures";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
 import { ALBUM_PACKS, LOOK_PACKS, PACKS, PLANS, formatUSD } from "@/lib/config";
 import { DECOR_PRESETS } from "@/lib/catalog";
 import { FREE_TOOLS, toolHref } from "@/lib/tools";
-
-const LOOK_EVENTS = [
-  { name: "Haldi", bride: "#F2C14E", dupatta: "#F2A33A", groom: "#FFF3C4", safa: "#F2A33A", bg: "#FFF4D6" },
-  { name: "Mehndi", bride: "#3E8E41", dupatta: "#E7849B", groom: "#F4E3B5", safa: "#3E8E41", bg: "#E9F4E4" },
-  { name: "Sangeet", bride: "#B03A84", dupatta: "#E5B8D6", groom: "#22335E", safa: "#B03A84", bg: "#F6E6F1" },
-  { name: "Wedding", bride: "#B3131B", dupatta: "#C2185B", groom: "#F6EFE2", safa: "#B3131B", bg: "#FBE7E1" },
-  { name: "Reception", bride: "#1F3A6B", dupatta: "#C9A24B", groom: "#1E1E2A", safa: "#1E1E2A", bg: "#E5EAF4" },
-];
 
 const MANDAP_EVENTS = [
   { src: "/samples/haldi.jpg", name: "Haldi" },
@@ -88,40 +79,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Product 1: Looks */}
-      <section className="relative border-y border-gold/30 bg-silk">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.05fr] lg:gap-12">
-          <div>
-            <p className="font-semibold text-kumkum">Bridal looks</p>
-            <h2 className="mt-2 text-[2.1rem] sm:text-[2.8rem]">You, at every event. Still you.</h2>
-            <p className="mt-4 text-ink-soft">One photo, a portrait for each event, in the outfit made for it. For the bride, the groom, or both.</p>
-            <ul className="mt-6 grid grid-cols-5 gap-2" aria-label="Events in a Look Pack">
-              {LOOK_EVENTS.map((e) => (
-                <li key={e.name} className="flex flex-col items-center rounded-2xl pb-2 pt-2 text-xs font-semibold" style={{ background: e.bg }}>
-                  <span className="flex h-16 items-end" aria-hidden="true">
-                    <Groom outfit={e.groom} safa={e.safa} className="-mr-2.5 h-16 w-8" />
-                    <Bride outfit={e.bride} dupatta={e.dupatta} className="h-16 w-8" />
-                  </span>
-                  {e.name}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link href="/looks" className="btn btn-primary">
-                Try your look free
-              </Link>
-              <span className="text-sm text-ink-soft">
-                Then {PACKS.look12.images} for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
-              </span>
-            </div>
-          </div>
-          <LookExamples />
-        </div>
-      </section>
-
       {/* Maharani: evergreen, so it gets its own quiet section with the rotating portraits */}
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20" aria-labelledby="maharani-h">
-        <div className="grid items-center gap-10 md:grid-cols-[1fr_0.8fr] lg:gap-16">
+      <section className="border-y border-gold/30 bg-silk" aria-labelledby="maharani-h">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 sm:py-20 md:grid-cols-[1fr_0.8fr] lg:gap-16">
           <div className="max-w-xl">
             <h2 id="maharani-h" className="text-[2.2rem] text-maroon sm:text-[2.8rem]">
               See yourself as a maharani
