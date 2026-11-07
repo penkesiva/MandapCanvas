@@ -2,6 +2,7 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { FOUNDING_OFFER, SITE } from "@/lib/config";
 import { SignupNudge } from "./SignupNudge";
+import { FeedbackButton } from "./FeedbackButton";
 
 export async function SiteHeader() {
   const user = await currentUser();
@@ -46,6 +47,7 @@ export async function SiteHeader() {
       </nav>
     </header>
     <SignupNudge signedIn={!!user} offer={FOUNDING_OFFER} />
+    <FeedbackButton />
     </>
   );
 }
@@ -68,7 +70,7 @@ export function SiteFooter() {
         <FooterCol title="Couples" links={[["Wedding looks", "/looks"], ["Maharani portraits", "/looks/maharani"], ["Navratri portraits", "/looks/navratri"], ["Mandap designs", "/mandap"], ["Gallery", "/gallery"], ["Pricing", "/pricing"], ["FAQ", "/faq"]]} />
         <FooterCol title="Free tools" links={[["All free tools", "/tools"], ["Venue decor visualizer", "/tools/ai-venue-decor-visualizer"], ["Invitation maker", "/tools/wedding-invitation-maker"], ["Palette from a photo", "/tools/outfit-photo-color-palette"], ["Palette finder", "/tools/wedding-color-palette-finder"], ["Outfit color matcher", "/tools/outfit-color-matcher"], ["Hashtag generator", "/tools/wedding-hashtag-generator"]]} />
         <FooterCol title="Decorators" links={[["MandapCanvas Pro", "/pro"], ["Sign in", "/signin"]]} />
-        <FooterCol title="Company" links={[["About", "/about"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
+        <FooterCol title="Company" links={[["About", "/about"], ["Contact us", "/contact"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Refunds", "/refunds"]]} />
       </div>
       <div className="relative border-t border-gold-light/20">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-[#e6cfc0] sm:px-6">

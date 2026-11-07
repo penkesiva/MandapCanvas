@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { FeedbackEntry } from "@/app/api/feedback/route";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageShell } from "@/components/SiteChrome";
@@ -17,12 +18,22 @@ export default async function Admin() {
   const user = await currentUser();
   if (!isAdmin(user)) notFound();
   // Everything the page needs, fetched in parallel (it used to be ~19 round trips in a row).
-  const [{ total, daily }, albums, userList, leadRows] = await Promise.all([
+  const [{ total, daily }, albums, userList, leadRows, feedbackRows] = await Promise.all([
     readStats(14),
     listAlbumIds("albums:all").then(async (ids) => (await Promise.all(ids.slice(0, 25).map(getAlbum))).filter(Boolean)),
     kv().lrange("users:all", 0, -1),
     kv().lrange("leads", 0, 49),
+    kv().lrange("feedback", 0, 49),
   ]);
+  const feedback = feedbackRows
+    .map((r) => {
+      try {
+        return (typeof r === "string" ? JSON.parse(r) : r) as FeedbackEntry;
+      } catch {
+        return null;
+      }
+    })
+    .filter((f): f is FeedbackEntry => !!f);
   const users = userList.length;
   const leads = leadRows
     .map((l) => {
@@ -78,6 +89,25 @@ export default async function Admin() {
             ))}
           </tbody>
         </table>
+
+        <h2 className="mt-12 text-2xl">Recent feedback</h2>
+        {feedback.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-soft">None yet. Visitors can send it from the Feedback button on every page, or from /contact.</p>
+        ) : (
+          <ul className="mt-3 space-y-3">
+            {feedback.map((f) => (
+              <li key={f.at} className="rounded-2xl border border-line bg-white p-4 text-sm">
+                <p className="whitespace-pre-wrap text-ink">
+                  {f.rating ? <span className="mr-1.5">{f.rating}</span> : null}
+                  {f.message}
+                </p>
+                <p className="mt-2 text-xs text-ink-soft">
+                  {f.kind === "contact" ? "Contact" : "Feedback"} · {f.page || "/"} · {f.email ? <a className="underline" href={`mailto:${f.email}`}>{f.email}</a> : "no email"} · {new Date(f.at).toLocaleString("en-US")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <h2 className="mt-12 text-2xl">Recent sign-up leads</h2>
         {leads.length === 0 ? (

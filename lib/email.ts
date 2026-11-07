@@ -65,3 +65,17 @@ export async function sendReceiptNote(to: string, what: string) {
     `Thank you — ${what}. Your albums: ${link}`,
   );
 }
+
+const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+/** A visitor's feedback or contact note, to the support inbox. */
+export async function sendFeedbackEmail(f: { message: string; rating?: string; email?: string; page: string; kind: "feedback" | "contact" }) {
+  const subject = `${f.kind === "contact" ? "Contact" : "Feedback"}${f.rating ? ` ${f.rating}` : ""}: ${f.message.slice(0, 60)}`;
+  const meta = [`Page: ${f.page}`, f.email ? `Reply to: ${f.email}` : "No email given", f.rating ? `Rating: ${f.rating}` : ""].filter(Boolean);
+  return send(
+    SITE.supportEmail,
+    subject,
+    shell(`<p style="font-size:16px;white-space:pre-wrap">${esc(f.message)}</p><p style="font-size:13px;color:#7a6470">${meta.map(esc).join("<br>")}</p>`),
+    `${f.message}\n\n${meta.join("\n")}`,
+  );
+}
