@@ -5,7 +5,7 @@ import { flagField, scrollToTopOf } from "@/lib/flagField";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@vercel/analytics";
-import { AlertCircle, ArrowDown, Check, Copy, Download, ImagePlus, LayoutGrid, Loader2, Lock, Maximize2, Minus, Pencil, Plus, Sparkles, Upload } from "lucide-react";
+import { AlertCircle, ArrowDown, Check, Copy, Download, ImagePlus, LayoutGrid, Loader2, Lock, Maximize2, Minus, Pencil, Plus, Sparkles, Upload, X } from "lucide-react";
 import { SketchCanvas, type SketchCanvasHandle } from "./SketchCanvas";
 import { Divider } from "@/components/Ornaments";
 import { ALBUM_PACKS, PACKS, AI_LABEL, formatUSD, type PackId } from "@/lib/config";
@@ -1157,7 +1157,15 @@ export function CreateWizard({
       )}
       {paywall ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-ink/80 p-4" role="dialog" aria-modal="true" aria-labelledby="paywall-h" onClick={() => setPaywall(null)}>
-          <div className="grid w-full max-w-4xl overflow-hidden rounded-[26px] bg-silk shadow-2xl md:grid-cols-[1.25fr_1fr]" onClick={(e) => e.stopPropagation()}>
+          <div className="relative grid max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[26px] bg-silk shadow-2xl md:grid-cols-[1.25fr_1fr] md:overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setPaywall(null)}
+              aria-label="Close"
+              className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-maroon shadow-md ring-1 ring-gold/40 transition hover:bg-white hover:text-kumkum"
+            >
+              <X size={18} />
+            </button>
             <div className="relative bg-maroon">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={paywall.url} alt="" className={`h-full max-h-[60vh] w-full object-cover ${paywall.reason === "more" ? "scale-110 blur-[14px]" : ""}`} />
