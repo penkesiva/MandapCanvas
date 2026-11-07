@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, Download, ImageUp, Loader2, Paintbrush, RefreshCw, Share2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 import { PACKS, formatUSD, offerLine } from "@/lib/config";
-import { ART_STYLES, getArtStyle, type ArtOutfit, type ArtStyleId } from "@/lib/artStyles";
+import { ART_STYLES, getArtStyle, type ArtGlasses, type ArtOutfit, type ArtStyleId } from "@/lib/artStyles";
 import { BeforeAfter } from "../BeforeAfter";
 import { FreeTrySignup } from "./FreeTrySignup";
 import { flagField } from "@/lib/flagField";
@@ -20,6 +20,8 @@ type Made = { style: ArtStyleId; url: string; aspect: string };
 export function ArtPortrait() {
   const [style, setStyle] = useState<ArtStyleId>("anime");
   const [outfit, setOutfit] = useState<ArtOutfit>("wedding");
+  // Follows the style (off for Mughal, Madhubani, Tanjore, classic oil) until they choose for themselves.
+  const [glassesChoice, setGlassesChoice] = useState<ArtGlasses | null>(null);
   const [consent, setConsent] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -53,6 +55,7 @@ export function ArtPortrait() {
   }, [busy]);
 
   const s = getArtStyle(style)!;
+  const glasses: ArtGlasses = glassesChoice ?? (s.noGlasses ? "remove" : "keep");
   const outOfTries = quota !== null && quota.remaining <= 0;
   const current = showing >= 0 ? made[showing] : null;
   const currentStyle = current ? getArtStyle(current.style)! : s;
@@ -91,13 +94,13 @@ export function ArtPortrait() {
     setError(null);
     setBusy(true);
     setTick(0);
-    track("tool_art_create", { style, outfit });
+    track("tool_art_create", { style, outfit, glasses });
     setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
     try {
       const res = await fetch("/api/tools/art-portrait", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ style, outfit, consent, photoUrl: photo }),
+        body: JSON.stringify({ style, outfit, glasses, consent, photoUrl: photo }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -266,7 +269,7 @@ export function ArtPortrait() {
           ) : null}
         </Step>
 
-        <Step n={3} title="Outfits">
+        <Step n={3} title="Outfits and glasses">
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Outfits">
             <button type="button" className="chip" role="radio" aria-checked={outfit === "wedding"} onClick={() => setOutfit("wedding")}>
               Dress us for the wedding
@@ -275,6 +278,18 @@ export function ArtPortrait() {
               Keep our clothes
             </button>
           </div>
+          <p className="mt-4 text-sm font-semibold">Glasses</p>
+          <div className="mt-1.5 flex flex-wrap gap-2" role="radiogroup" aria-label="Glasses">
+            <button type="button" className="chip" role="radio" aria-checked={glasses === "keep"} onClick={() => setGlassesChoice("keep")}>
+              Keep them
+            </button>
+            <button type="button" className="chip" role="radio" aria-checked={glasses === "remove"} onClick={() => setGlassesChoice("remove")}>
+              Remove them
+            </button>
+          </div>
+          {s.noGlasses && glassesChoice === null ? (
+            <p className="mt-1.5 text-xs text-ink-soft">Off for {s.name}, since glasses look out of place in this art form. Switch back any time.</p>
+          ) : null}
         </Step>
 
         <label className={`mt-6 flex gap-3 rounded-2xl p-4 text-sm ${error?.field === "consent" ? "bg-[#fbeaea] text-kumkum-deep" : "bg-silk"}`} data-field="consent">

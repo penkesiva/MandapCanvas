@@ -21,6 +21,8 @@ export interface ArtStyle {
   hint: string;
   /** Shown first, with a "Popular" tag. */
   popular?: boolean;
+  /** Glasses look out of place in this art form, so the tool suggests removing them. */
+  noGlasses?: boolean;
   /** Tile colors until an example is painted. */
   swatch: [string, string];
   prompt: string;
@@ -56,6 +58,7 @@ export const ART_STYLES: ArtStyle[] = [
   {
     id: "mughal",
     name: "Mughal miniature",
+    noGlasses: true,
     hint: "Palace garden, gold borders",
     swatch: ["#0F4D36", "#C9A24B"],
     prompt:
@@ -64,6 +67,7 @@ export const ART_STYLES: ArtStyle[] = [
   {
     id: "madhubani",
     name: "Madhubani folk art",
+    noGlasses: true,
     hint: "Bold lines, fish and peacocks",
     swatch: ["#D7263D", "#F2C14E"],
     prompt:
@@ -72,6 +76,7 @@ export const ART_STYLES: ArtStyle[] = [
   {
     id: "tanjore",
     name: "Tanjore painting",
+    noGlasses: true,
     hint: "Gold foil, gem colors",
     swatch: ["#7A1F3D", "#E2B43C"],
     prompt:
@@ -80,6 +85,7 @@ export const ART_STYLES: ArtStyle[] = [
   {
     id: "oil",
     name: "Classic oil painting",
+    noGlasses: true,
     hint: "19th-century Indian portrait",
     swatch: ["#6D4C2F", "#D8B98A"],
     prompt:
@@ -117,10 +123,15 @@ export function getArtStyle(id: unknown): ArtStyle | null {
 
 export type ArtOutfit = "wedding" | "keep";
 
-export function buildArtPrompt(style: ArtStyle, outfit: ArtOutfit): string {
+export type ArtGlasses = "keep" | "remove";
+
+export function buildArtPrompt(style: ArtStyle, outfit: ArtOutfit, glasses: ArtGlasses = style.noGlasses ? "remove" : "keep"): string {
   return [
     `Redraw the attached PHOTO as ${style.prompt}.`,
-    "LIKENESS (MUST FOLLOW): keep every person recognizable in this style: their face shape, skin tone, hair, facial hair, glasses, age and build. Keep the same number of people, in the same positions and roughly the same pose. Do not add or remove anyone, and do not swap anyone for a model.",
+    "LIKENESS (MUST FOLLOW): keep every person recognizable in this style: their face shape, eyes, skin tone, hair, facial hair, age and build. Keep the same number of people, in the same positions and roughly the same pose. Do not add or remove anyone, and do not swap anyone for a model.",
+    glasses === "remove"
+      ? "EYEWEAR (MUST FOLLOW): no one wears glasses or sunglasses. Remove them completely and draw the eyes naturally, with no marks on the nose."
+      : "EYEWEAR: anyone who wears glasses in the photo keeps them, redrawn in this style.",
     outfit === "wedding"
       ? "OUTFITS: dress them for their Indian wedding in this style: the woman in a bridal lehenga or saree with jewelry, the man in a sherwani or kurta; a man only ever wears men's clothing."
       : "OUTFITS: keep the clothes they wear in the photo, redrawn in this style.",

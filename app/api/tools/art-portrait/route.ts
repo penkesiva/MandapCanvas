@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { loadImage, saveImage } from "@/lib/blob";
 import { brandMark, generateImage } from "@/lib/imagegen";
-import { buildArtPrompt, getArtStyle, type ArtOutfit } from "@/lib/artStyles";
+import { buildArtPrompt, getArtStyle, type ArtGlasses, type ArtOutfit } from "@/lib/artStyles";
 import { dailyCapCents } from "@/lib/albums";
 import { SITE } from "@/lib/config";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
@@ -25,6 +25,7 @@ export async function POST(request: Request) {
   const style = getArtStyle(body?.style);
   if (!style) return jsonError("Pick a style.");
   const outfit: ArtOutfit = body?.outfit === "keep" ? "keep" : "wedding";
+  const glasses: ArtGlasses = body?.glasses === "remove" ? "remove" : body?.glasses === "keep" ? "keep" : style.noGlasses ? "remove" : "keep";
   if (body?.consent !== true) return jsonError("Please confirm the photo is of you, or that everyone in it agreed.");
   const photoUrl = body?.photoUrl;
   if (!isOurImageUrl(photoUrl) || !photoUrl.includes("/faces/")) return jsonError("Upload your photo first.");
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     const meta = await sharp(photo.data).rotate().metadata();
     const aspect = nearestAspect(meta.autoOrient?.width ?? meta.width ?? 3, meta.autoOrient?.height ?? meta.height ?? 4);
     const result = await generateImage({
-      prompt: buildArtPrompt(style, outfit),
+      prompt: buildArtPrompt(style, outfit, glasses),
       refs: [{ label: "PHOTO", data: photo.data, mimeType: photo.mimeType }],
       aspectRatio: aspect,
       mockLabel: { title: "Your art portrait", subtitle: style.name, paletteId: "red_gold" },
