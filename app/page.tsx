@@ -4,6 +4,7 @@ import { BeforeAfter } from "@/components/BeforeAfter";
 import { Divider, Mandala, SectionTitle } from "@/components/Ornaments";
 import { LookExamples } from "@/components/looks/LookExamples";
 import { NavratriStrip } from "@/components/looks/NavratriStrip";
+import { MaharaniCarousel } from "@/components/looks/MaharaniCarousel";
 import { Bride, Groom } from "@/components/tools/Figures";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
@@ -118,6 +119,28 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Maharani: evergreen, so it gets its own quiet section with the rotating portraits */}
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20" aria-labelledby="maharani-h">
+        <div className="grid items-center gap-10 md:grid-cols-[1fr_0.8fr] lg:gap-16">
+          <div className="max-w-xl">
+            <h2 id="maharani-h" className="text-[2.2rem] text-maroon sm:text-[2.8rem]">
+              See yourself as a maharani
+            </h2>
+            <p className="mt-3 text-lg text-ink-soft">
+              Twelve heritage silk sarees, from Banarasi to Kanjeevaram, at palace halls and temple courtyards. Made from a few of your selfies, so it&apos;s still unmistakably you.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/looks/maharani" className="btn btn-primary">
+                {PACKS.maharani12.images} portraits for {formatUSD(PACKS.maharani12.priceCents)}
+              </Link>
+              <span className="text-sm text-ink-soft">No watermark, ready in about 10 minutes.</span>
+            </div>
+            <p className="mt-4 text-xs text-ink-soft">Made from one photo of an AI model. Hover or hold to pause.</p>
+          </div>
+          <MaharaniCarousel className="mx-auto w-full max-w-sm" />
+        </div>
+      </section>
+
       {/* Festival looks: the nine-day strip is the one bold moment for the new collections */}
       <section className="bg-maroon-deep py-14 text-[#fff8ef] sm:py-20" aria-labelledby="navratri-h">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -133,9 +156,6 @@ export default function Home() {
             <div className="flex flex-col items-start gap-2 sm:items-end">
               <Link href="/looks/navratri" className="btn btn-gold">
                 {PACKS.navratri9.images} portraits for {formatUSD(PACKS.navratri9.priceCents)}
-              </Link>
-              <Link href="/looks/maharani" className="text-sm font-semibold text-gold-light underline underline-offset-4">
-                Or see yourself as a maharani
               </Link>
             </div>
           </div>

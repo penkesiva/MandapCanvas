@@ -17,20 +17,12 @@ export function MoreLooks({ heading = "More ways to see yourself" }: { heading?:
         {items.map(({ c, line, from }) => (
           <li key={c.id} className="flex">
             <Link href={c.path} className="group flex w-full flex-col overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
-              {c.id === "navratri" ? (
-                <span className="grid grid-cols-5 gap-0.5 bg-white" aria-hidden="true">
-                  {[1, 3, 4, 6, 8].map((d) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={d} src={`/samples/navratri/day-${d}.jpg`} alt="" className="aspect-[3/4] w-full object-cover object-top" loading="lazy" />
-                  ))}
-                </span>
-              ) : (
-                <span className="flex h-16" aria-hidden="true">
-                  {c.scenes.slice(0, 9).map((s) => (
-                    <span key={s.name} className="flex-1" style={{ background: s.hex }} />
-                  ))}
-                </span>
-              )}
+              <span className="grid grid-cols-5 gap-0.5 bg-white" aria-hidden="true">
+                {(c.id === "navratri" ? [1, 3, 4, 6, 8].map((d) => `/samples/navratri/day-${d}.jpg`) : [1, 3, 4, 6, 9].map((d) => `/samples/maharani/scene-${d}.jpg`)).map((src) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={src} src={src} alt="" className="aspect-[3/4] w-full object-cover object-top" loading="lazy" />
+                ))}
+              </span>
               <span className="flex flex-1 flex-col p-5">
                 <span className="font-display text-2xl text-maroon group-hover:text-kumkum">{c.name} portraits</span>
                 <span className="mt-1 text-ink-soft">{line}</span>

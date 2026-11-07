@@ -5,6 +5,7 @@ import { LOOK_COLLECTIONS, type CollectionId } from "@/lib/lookCollections";
 import { CollectionGallery, CollectionOrder } from "./CollectionLook";
 import { LooksSwitcher } from "./LooksSwitcher";
 import { NavratriStrip } from "./NavratriStrip";
+import { MaharaniCarousel } from "./MaharaniCarousel";
 
 /** The shared layout for the Maharani and Navratri pages. */
 export function CollectionPage({
@@ -32,7 +33,8 @@ export function CollectionPage({
         <div className="mt-5">
           <LooksSwitcher current={c.path as "/looks/maharani" | "/looks/navratri"} />
         </div>
-        <header className="mt-6 max-w-3xl">
+        <div className={id === "maharani" ? "mt-6 grid items-center gap-10 md:grid-cols-[1.2fr_0.8fr]" : ""}>
+        <header className={id === "maharani" ? "max-w-2xl" : "mt-6 max-w-3xl"}>
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">{title}</h1>
           <p className="mt-4 text-lg text-ink-soft">{intro}</p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -46,6 +48,8 @@ export function CollectionPage({
             )}
           </div>
         </header>
+        {id === "maharani" ? <MaharaniCarousel className="mx-auto w-full max-w-sm" /> : null}
+        </div>
         {id === "navratri" ? (
           <div className="mt-10">
             <NavratriStrip />
