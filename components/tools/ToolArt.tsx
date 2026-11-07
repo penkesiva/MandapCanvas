@@ -59,23 +59,22 @@ function Frame({ children, bg = "bg-silk" }: { children: React.ReactNode; bg?: s
   return <div className={`relative aspect-[16/9] w-full overflow-hidden ${bg}`}>{children}</div>;
 }
 
-/** A gold medallion arrow, the same mark as the before/after examples on /looks. */
 /** A hand-drawn trail with a loop, ending in a paper plane: "this becomes that". */
 function Arrow() {
   return (
     <svg viewBox="0 0 64 44" className="relative z-10 h-10 w-14 flex-none -rotate-6 drop-shadow-[0_2px_3px_rgba(74,13,26,0.18)] sm:h-12 sm:w-[4.5rem]" aria-hidden="true">
       <path
-        d="M3 36 C10 40 17 33 22 27 C27 21 33 21 33 27 C33 33 25 33 25 27 C25 19 33 13 43 13"
+        d="M3 38 C10 42 17 35 22 29 C27 23 33 23 33 29 C33 35 25 35 25 29 C25 21 31 16 40 13.3"
         fill="none"
         stroke="#8E1B2B"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeDasharray="0.5 4.2"
       />
-      <g transform="translate(44 4) rotate(12)">
-        <path d="M0 6 L18 0 L11 15 Z" fill="#FFF8EE" stroke="#8E1B2B" strokeWidth="1.5" strokeLinejoin="round" />
-        <path d="M0 6 L11 8.5 L18 0 M11 8.5 L11 15" fill="none" stroke="#8E1B2B" strokeWidth="1.2" strokeLinejoin="round" />
-        <path d="M11 8.5 L8.5 12 L11 15" fill="#C9A24B" stroke="#8E1B2B" strokeWidth="1" strokeLinejoin="round" />
+      {/* the plane's tail notch sits exactly on the trail's end, pointing the way the trail heads */}
+      <g transform="translate(41 13) rotate(-18) scale(1.15)">
+        <path d="M15 0 L-4 -7.5 L0 0 Z" fill="#FFF8EE" stroke="#8E1B2B" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M15 0 L-4 7.5 L0 0 Z" fill="#C9A24B" stroke="#8E1B2B" strokeWidth="1.4" strokeLinejoin="round" />
       </g>
     </svg>
   );
