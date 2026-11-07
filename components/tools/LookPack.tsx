@@ -199,7 +199,7 @@ export function LookPack({
                     </span>
                   </span>
                   <span className="mt-1 block text-sm text-ink-soft">
-                    {p.blurb} About {formatUSD(Math.round(p.priceCents / p.images))} each. {p.freeRegens} free redos.
+                    {p.blurb} {p.freeRegens} free redos.
                   </span>
                 </button>
               );

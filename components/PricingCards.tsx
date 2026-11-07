@@ -31,10 +31,6 @@ export function PricingCards({ product = "mandap" }: { product?: "mandap" | "loo
                 one time, {p.images} {unit}
               </span>
             </p>
-            <p className="mt-1 text-sm text-ink-soft">
-              {p.listCents ? <span className="font-semibold text-mehndi">Launch price. </span> : null}
-              About {formatUSD(Math.round(p.priceCents / p.images))} per {product === "looks" ? "portrait" : "image"}
-            </p>
             <ul className="mb-7 mt-5 space-y-2 text-[0.97rem]">
               {p.includes.map((i) => (
                 <li key={i} className="flex gap-2.5">
