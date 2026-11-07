@@ -346,6 +346,29 @@ p {
   animation-play-state: paused;
 }
 
+/* Feedback tab: an occasional wiggle with a little heart pop. */
+@keyframes mc-nudge {
+  0%, 100% { transform: rotate(0) scale(1); }
+  15% { transform: rotate(-6deg) scale(1.06); }
+  30% { transform: rotate(5deg) scale(1.06); }
+  45% { transform: rotate(-4deg) scale(1.04); }
+  60% { transform: rotate(2deg) scale(1.02); }
+  75% { transform: rotate(0) scale(1); }
+}
+@keyframes mc-heart-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.mc-nudge {
+  animation: mc-nudge 1.1s ease-in-out;
+  box-shadow: 0 0 0 4px rgba(201, 162, 75, 0.35), 0 6px 16px rgba(74, 13, 26, 0.18);
+}
+.mc-nudge svg {
+  animation: mc-heart-pop 0.6s ease-out 0.2s 2;
+  color: #9e1b32;
+}
+
 /* Confetti in the bride-and-groom scenes: a slow fall with a gentle side-to-side sway. */
 @keyframes mc-fall {
   from { transform: translateY(-16px); }
@@ -369,6 +392,10 @@ p {
 @media (prefers-reduced-motion: reduce) {
   .mc-fall {
     display: none;
+  }
+  .mc-nudge,
+  .mc-nudge svg {
+    animation: none !important;
   }
   .mc-attention {
     animation: none !important;

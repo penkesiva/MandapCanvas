@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MessageCircleHeart, X } from "lucide-react";
 import { FeedbackForm } from "./FeedbackForm";
@@ -11,7 +11,45 @@ export function FeedbackButton() {
   // Remember which page the box was opened on, so it closes by itself after navigating.
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === path;
-  const setOpen = (v: boolean) => setOpenOn(v ? path : null);
+  const setOpen = (v: boolean) => {
+    setOpenOn(v ? path : null);
+    if (v) {
+      // Once someone opens it, stop nudging them (this visit and later ones).
+      try {
+        localStorage.setItem("mc:feedback:seen", "1");
+      } catch {}
+      setNudge(false);
+    }
+  };
+
+  // An occasional wiggle to say "tell us": first after ~30s, then every 45s, at most 3 times a page.
+  const [nudge, setNudge] = useState(false);
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = localStorage.getItem("mc:feedback:seen") === "1";
+    } catch {}
+    if (seen || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let count = 0;
+    let off: number | undefined;
+    const ping = () => {
+      if (document.hidden) return;
+      count += 1;
+      setNudge(true);
+      off = window.setTimeout(() => setNudge(false), 1300);
+      if (count >= 3) window.clearInterval(every);
+    };
+    let every: number | undefined;
+    const first = window.setTimeout(() => {
+      ping();
+      every = window.setInterval(ping, 45000);
+    }, 30000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(off);
+      window.clearInterval(every);
+    };
+  }, [path]);
   if (path.startsWith("/admin") || path.startsWith("/contact")) return null;
 
   return (
@@ -33,7 +71,7 @@ export function FeedbackButton() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 rounded-full border border-gold/60 bg-white/95 px-3 py-1.5 text-sm font-semibold text-maroon shadow-md backdrop-blur hover:border-kumkum"
+          className={`flex items-center gap-1.5 rounded-full border border-gold/60 bg-white/95 px-3 py-1.5 text-sm font-semibold text-maroon shadow-md backdrop-blur hover:border-kumkum ${nudge ? "mc-nudge" : ""}`}
         >
           <MessageCircleHeart size={16} /> Feedback
         </button>
