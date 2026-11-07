@@ -224,7 +224,7 @@ export function PhotoPalette() {
               onFile(e.dataTransfer.files?.[0]);
             }}
             className={`flex w-full flex-col items-center justify-center gap-3 rounded-[22px] border-2 border-dashed px-6 py-14 text-center transition ${
-              drag ? "border-kumkum bg-[#fdf3f1]" : "border-gold/60 bg-silk hover:border-gold"
+              drag ? "border-kumkum bg-[#fdf3f1]" : "mc-attention border-gold/60 bg-silk hover:border-gold"
             }`}
           >
             <span className="grid h-14 w-14 place-items-center rounded-full bg-maroon text-gold-light">

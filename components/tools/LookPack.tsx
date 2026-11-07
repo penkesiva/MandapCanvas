@@ -169,6 +169,7 @@ export function LookPack({
                 hint={s.hint}
                 urls={photos[s.id]}
                 onChange={(urls) => setPhotos((p) => ({ ...p, [s.id]: urls }))}
+                attention={!s.hint.startsWith("Optional")}
               />
             ))}
           </div>
@@ -233,7 +234,20 @@ export function LookPack({
   );
 }
 
-export function PhotoRow({ label, hint, urls, onChange }: { label: string; hint: string; urls: string[]; onChange: (u: string[]) => void }) {
+export function PhotoRow({
+  label,
+  hint,
+  urls,
+  onChange,
+  attention = true,
+}: {
+  label: string;
+  hint: string;
+  urls: string[];
+  onChange: (u: string[]) => void;
+  /** Pulse the add tile while empty. Off for optional rows. */
+  attention?: boolean;
+}) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -287,7 +301,7 @@ export function PhotoRow({ label, hint, urls, onChange }: { label: string; hint:
           <button
             type="button"
             onClick={() => ref.current?.click()}
-            className="grid h-20 w-16 place-items-center rounded-lg border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum"
+            className={`grid h-20 w-16 place-items-center rounded-lg border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum ${urls.length === 0 && !busy && attention ? "mc-attention" : ""}`}
             aria-label={`Add ${label.toLowerCase()}`}
           >
             {busy ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={20} />}

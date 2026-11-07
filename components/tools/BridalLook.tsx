@@ -190,7 +190,7 @@ export function BridalLook() {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="relative flex h-36 w-28 flex-none items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum"
+              className={`relative flex h-36 w-28 flex-none items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-gold/70 bg-silk text-kumkum hover:border-kumkum ${!photo && !uploading ? "mc-attention" : ""}`}
               aria-label={photo ? "Change photo" : "Upload photo"}
             >
               {photo ? (
@@ -208,7 +208,7 @@ export function BridalLook() {
               ) : null}
             </button>
             <div className="text-sm text-ink-soft">
-              <button type="button" className="btn btn-ghost btn-sm mb-2" onClick={() => fileRef.current?.click()}>
+              <button type="button" className={`btn btn-ghost btn-sm mb-2 ${!photo && !uploading ? "mc-attention" : ""}`} onClick={() => fileRef.current?.click()}>
                 {photo ? "Change photo" : "Choose a photo"}
               </button>
               <ul className="space-y-0.5">

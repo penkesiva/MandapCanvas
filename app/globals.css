@@ -332,6 +332,20 @@ p {
   border-radius: 18px;
 }
 
+/* "Upload here": a soft gold ring that breathes out from an empty upload spot until a photo is added. */
+@keyframes mc-attention {
+  0% { box-shadow: 0 0 0 0 rgba(201, 162, 75, 0.7), 0 0 0 0 rgba(158, 27, 50, 0.25); }
+  70% { box-shadow: 0 0 0 12px rgba(201, 162, 75, 0), 0 0 0 20px rgba(158, 27, 50, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 162, 75, 0), 0 0 0 0 rgba(158, 27, 50, 0); }
+}
+.mc-attention {
+  animation: mc-attention 2.2s ease-out infinite;
+}
+.mc-attention:hover,
+.mc-attention:focus-visible {
+  animation-play-state: paused;
+}
+
 /* Confetti in the bride-and-groom scenes: a slow fall with a gentle side-to-side sway. */
 @keyframes mc-fall {
   from { transform: translateY(-16px); }
@@ -355,6 +369,10 @@ p {
 @media (prefers-reduced-motion: reduce) {
   .mc-fall {
     display: none;
+  }
+  .mc-attention {
+    animation: none !important;
+    box-shadow: 0 0 0 3px rgba(201, 162, 75, 0.6);
   }
   .mc-flag {
     animation: none !important;

@@ -1339,7 +1339,7 @@ function ImageDrop({
         setOver(false);
         void handle(e.dataTransfer.files?.[0]);
       }}
-      className={`relative overflow-hidden rounded-[18px] border-2 border-dashed bg-white ${over ? "border-kumkum" : "border-line"} ${compact ? "aspect-square" : "aspect-[4/3]"}`}
+      className={`relative overflow-hidden rounded-[18px] border-2 border-dashed bg-white ${over ? "border-kumkum" : "border-line"} ${compact ? "aspect-square" : "aspect-[4/3]"} ${!value && !busy ? "mc-attention" : ""}`}
     >
       {value ? (
         // eslint-disable-next-line @next/next/no-img-element
