@@ -52,8 +52,9 @@ export default function WeddingInvitationPage() {
         <header className="mt-6 max-w-3xl">
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">Make your wedding invitation</h1>
           <p className="mt-4 text-lg text-ink-soft">
-            Type your names, date and venue, pick one of {CARD_TEMPLATES.length} styles, and get a one-of-a-kind card painted by AI, with every word spelled exactly
-            right. For the wedding, the save the date, or every event from Haldi to the reception. Try for free.
+            Pick one of {CARD_TEMPLATES.length} painted backgrounds, type your names, date and venue, and download your card free, with every word spelled
+            exactly right. Want it one of a kind? Customize the background and we paint your own version. For the wedding, the save the date, or every event
+            from Haldi to the reception.
           </p>
         </header>
 

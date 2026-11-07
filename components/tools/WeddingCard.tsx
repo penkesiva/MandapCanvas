@@ -19,7 +19,7 @@ import "@fontsource/cormorant-garamond/500-italic.css";
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, Copy, Download, Link2, Loader2, Paintbrush, Share2, Sparkles, Wand2 } from "lucide-react";
+import { Check, Copy, Download, Link2, Loader2, Paintbrush, Share2, Sparkles, Wand2, X } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 import { offerLine } from "@/lib/config";
 import {
@@ -63,6 +63,8 @@ export function WeddingCard() {
   const [tick, setTick] = useState(0);
   const [error, setError] = useState<{ msg: string; code?: string; field?: "names" } | null>(null);
   const [seeding, setSeeding] = useState<string | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [exported, setExported] = useState(false);
   const loaded = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -109,9 +111,10 @@ export function WeddingCard() {
 
   const t = getCardTemplate(template);
   const mine = [...arts].reverse().find((a) => a.template === template && a.format === format) ?? null;
-  const sampleUrl = format === "card" ? samples[template] : undefined;
+  // The ready-made background is free for everyone; the story size crops the same painting.
+  const sampleUrl = samples[template];
   const artUrl = mine?.url ?? sampleUrl ?? null;
-  const isSample = !mine;
+  const hasArt = !!artUrl;
 
   // draw the preview whenever anything changes
   const draw = useCallback(async () => {
@@ -120,8 +123,8 @@ export function WeddingCard() {
     await loadCardFonts(t);
     let art: HTMLImageElement | null = null;
     if (artUrl) art = await cachedImage(artUrl).catch(() => null);
-    drawCard(canvas, { art, template: t, details, format, sample: isSample && !!art, badge: true });
-  }, [t, artUrl, details, format, isSample]);
+    drawCard(canvas, { art, template: t, details, format, badge: true });
+  }, [t, artUrl, details, format]);
 
   useEffect(() => {
     const id = setTimeout(draw, 80);
@@ -166,6 +169,7 @@ export function WeddingCard() {
         return;
       }
       setArts((a) => [...a, { template, format, url: data.url }].slice(-12));
+      setCustomOpen(false);
       setQuota((q) => ({ signedIn: data.signedIn, remaining: data.remaining, admin: q?.admin ?? false }));
       track("tool_card_done", { template, format });
     } catch {
@@ -181,9 +185,17 @@ export function WeddingCard() {
     return `${n || "our"}-${details.event.replace(/_/g, "-")}-invitation.${ext}`;
   }
 
+  function needNames() {
+    if (ready) return false;
+    setError({ msg: "Add both names first.", field: "names" });
+    flagField(details.name1.trim() ? '[data-field="name2"]' : '[data-field="name1"]');
+    return true;
+  }
+
   async function toBlob(): Promise<Blob | null> {
     const canvas = canvasRef.current;
     if (!canvas) return null;
+    setExported(true);
     await draw();
     return new Promise((ok) => {
       try {
@@ -195,7 +207,8 @@ export function WeddingCard() {
   }
 
   async function download() {
-    track("tool_card_download", { template });
+    if (needNames()) return;
+    track("tool_card_download", { template, own: !!mine });
     const blob = await toBlob();
     if (!blob) return setError({ msg: "Your browser blocked the download. Try another browser." });
     const a = document.createElement("a");
@@ -206,7 +219,8 @@ export function WeddingCard() {
   }
 
   async function share() {
-    track("tool_card_share", { template });
+    if (needNames()) return;
+    track("tool_card_share", { template, own: !!mine });
     const blob = await toBlob();
     try {
       const file = blob ? new File([blob], fileName("png"), { type: "image/png" }) : null;
@@ -218,13 +232,14 @@ export function WeddingCard() {
   }
 
   // A link is made once per painted card and words; editing the words makes a new one.
-  const linkKey = mine ? `${mine.url}|${format}|${JSON.stringify(details)}` : "";
+  const linkKey = artUrl ? `${artUrl}|${format}|${JSON.stringify(details)}` : "";
   useEffect(() => {
     setShareLink(null);
   }, [linkKey]);
 
   async function copyImage() {
-    track("tool_card_copy_image", { template });
+    if (needNames()) return;
+    track("tool_card_copy_image", { template, own: !!mine });
     const blob = await toBlob();
     try {
       if (!blob || typeof ClipboardItem === "undefined") throw new Error("unsupported");
@@ -236,7 +251,8 @@ export function WeddingCard() {
   }
 
   async function copyLink() {
-    track("tool_card_copy_link", { template });
+    if (needNames()) return;
+    track("tool_card_copy_link", { template, own: !!mine });
     let link = shareLink;
     if (!link) {
       setLinking(true);
@@ -302,17 +318,114 @@ export function WeddingCard() {
     setSeeding(null);
   }
 
+  const customPanel = (
+    <div className="mt-3 rounded-2xl border border-gold/60 bg-[#fdf6ea] p-3 sm:p-4">
+      {hasArt && !customOpen ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm">
+            <span className="font-semibold text-maroon">{mine ? `Your own ${t.name} painting` : `${t.name}, ready to use`}</span>
+            <span className="block text-ink-soft">{mine ? "Painted just for you." : "Free to download and share."}</span>
+          </p>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => {
+              setCustomOpen(true);
+              track("tool_card_customize_open", { template });
+            }}
+          >
+            <Wand2 size={16} /> {mine ? "Paint another version" : "Customize this background"}
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <label htmlFor="card-motifs" className="flex items-center gap-2 font-semibold text-maroon">
+              <Sparkles size={16} className="text-gold" /> {hasArt ? `Customize the ${t.name} background` : `Paint the ${t.name} background`}
+            </label>
+            {hasArt ? (
+              <button type="button" aria-label="Close" className="rounded-full p-1 text-ink-soft hover:bg-white" onClick={() => setCustomOpen(false)}>
+                <X size={16} />
+              </button>
+            ) : null}
+          </div>
+          <p className="mt-0.5 text-sm text-ink-soft">We paint a new version just for you, with anything you add. Tap an idea or type your own.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {t.ideas.map((idea) => {
+              const on = motifList.includes(idea.toLowerCase());
+              return (
+                <button
+                  key={idea}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleIdea(idea)}
+                  className={`rounded-full border px-3 py-1 text-sm transition ${on ? "border-kumkum bg-kumkum text-white" : "border-gold/60 bg-white hover:border-kumkum"}`}
+                >
+                  {on ? "✓ " : "+ "}
+                  {idea}
+                </button>
+              );
+            })}
+          </div>
+          <input
+            id="card-motifs"
+            className="field mt-3"
+            value={motifs}
+            onChange={(e) => setMotifs(e.target.value)}
+            placeholder={`e.g. ${t.ideas.slice(0, 2).join(", ")}`}
+            maxLength={160}
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                if (!outOfTries) return paint();
+                track("tool_card_out_click", { signedIn: !!quota?.signedIn });
+                flagField(quota?.signedIn ? "#card-next" : "#card-signup");
+              }}
+              disabled={busy}
+            >
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}{" "}
+              {busy ? "Painting…" : outOfTries ? (quota?.signedIn ? "See your mandap next" : "Sign up free for one more") : `Paint my ${t.name} version`}
+            </button>
+            <span className="text-xs text-ink-soft">
+              {quota === null
+                ? "One free painting, no sign-up."
+                : quota.remaining > 0
+                  ? quota.admin
+                    ? "Admin: unlimited."
+                    : `${quota.remaining} free ${quota.remaining === 1 ? "painting" : "paintings"} left.`
+                  : quota.signedIn
+                    ? "You've used your free paintings. Ready-made backgrounds stay free."
+                    : "Create a free account for one more. Ready-made backgrounds stay free."}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
       <div className="min-w-0 rounded-[26px] border border-gold/40 bg-white p-4 shadow-[0_30px_60px_-44px_rgba(74,13,26,0.6)] sm:p-7">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-ink-soft">Type your details. The card updates as you type.</p>
+          <p className="text-sm text-ink-soft">Pick a painted background, add your words, download free.</p>
           <button type="button" className="text-sm font-semibold text-kumkum underline underline-offset-4" onClick={() => setDetails(EXAMPLE_DETAILS)}>
             Fill in an example
           </button>
         </div>
 
-        <Step n={1} title="The couple and the event">
+        <Step n={1} title="Pick a background">
+          <StyleGallery template={template} setTemplate={(id) => { setTemplate(id); setCustomOpen(false); }} samples={samples} arts={arts} below={customPanel} />
+          {quota?.admin && CARD_TEMPLATES.some((x) => !samples[x.id]) ? (
+            <button type="button" className="btn btn-ghost btn-sm mt-3" onClick={seedSamples} disabled={!!seeding}>
+              {seeding ? `Painting the ${seeding} sample…` : "Admin: paint the missing style samples"}
+            </button>
+          ) : null}
+        </Step>
+
+        <Step n={2} title="The couple and the event">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="First name" hint="As it should appear">
               <input className="field" value={details.name1} onChange={set("name1")} placeholder="Priya" maxLength={28} data-field="name1" />
@@ -335,7 +448,7 @@ export function WeddingCard() {
           </div>
         </Step>
 
-        <Step n={2} title="When and where">
+        <Step n={3} title="When and where">
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Date">
               <input className="field" type="date" value={details.date} onChange={set("date")} />
@@ -354,7 +467,7 @@ export function WeddingCard() {
           </div>
         </Step>
 
-        <Step n={3} title="Extras, all optional">
+        <Step n={4} title="Extras, all optional">
           <div className="grid gap-3">
             {details.event !== "save_the_date" && details.event !== "haldi" && details.event !== "mehndi" && details.event !== "sangeet" ? (
               <Field label="Hosts line" hint="Replaces “Together with their families”">
@@ -382,16 +495,7 @@ export function WeddingCard() {
           </div>
         </Step>
 
-        <Step n={4} title="Pick a style">
-          <StyleGallery template={template} setTemplate={setTemplate} samples={samples} arts={arts} />
-          {quota?.admin && CARD_TEMPLATES.some((x) => !samples[x.id]) ? (
-            <button type="button" className="btn btn-ghost btn-sm mt-3" onClick={seedSamples} disabled={!!seeding}>
-              {seeding ? `Painting the ${seeding} sample…` : "Admin: paint the missing style samples"}
-            </button>
-          ) : null}
-        </Step>
-
-        <Step n={5} title="Size and personal touches">
+        <Step n={5} title="Size">
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
             {(
               [
@@ -412,37 +516,6 @@ export function WeddingCard() {
               </button>
             ))}
           </div>
-          <div className="mt-5 rounded-2xl border-2 border-dashed border-gold/70 bg-[#fdf6ea] p-4">
-            <label htmlFor="card-motifs" className="flex items-center gap-2 font-semibold text-maroon">
-              <Sparkles size={16} className="text-gold" /> Make it yours: add keywords to the artwork
-            </label>
-            <p className="mt-0.5 text-sm text-ink-soft">The AI paints them into your {t.name} card. Tap an idea or type your own.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {t.ideas.map((idea) => {
-                const on = motifList.includes(idea.toLowerCase());
-                return (
-                  <button
-                    key={idea}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => toggleIdea(idea)}
-                    className={`rounded-full border px-3 py-1 text-sm transition ${on ? "border-kumkum bg-kumkum text-white" : "border-gold/60 bg-white hover:border-kumkum"}`}
-                  >
-                    {on ? "✓ " : "+ "}
-                    {idea}
-                  </button>
-                );
-              })}
-            </div>
-            <input
-              id="card-motifs"
-              className="field mt-3"
-              value={motifs}
-              onChange={(e) => setMotifs(e.target.value)}
-              placeholder={`e.g. ${t.ideas.slice(0, 2).join(", ")}`}
-              maxLength={160}
-            />
-          </div>
         </Step>
 
         <div className="mt-5 flex flex-col items-start gap-2">
@@ -450,24 +523,15 @@ export function WeddingCard() {
             type="button"
             className="btn btn-primary w-full sm:w-auto"
             onClick={() => {
-              if (!outOfTries) return paint();
-              track("tool_card_out_click", { signedIn: !!quota?.signedIn });
-              flagField(quota?.signedIn ? "#card-next" : "#card-signup");
+              if (needNames()) return;
+              previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              if (hasArt) download();
             }}
-            disabled={busy}
+            disabled={busy || !hasArt}
           >
-            {busy ? <Loader2 size={18} className="animate-spin" /> : <Wand2 size={18} />}{" "}
-            {busy ? "Painting your card…" : outOfTries ? (quota?.signedIn ? "See your mandap next" : "Sign up free for one more card") : `Paint my ${t.name} card`}
+            <Download size={18} /> Download my card
           </button>
-          <p className="text-sm text-ink-soft">
-            {quota === null
-              ? "Try for free, no sign-up."
-              : quota.remaining > 0
-                ? `${quota.admin ? "Admin: unlimited" : `${quota.remaining} free ${quota.remaining === 1 ? "card" : "cards"} left`}. Words stay editable for free after painting.`
-                : quota.signedIn
-                  ? "You've used your free cards. You can still edit the words on cards you've made."
-                  : "You've used your free card. Create a free account for one more."}
-          </p>
+          <p className="text-sm text-ink-soft">Free, no sign-up. Change the words any time and download again.</p>
         </div>
       </div>
 
@@ -485,7 +549,7 @@ export function WeddingCard() {
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 px-1 pt-3">
-            {mine ? (
+            {hasArt ? (
               <>
                 <button type="button" className="btn btn-primary btn-sm" onClick={download}>
                   <Download size={16} /> Download
@@ -500,7 +564,7 @@ export function WeddingCard() {
                 <button type="button" className="btn btn-ghost btn-sm" onClick={share}>
                   <Share2 size={16} /> Share
                 </button>
-                {quota?.admin && format === "card" ? (
+                {quota?.admin && format === "card" && mine ? (
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
@@ -521,7 +585,7 @@ export function WeddingCard() {
             ) : (
               <p className="text-sm text-ink-soft">
                 <Sparkles size={14} className="mr-1 inline text-gold" />
-                {sampleUrl ? "Preview on sample artwork. Paint your card to download and share it." : "Preview. Paint your card to download and share it."}
+                Paint this background to download it, or pick a style with a ready-made one.
               </p>
             )}
           </div>
@@ -569,7 +633,7 @@ export function WeddingCard() {
             cta="Get my free card"
           />
         ) : null}
-        {mine || (outOfTries && quota?.signedIn) ? (
+        {mine || exported || (outOfTries && quota?.signedIn) ? (
           <div id="card-next" className="mt-4 rounded-[22px] border border-gold/50 bg-white p-5">
             <p className="font-display text-xl text-maroon">Now picture the mandap</p>
             <p className="mt-1 text-sm text-ink-soft">See your decor and outfits photo-real, for every event on your card. Two previews are free.</p>
@@ -588,13 +652,17 @@ function StyleGallery({
   setTemplate,
   samples,
   arts,
+  below,
 }: {
   template: string;
   setTemplate: (id: string) => void;
   samples: Record<string, string>;
   arts: Art[];
+  /** Shown right under the row that holds the chosen style. */
+  below?: React.ReactNode;
 }) {
   const groups = ["Traditional", "Modern", "Fun"] as const;
+  const chosenGroup = CARD_TEMPLATES.find((x) => x.id === template)?.group;
   return (
     <div className="space-y-4">
       {groups.map((g) => (
@@ -619,11 +687,12 @@ function StyleGallery({
                     <img src={img} alt="" className="aspect-[3/4] w-full object-cover" loading="lazy" />
                   ) : (
                     <span
-                      className="flex aspect-[3/4] w-full items-center justify-center text-3xl"
-                      style={{ background: `linear-gradient(160deg, ${x.swatch[2]}, ${x.swatch[0]} 70%, ${x.swatch[1]})`, fontFamily: `"${x.display}"`, color: x.ink }}
+                      className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-1.5 text-center"
+                      style={{ background: `radial-gradient(circle at 50% 38%, ${x.swatch[2]}, ${x.swatch[0]} 75%)` }}
                       aria-hidden="true"
                     >
-                      <span className="rounded-lg bg-white/75 px-2 py-0.5">P&amp;A</span>
+                      <Paintbrush size={22} style={{ color: x.ink }} />
+                      <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-semibold text-maroon">Paint to see</span>
                     </span>
                   )}
                   <span className="block bg-white px-2 py-1.5">
@@ -639,6 +708,7 @@ function StyleGallery({
               );
             })}
           </div>
+          {g === chosenGroup ? below : null}
         </div>
       ))}
     </div>
