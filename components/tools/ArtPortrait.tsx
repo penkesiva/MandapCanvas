@@ -34,6 +34,8 @@ export function ArtPortrait() {
   const [made, setMade] = useState<Made[]>([]);
   const [showing, setShowing] = useState<number>(-1);
   const [error, setError] = useState<{ msg: string; code?: string; field?: "photo" | "consent" } | null>(null);
+  const [ordering, setOrdering] = useState(false);
+  const [packError, setPackError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +122,46 @@ export function ArtPortrait() {
       flagField("#art-error");
     } finally {
       setBusy(false);
+    }
+  }
+
+  /** The paid Art pack: every style at once, then checkout. */
+  async function orderPack(free = false) {
+    if (!photo) {
+      setError({ msg: "Add your photo first.", field: "photo" });
+      return flagField('[data-field="photo"]');
+    }
+    if (!consent) {
+      setError({ msg: "Tick the box to confirm the photo is of you, or that everyone in it agreed.", field: "consent" });
+      return flagField('[data-field="consent"]');
+    }
+    setPackError(null);
+    setOrdering(true);
+    track(free ? "art_pack_admin_free" : "art_pack_checkout", { outfit });
+    try {
+      const res = await fetch("/api/tools/art-portrait/pack", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ photoUrl: photo, outfit, glasses: glassesChoice ?? "auto", consent, adminFree: free }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (data.redirect) {
+        window.location.href = data.redirect;
+        return;
+      }
+      const co = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "pack", packId: PACKS.art10.id, albumId: data.albumId }),
+      });
+      const cd = await co.json();
+      if (!co.ok || !cd.url) throw new Error(cd.error || "We couldn't start checkout.");
+      window.location.href = cd.url;
+    } catch (e) {
+      setPackError(e instanceof Error ? e.message : "Something went wrong.");
+      flagField("#art-pack-error");
+      setOrdering(false);
     }
   }
 
@@ -421,6 +463,45 @@ export function ArtPortrait() {
             cta="Get my free portrait"
           />
         ) : null}
+        <section id="art-pack" className="mt-4 overflow-hidden rounded-[22px] border border-gold/60 bg-white" aria-labelledby="art-pack-h">
+          <div className="flex items-baseline justify-between gap-3 bg-[#2a0b14] px-5 py-4 text-[#fff8ef]">
+            <h2 id="art-pack-h" className="font-display text-xl text-gold-light">
+              All {ART_STYLES.length} styles at once
+            </h2>
+            <span className="flex-none rounded-full bg-[linear-gradient(#f2d98c,#c9a24b)] px-2.5 py-0.5 text-sm font-semibold text-[#3b0a15]">
+              {formatUSD(PACKS.art10.priceCents)}
+            </span>
+          </div>
+          <div className="p-5">
+            <ul className="grid grid-cols-5 gap-1" aria-label="Every style in the pack">
+              {ART_STYLES.map((x) => (
+                <li key={x.id} className="overflow-hidden rounded-md">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={samples[x.id]} alt={x.name} className="aspect-[3/4] w-full object-cover" loading="lazy" />
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-sm text-ink-soft">
+              Your photo in every style, painted together, with no watermark. Download them all as a ZIP, or one at a time.
+            </p>
+            <button type="button" className="btn btn-primary mt-4 w-full" onClick={() => orderPack()} disabled={ordering || uploading}>
+              {ordering ? <Loader2 size={18} className="animate-spin" /> : null}
+              {photo ? `Get all ${ART_STYLES.length} styles, ${formatUSD(PACKS.art10.priceCents)}` : "Add your photo first"}
+            </button>
+            <p className="mt-2 text-center text-xs text-ink-soft">Uses your outfit and glasses choices. {PACKS.art10.freeRegens} free redos.</p>
+            {quota?.admin && photo ? (
+              <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={() => orderPack(true)} disabled={ordering}>
+                Admin: make this pack free
+              </button>
+            ) : null}
+            {packError ? (
+              <p id="art-pack-error" role="alert" className="mt-3 rounded-2xl bg-[#fbeaea] p-3 text-sm text-kumkum-deep">
+                {packError}
+              </p>
+            ) : null}
+          </div>
+        </section>
+
         {current || (outOfTries && quota?.signedIn) ? (
           <div id="art-next" className="mt-4 rounded-[22px] border border-gold/50 bg-white p-5">
             <p className="font-display text-xl text-maroon">Now see it for real</p>

@@ -9,6 +9,7 @@ import { buildEditPrompt, buildShotPrompt, type PromptRefs } from "./prompts";
 import { buildEventLookPrompt, glassesRule } from "./bridalLooks";
 import { buildCollectionPrompt, collectionShot, getCollection } from "./lookCollections";
 import { buildVenuePrompt, VENUE_EVENTS, VENUE_STYLES } from "./venueDecor";
+import { ART_STYLES, buildArtPrompt } from "./artStyles";
 import { generateImage, watermark, type RefImage } from "./imagegen";
 import { loadImage, saveImage, deleteImage } from "./blob";
 import { recordStat, todayCostCents } from "./stats";
@@ -126,6 +127,20 @@ export async function spendCredits(userId: string, n: number, entry: Omit<Ledger
 
 /** Expands the customer's mix into a concrete, evenly varied shot list. */
 export function planShots(config: AlbumConfig, total: number, existing: Shot[] = []): Shot[] {
+  if (config.artPack) {
+    // Art pack: one style per image, in order; a top-up goes round the styles again.
+    return Array.from({ length: Math.max(0, total - existing.length) }, (_, i) => ({
+      id: crypto.randomUUID().slice(0, 12),
+      event: "ceremony" as const,
+      category: "couple" as const,
+      scene: existing.length + i,
+      paletteId: "red_gold",
+      venue: "indoor" as const,
+      lighting: "day" as const,
+      status: "pending" as const,
+      attempts: 0,
+    }));
+  }
   if (config.venuePack) {
     // Venue pack: their space in one style per image, in order; a top-up goes round the styles again.
     const vp = config.venuePack;
@@ -268,6 +283,7 @@ async function loadTemplate(img: string): Promise<{ data: Buffer; mimeType: stri
 
 function aspectFor(shot: Shot, album?: Album): "4:3" | "3:4" | "16:9" | "9:16" {
   if (album?.config.venuePack) return album.config.venuePack.aspect;
+  if (album?.config.artPack) return album.config.artPack.aspect;
   if (album?.config.look) return "3:4";
   return shot.category === "bride" || shot.category === "groom" ? "3:4" : "4:3";
 }
@@ -283,6 +299,28 @@ export function venueShotStyle(c: AlbumConfig, shot: Shot) {
   const styles = c.venuePack?.styles ?? [];
   const id = styles[(shot.scene ?? 0) % Math.max(1, styles.length)];
   return VENUE_STYLES.find((s) => s.id === id) ?? VENUE_STYLES[0];
+}
+
+/** The style an Art pack image uses. */
+export function artShotStyle(c: AlbumConfig, shot: Shot) {
+  const styles = c.artPack?.styles ?? [];
+  const id = styles[(shot.scene ?? 0) % Math.max(1, styles.length)];
+  return ART_STYLES.find((s) => s.id === id) ?? ART_STYLES[0];
+}
+
+/** Art pack image: their photo redrawn in one style. */
+async function renderArtShot(album: Album, shot: Shot): Promise<{ url: string; cost: number }> {
+  const ap = album.config.artPack!;
+  const style = artShotStyle(album.config, shot);
+  const photo = await loadImage(ap.photoUrl);
+  const result = await generateImage({
+    prompt: buildArtPrompt(style, ap.outfit, ap.glasses === "auto" ? undefined : ap.glasses),
+    refs: [{ label: "PHOTO", ...photo }],
+    aspectRatio: ap.aspect,
+    mockLabel: { title: "Your art portrait", subtitle: style.name, paletteId: "red_gold" },
+  });
+  const saved = await saveImage(`albums/${album.id}/${shot.id}`, result.data, result.mimeType);
+  return { url: saved.url, cost: result.costMilliCents };
 }
 
 /** Venue pack image: an edit of their own venue photo in one style. */
@@ -377,6 +415,7 @@ async function renderShot(
     return { url: saved.url, cost: result.costMilliCents };
   }
   if (c.venuePack) return renderVenueShot(album, shot);
+  if (c.artPack) return renderArtShot(album, shot);
   if (c.look) return renderLookShot(album, shot, refs);
 
   const isPeople = !["decor", "decor_detail"].includes(shot.category);

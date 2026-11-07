@@ -77,6 +77,16 @@ export interface AlbumConfig {
     /** Set for the Maharani and Navratri collections (lib/lookCollections) instead of wedding events. */
     collection?: "maharani" | "navratri";
   };
+  /** Set for Art pack albums: their photo redrawn in one art style per image. */
+  artPack?: {
+    photoUrl: string;
+    outfit: "wedding" | "keep";
+    /** "auto" follows each style (off for the traditional ones). */
+    glasses: "auto" | "keep" | "remove";
+    /** lib/artStyles ids, one per image. */
+    styles: string[];
+    aspect: "4:3" | "3:4" | "16:9" | "9:16";
+  };
   /** Set for Venue pack albums: their own space, decorated in one style per image. */
   venuePack?: {
     photoUrl: string;

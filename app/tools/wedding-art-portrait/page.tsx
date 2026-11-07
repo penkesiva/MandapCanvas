@@ -27,6 +27,10 @@ const FAQ = [
     a: `${ART_STYLES.length} styles: ${ART_STYLES.map((s) => s.name).join(", ")}.`,
   },
   {
+    q: "Can I get every style at once?",
+    a: "Yes. The Art pack paints your photo in all 10 styles together, with no watermark, for $4.99. Download them all as a ZIP, or one at a time.",
+  },
+  {
     q: "Will it still look like us?",
     a: "The AI keeps your faces, skin tones, hair and glasses, the number of people and how you're standing, and redraws everything in the style. Clear, well-lit photos give the closest likeness.",
   },

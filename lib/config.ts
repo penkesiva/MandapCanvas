@@ -10,7 +10,7 @@ export const SITE = {
   supportEmail: process.env.SUPPORT_EMAIL || "hello@mandapcanvas.com",
 } as const;
 
-export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30" | "maharani12" | "navratri9" | "navratri18" | "venue9";
+export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30" | "maharani12" | "navratri9" | "navratri18" | "venue9" | "art10";
 
 export interface Pack {
   id: PackId;
@@ -92,6 +92,18 @@ export const PACKS: Record<PackId, Pack> = {
     hd: false,
     highlight: true,
   },
+  art10: {
+    id: "art10",
+    name: "Art pack",
+    images: 10,
+    priceCents: 499,
+    freeRegens: 2,
+    blurb: "Your photo in all 10 art styles at once.",
+    includes: ["All 10 styles, painted at once", "Download them all as a ZIP", "No watermark, private album"],
+    maxEvents: 1,
+    maxPalettes: 1,
+    hd: false,
+  },
   venue9: {
     id: "venue9",
     name: "Venue pack",
@@ -165,6 +177,9 @@ export const COLLECTION_PACKS: PackId[] = ["maharani12", "navratri9", "navratri1
 
 /** The Venue pack: one photo of their space, decorated in nine styles. */
 export const VENUE_PACKS: PackId[] = ["venue9"];
+
+/** The Art pack: their photo in every art portrait style. */
+export const ART_PACKS: PackId[] = ["art10"];
 
 /** Every portrait pack: albums made from the customer's own photos. */
 export function isPortraitPack(id: PackId): boolean {
