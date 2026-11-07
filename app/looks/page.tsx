@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { BridalLook } from "@/components/tools/BridalLook";
 import { LookExamples } from "@/components/looks/LookExamples";
+import { MoreLooks } from "@/components/looks/MoreLooks";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
 import { LOOK_TRADITIONS } from "@/lib/bridalLooks";
@@ -97,6 +98,8 @@ export default function BridalLookPage() {
             </div>
           ))}
         </section>
+
+        <MoreLooks />
 
         <ToolFaq faq={FAQ} />
         <MoreTools current={tool.slug} />

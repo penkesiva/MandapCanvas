@@ -233,7 +233,7 @@ export function LookPack({
   );
 }
 
-function PhotoRow({ label, hint, urls, onChange }: { label: string; hint: string; urls: string[]; onChange: (u: string[]) => void }) {
+export function PhotoRow({ label, hint, urls, onChange }: { label: string; hint: string; urls: string[]; onChange: (u: string[]) => void }) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);

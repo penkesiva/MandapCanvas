@@ -3,7 +3,8 @@ import { ADVANCE_BATCH, FREE_PREVIEW, PACKS, type PackId } from "./config";
 import { EVENTS, CATEGORIES, getTradition, eventLabel, getPalette } from "./catalog";
 import { acquireLock, getJSON, kv, setJSON } from "./kv";
 import { buildEditPrompt, buildShotPrompt, type PromptRefs } from "./prompts";
-import { buildEventLookPrompt } from "./bridalLooks";
+import { buildEventLookPrompt, glassesRule } from "./bridalLooks";
+import { buildCollectionPrompt, collectionShot, getCollection } from "./lookCollections";
 import { generateImage, watermark, type RefImage } from "./imagegen";
 import { loadImage, saveImage, deleteImage } from "./blob";
 import { recordStat, todayCostCents } from "./stats";
@@ -121,6 +122,20 @@ export async function spendCredits(userId: string, n: number, entry: Omit<Ledger
 
 /** Expands the customer's mix into a concrete, evenly varied shot list. */
 export function planShots(config: AlbumConfig, total: number, existing: Shot[] = []): Shot[] {
+  if (config.look?.collection) {
+    // Collections: one portrait per scene in order, then a second pose per scene.
+    return Array.from({ length: Math.max(0, total - existing.length) }, (_, i) => ({
+      id: crypto.randomUUID().slice(0, 12),
+      event: "ceremony" as const,
+      category: "bride" as const,
+      scene: existing.length + i,
+      paletteId: "red_gold",
+      venue: "indoor" as const,
+      lighting: "day" as const,
+      status: "pending" as const,
+      attempts: 0,
+    }));
+  }
   const events = config.events.length ? config.events : (["ceremony"] as const);
   const palettes = config.palettes.length ? config.palettes : ["blush_ivory"];
   const shots: Shot[] = [];
@@ -234,6 +249,20 @@ function pick(list: RefImage[], n: number, offset: number): RefImage[] {
 async function renderLookShot(album: Album, shot: Shot, refs: Refs): Promise<{ url: string; cost: number }> {
   const c = album.config;
   const look = c.look!;
+  const collection = getCollection(look.collection);
+  if (collection) {
+    const n = shot.scene ?? album.shots.findIndex((s) => s.id === shot.id);
+    const attached = refs.people.bride.length ? pick(refs.people.bride, 3, n) : pick(refs.people.couple, 2, n);
+    const { scene } = collectionShot(collection, Math.max(0, n));
+    const result = await generateImage({
+      prompt: buildCollectionPrompt({ collection, n: Math.max(0, n), photoCount: attached.length, glassesRule: glassesRule(look.glasses) }),
+      refs: attached.map((r) => ({ ...r, label: "BRIDE PHOTO" })),
+      aspectRatio: "3:4",
+      mockLabel: { title: `${collection.name} · ${scene.name}`, subtitle: "Portrait", paletteId: "red_gold" },
+    });
+    const saved = await saveImage(`albums/${album.id}/${shot.id}`, result.data, result.mimeType);
+    return { url: saved.url, cost: result.costMilliCents };
+  }
   const person = shot.category === "groom" ? "groom" : shot.category === "couple" ? "couple" : "bride";
   const variant = album.shots.filter((s) => s.event === shot.event && s.category === shot.category).findIndex((s) => s.id === shot.id);
   const offset = Math.max(0, variant) + album.shots.findIndex((s) => s.id === shot.id);

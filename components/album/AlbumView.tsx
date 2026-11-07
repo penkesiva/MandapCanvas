@@ -6,6 +6,7 @@ import Link from "next/link";
 import { track } from "@vercel/analytics";
 import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
 import { AI_LABEL, PACKS, ALBUM_PACKS, LOOK_PACKS, formatUSD, type PackId } from "@/lib/config";
+import { collectionShot, getCollection } from "@/lib/lookCollections";
 import { CATEGORIES, eventLabel, getPalette } from "@/lib/catalog";
 import type { PublicAlbum } from "@/lib/albums";
 import type { Shot } from "@/lib/types";
@@ -162,7 +163,7 @@ export function AlbumView({
         if (!res.ok) continue;
         const blob = await res.blob();
         const ext = blob.type.includes("png") ? "png" : "jpg";
-        const name = `${String(++n).padStart(3, "0")}-${eventLabel(s.event, tradition)}-${s.category}-${getPalette(s.paletteId).name}`.replace(/[^\w-]+/g, "-");
+        const name = (collection ? `${String(++n).padStart(3, "0")}-${collection.name}-${collectionShot(collection, s.scene ?? 0).scene.name}` : `${String(++n).padStart(3, "0")}-${eventLabel(s.event, tradition)}-${s.category}-${getPalette(s.paletteId).name}`).replace(/[^\w-]+/g, "-");
         zip.file(`${name}.${ext}`, blob);
         setZipping(`Preparing ${n} of ${list.length}…`);
       }
@@ -223,8 +224,11 @@ export function AlbumView({
   }, [open, viewable.length]);
 
   const isLook = !!album.config.look;
+  const collection = getCollection(album.config.look?.collection);
   const caption = (s: Shot) =>
-    isLook
+    collection
+      ? collectionShot(collection, s.scene ?? 0).scene.name
+      : isLook
       ? `${eventLabel(s.event, tradition)}, ${s.category === "couple" ? "the two of you" : s.category}`
       : `${eventLabel(s.event, tradition)}, ${CATEGORIES.find((c) => c.id === s.category)?.name.toLowerCase()}, ${getPalette(s.paletteId).name}`;
 
@@ -235,12 +239,12 @@ export function AlbumView({
       <div className="mx-auto max-w-3xl px-4 pb-24 pt-8 sm:px-6">
         <h1 className="text-[2.2rem]">{album.title}</h1>
         <p className="mt-1 text-ink-soft">
-          Your photos and choices are saved. Pick a pack: we&apos;ll create your portraits for{" "}
-          {album.config.events.map((e) => eventLabel(e, tradition)).join(", ")} without watermarks.
+          Your photos and choices are saved. Pick a pack: we&apos;ll create your{" "}
+          {collection ? `${collection.name} portraits` : `portraits for ${album.config.events.map((e) => eventLabel(e, tradition)).join(", ")}`} without watermarks.
         </p>
         {error ? <ErrorBox msg={error} /> : null}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {LOOK_PACKS.map((id) => (
+          {(collection ? collection.packs : LOOK_PACKS).map((id) => (
             <button
               key={id}
               type="button"

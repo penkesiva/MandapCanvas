@@ -10,7 +10,7 @@ export const SITE = {
   supportEmail: process.env.SUPPORT_EMAIL || "hello@mandapcanvas.com",
 } as const;
 
-export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30";
+export type PackId = "starter" | "signature" | "grand" | "topup" | "look12" | "look30" | "maharani12" | "navratri9" | "navratri18";
 
 export interface Pack {
   id: PackId;
@@ -92,6 +92,43 @@ export const PACKS: Record<PackId, Pack> = {
     hd: false,
     highlight: true,
   },
+  maharani12: {
+    id: "maharani12",
+    name: "Maharani 12",
+    images: 12,
+    priceCents: 499,
+    freeRegens: 2,
+    blurb: "Twelve grand portraits at palaces and temples, each in a different heritage saree.",
+    includes: ["12 portraits", "12 sarees and settings", "No watermark, private album"],
+    maxEvents: 6,
+    maxPalettes: 6,
+    hd: false,
+  },
+  navratri9: {
+    id: "navratri9",
+    name: "Navratri 9",
+    images: 9,
+    priceCents: 499,
+    freeRegens: 2,
+    blurb: "One portrait for each of the nine days, in that day's color.",
+    includes: ["9 portraits", "A saree color for each day", "No watermark, private album"],
+    maxEvents: 6,
+    maxPalettes: 6,
+    hd: false,
+  },
+  navratri18: {
+    id: "navratri18",
+    name: "Navratri 18",
+    images: 18,
+    priceCents: 799,
+    freeRegens: 3,
+    blurb: "Two portraits for each day: a close portrait and a full-length one.",
+    includes: ["18 portraits", "Two poses for each of the nine days", "No watermark, private album"],
+    maxEvents: 6,
+    maxPalettes: 6,
+    hd: false,
+    highlight: true,
+  },
   topup: {
     id: "topup",
     name: "Add 10 images",
@@ -110,6 +147,14 @@ export const ALBUM_PACKS: PackId[] = ["starter", "signature", "grand"];
 
 /** Wedding Look Packs: portraits of the bride, the groom or the couple at every event, from their own photos. */
 export const LOOK_PACKS: PackId[] = ["look12", "look30"];
+
+/** Packs for the Maharani and Navratri collections (lib/lookCollections). */
+export const COLLECTION_PACKS: PackId[] = ["maharani12", "navratri9", "navratri18"];
+
+/** Every portrait pack: albums made from the customer's own photos. */
+export function isPortraitPack(id: PackId): boolean {
+  return LOOK_PACKS.includes(id) || COLLECTION_PACKS.includes(id);
+}
 
 export type PlanId = "pro" | "studio";
 

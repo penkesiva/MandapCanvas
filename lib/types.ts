@@ -74,6 +74,8 @@ export interface AlbumConfig {
     jewelry: "delicate" | "classic" | "royal";
     /** Remove eyeglasses in the portraits (the default) or keep them. */
     glasses?: "remove" | "keep";
+    /** Set for the Maharani and Navratri collections (lib/lookCollections) instead of wedding events. */
+    collection?: "maharani" | "navratri";
   };
   mix: ShotMix;
   /** Per-event palettes, venue and light. When set for an event, it overrides the album-wide values. */
@@ -89,6 +91,8 @@ export interface Shot {
   id: string;
   event: EventId;
   category: ShotCategory;
+  /** Collections: which scene (and, on a second pass, which pose) this portrait is. */
+  scene?: number;
   paletteId: string;
   lighting: "day" | "evening";
   venue: "indoor" | "outdoor";

@@ -112,6 +112,16 @@ export default function Home() {
                 Then {PACKS.look12.images} for {formatUSD(PACKS.look12.priceCents)} or {PACKS.look30.images} for {formatUSD(PACKS.look30.priceCents)}.
               </span>
             </div>
+            <p className="mt-4 text-sm">
+              Also:{" "}
+              <Link href="/looks/maharani" className="font-semibold text-kumkum underline underline-offset-4">
+                Maharani sarees
+              </Link>{" "}
+              ·{" "}
+              <Link href="/looks/navratri" className="font-semibold text-kumkum underline underline-offset-4">
+                Navratri, nine days
+              </Link>
+            </p>
           </div>
           <LookExamples />
         </div>
