@@ -1,6 +1,9 @@
 import "server-only";
 import { ADVANCE_BATCH, FREE_PREVIEW, PACKS, type PackId } from "./config";
-import { EVENTS, CATEGORIES, getTradition, eventLabel, getPalette } from "./catalog";
+import { EVENTS, CATEGORIES, getTradition, eventLabel, getPalette, getPreset } from "./catalog";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { SITE } from "./config";
 import { acquireLock, getJSON, kv, setJSON } from "./kv";
 import { buildEditPrompt, buildShotPrompt, type PromptRefs } from "./prompts";
 import { buildEventLookPrompt, glassesRule } from "./bridalLooks";
@@ -238,6 +241,9 @@ async function loadRefs(album: Album, events: EventId[] = album.config.events): 
     return out;
   }
   const tasks: Promise<void>[] = [];
+  // A picked template: its photo is the blueprint, so every image of that event shows the same mandap.
+  const templates = new Set(events.map((e) => designFor(c, e)).filter((d) => d?.source === "preset").map((d) => getPreset(d!.presetId).image));
+  for (const img of templates) tasks.push(loadTemplate(img).then((i) => void out.decor.set(img, { label: "TEMPLATE", ...i })));
   const urls = new Set(events.map((e) => designFor(c, e)).filter((d) => d && d.source !== "preset" && d.imageUrl).map((d) => d!.imageUrl!));
   for (const url of urls) tasks.push(loadImage(url).then((i) => void out.decor.set(url, { label: "DECOR", ...i })));
   if (c.people.mode === "likeness" && c.people.consentAt) {
@@ -248,6 +254,16 @@ async function loadRefs(album: Album, events: EventId[] = album.config.events): 
     tasks.push(loadImage(url).then((i) => void out.inventory.push({ label: "INVENTORY", ...i })));
   await Promise.allSettled(tasks);
   return out;
+}
+
+/** A template photo from /public: read from disk when it's there (local), otherwise from the site. */
+async function loadTemplate(img: string): Promise<{ data: Buffer; mimeType: string }> {
+  try {
+    const data = await fs.readFile(path.join(process.cwd(), "public", img));
+    return { data, mimeType: img.endsWith(".png") ? "image/png" : "image/jpeg" };
+  } catch {
+    return loadImage(new URL(img, SITE.url).toString());
+  }
 }
 
 function aspectFor(shot: Shot, album?: Album): "4:3" | "3:4" | "16:9" | "9:16" {
@@ -365,7 +381,12 @@ async function renderShot(
 
   const isPeople = !["decor", "decor_detail"].includes(shot.category);
   const design = designFor(c, shot.event);
-  const decorRef = design && design.source !== "preset" && design.imageUrl ? refs.decor.get(design.imageUrl) : undefined;
+  const decorRef =
+    design?.source === "preset"
+      ? refs.decor.get(getPreset(design.presetId).image)
+      : design && design.imageUrl
+        ? refs.decor.get(design.imageUrl)
+        : undefined;
   const useDecor = !!decorRef;
   const attached: RefImage[] = [];
   if (decorRef) attached.push(decorRef);
@@ -374,7 +395,8 @@ async function renderShot(
   attached.push(...refs.inventory);
 
   const promptRefs: PromptRefs = {
-    decorImage: useDecor,
+    decorImage: useDecor && decorRef?.label === "DECOR",
+    templateImage: decorRef?.label === "TEMPLATE",
     brideImage: attached.some((r) => r.label === "BRIDE"),
     groomImage: attached.some((r) => r.label === "GROOM"),
     inventoryCount: refs.inventory.length,

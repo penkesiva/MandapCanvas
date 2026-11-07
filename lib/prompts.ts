@@ -10,6 +10,8 @@ import { glassesRule } from "./bridalLooks";
 
 export interface PromptRefs {
   decorImage: boolean;
+  /** The photo of the decor template the customer picked. */
+  templateImage?: boolean;
   brideImage: boolean;
   groomImage: boolean;
   inventoryCount: number;
@@ -32,10 +34,18 @@ const CATEGORY_FRAMING: Record<Shot["category"], string> = {
     "SHOT: Candid group photograph of the bridal party and close family (5–8 people) in outfits color-coordinated with the event palette, laughing naturally, decor behind them.",
 };
 
-function decorDescription(config: AlbumConfig, shot: Shot, design: EventDesign | null): string {
+function decorDescription(config: AlbumConfig, shot: Shot, design: EventDesign | null, template = false): string {
   const tradition = getTradition(config.tradition);
   const isCeremony = shot.event === "ceremony";
   const base = isCeremony ? tradition.ceremonyDecor : EVENTS[shot.event].decor;
+  if (design?.source === "preset" && template) {
+    const preset = getPreset(design.presetId);
+    return [
+      `the "${preset.name}" design shown in the attached TEMPLATE photo (${preset.meta.structure}; ${preset.meta.florals}).`,
+      `Around that structure, add this wedding's traditional touches where they fit: ${base}.`,
+      "Recolor every flower and fabric to the chosen palette.",
+    ].join(" ");
+  }
   if (design?.source === "preset") {
     const preset = getPreset(design.presetId);
     const m = preset.meta;
@@ -61,7 +71,8 @@ function outfitDescription(config: AlbumConfig, shot: Shot, palette: ReturnType<
   return [
     `BRIDE OUTFIT: ${bride}.`,
     `GROOM OUTFIT: ${groom}.`,
-    `OUTFIT COLORS: coordinate with the decor palette — ${palette.outfits}. Outfits must complement, not clash with, the decor.`,
+    `OUTFIT COLORS: coordinate with the decor palette — ${palette.outfits}. Outfits must complement, not clash with, the decor. The groom does not wear the same color and fabric as the bride; his outfit is in ivory, cream, gold or a tone that complements hers.`,
+    "MEN'S ATTIRE (MUST FOLLOW): the groom and every man wear men's clothing only: a sherwani, kurta, bandhgala, shirt, veshti or dhoti as described. Never a saree, lehenga, blouse, dupatta draped like a saree, or any women's garment. A veshti or dhoti is worn with a silk shirt or kurta and the angavastram as a stole over the shoulder.",
   ].join(" ");
 }
 
@@ -71,9 +82,13 @@ function peopleRules(config: AlbumConfig, refs: PromptRefs, shot: Shot): string 
   const rules: string[] = ["PEOPLE: adults only, natural proportions, realistic hands, tasteful and modest styling."];
   if (config.people.mode === "likeness" && (refs.brideImage || refs.groomImage)) {
     if (refs.brideImage && ["bride", "couple", "couple_stage", "family"].includes(shot.category))
-      rules.push("The bride must closely resemble the person in the BRIDE reference photo (face, skin tone, hair), restyled for the event.");
+      rules.push(
+        "The bride must closely resemble the person in the BRIDE reference photo (face, skin tone, hair). If that photo shows her in wedding or festive attire, she wears that same outfit: the same garment type, color and details. Only if it shows everyday clothes, dress her as described above.",
+      );
     if (refs.groomImage && ["groom", "couple", "couple_stage", "family"].includes(shot.category))
-      rules.push("The groom must closely resemble the person in the GROOM reference photo (face, skin tone, hair, facial hair), restyled for the event.");
+      rules.push(
+        "The groom must closely resemble the person in the GROOM reference photo (face, skin tone, hair, facial hair). If that photo shows him in wedding or festive attire, he wears that same outfit: the same garment type, color and details. Only if it shows everyday clothes, dress him as described above.",
+      );
     rules.push(glassesRule(config.people.glasses));
   } else {
     rules.push(
@@ -105,8 +120,14 @@ export function buildShotPrompt(config: AlbumConfig, shot: Shot, refs: PromptRef
     `SETTING (MUST FOLLOW, overrides anything below): Time of day is ${timeRule} Location is ${venueRule}`,
     `COLOR PALETTE (MUST FOLLOW): ${palette.name} — ${palette.colors}. Decor, florals, fabrics and outfits all use these colors; avoid other dominant colors.`,
     CATEGORY_FRAMING[shot.category],
-    `DECOR: ${decorDescription(config, shot, design)}`,
+    `DECOR: ${decorDescription(config, shot, design, !!refs.templateImage)}`,
   ];
+
+  if (refs.templateImage) {
+    lines.push(
+      `TEMPLATE (CRITICAL): The attached TEMPLATE photo is the decor design the customer picked. Build this same design: the same structure and canopy shape, pillars, layout, draping and flower placement, so every image of the ${label} shows the same ${shot.event === "ceremony" ? "mandap" : "stage"}. Change only the colors (to the palette), the venue, time of day and camera angle as the SETTING and SHOT require. Do not copy any people from it.`,
+    );
+  }
 
   if (usesDecorRef) {
     lines.push(

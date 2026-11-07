@@ -38,7 +38,7 @@ export const TRADITIONS: Tradition[] = [
     ceremonyDecor:
       "a South Indian temple-style mandapam with carved pillars, banana trees and coconut fronds at the entrance, thick jasmine and marigold garlands, brass kuthuvilakku lamps, kolam on the floor, a low wooden seat",
     bride: "a Kanjeevaram silk saree with temple jewelry, jasmine in the hair, a gold waist belt (oddiyanam)",
-    groom: "a silk veshti/panche with angavastram, or a silk kurta with veshti",
+    groom: "a cream silk veshti/panche with a gold zari border, worn with a silk shirt or kurta and an angavastram stole over the shoulder",
   },
   {
     id: "gujarati",
