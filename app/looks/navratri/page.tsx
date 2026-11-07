@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   title: { absolute: `${title} · MandapCanvas` },
   description,
   alternates: { canonical: "/looks/navratri" },
-  openGraph: { title: "Nine days, nine sarees, all you", description, url: "/looks/navratri", type: "website" },
+  openGraph: { title: "Nine days, nine sarees, all you", description, url: "/looks/navratri", type: "website", images: [{ url: "/og-navratri.jpg", width: 1200, height: 630, alt: "The same woman in nine Navratri sarees, one color for each day" }] },
+  twitter: { card: "summary_large_image", images: ["/og-navratri.jpg"] },
 };
 
 export default function NavratriPage() {

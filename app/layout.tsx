@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "MandapCanvas",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "A hand-drawn mandap sketch beside its photo-real preview" }],
+    url: "/",
+    images: [{ url: "/og-home.jpg", width: 1200, height: 630, alt: "Bridal, Maharani and Navratri portraits beside a photo-real mandap" }],
   },
   twitter: { card: "summary_large_image" },
 };

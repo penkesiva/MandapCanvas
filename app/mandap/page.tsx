@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   description:
     `Sketch your mandap, upload a photo you love or pick one of 12 styles. See your decor photo-real for every event, from the Haldi to the reception, with the two of you in it. Two free previews, albums from ${formatUSD(PACKS.starter.priceCents)}.`,
   alternates: { canonical: "/mandap" },
-  openGraph: { title: "See your mandap before the first flower is ordered", url: "/mandap", type: "website" },
+  openGraph: { title: "See your mandap before the first flower is ordered", url: "/mandap", type: "website", images: [{ url: "/og-mandap.jpg", width: 1200, height: 630, alt: "A mandap sketch beside its photo-real preview" }] },
 };
 
 export default function MandapPage() {

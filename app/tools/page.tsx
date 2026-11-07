@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     title: "Free Desi Wedding Planning Tools · MandapCanvas",
     description: "AI bridal look try-on, AI wedding invitation maker, color palette finder, outfit color matcher and wedding hashtag generator for Desi weddings. Free, no sign-up.",
     url: "/tools",
+    images: [{ url: "/og-home.jpg", width: 1200, height: 630, alt: "Bridal, Maharani and Navratri portraits beside a photo-real mandap" }],
   },
 };
 

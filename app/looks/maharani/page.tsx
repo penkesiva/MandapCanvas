@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   title: { absolute: `${title} · MandapCanvas` },
   description,
   alternates: { canonical: "/looks/maharani" },
-  openGraph: { title: "See yourself as a maharani", description, url: "/looks/maharani", type: "website" },
+  openGraph: { title: "See yourself as a maharani", description, url: "/looks/maharani", type: "website", images: [{ url: "/og-maharani.jpg", width: 1200, height: 630, alt: "The same woman in four heritage silk sarees at palaces and temples" }] },
+  twitter: { card: "summary_large_image", images: ["/og-maharani.jpg"] },
 };
 
 export default function MaharaniPage() {
