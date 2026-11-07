@@ -20,7 +20,7 @@ export function toolHref(t: FreeTool): string {
 export const FREE_TOOLS: FreeTool[] = [
   {
     slug: "ai-bridal-look",
-    name: "AI bridal and groom look",
+    name: "Bridal and groom look",
     blurb: "Upload a selfie. See yourself as a bride or groom in 8 traditions. Try for free.",
     title: "AI Bridal Look Try-On: See Yourself as an Indian Bride or Groom (Free)",
     description:
@@ -39,7 +39,7 @@ export const FREE_TOOLS: FreeTool[] = [
   },
   {
     slug: "ai-venue-decor-visualizer",
-    name: "AI venue decor visualizer",
+    name: "Venue decor visualizer",
     blurb: "Upload a photo of your hall or backyard. See it decorated for your wedding. Try for free.",
     title: "AI Wedding Venue Decor Visualizer: See Your Hall or Backyard Decorated (Free)",
     description:
@@ -57,7 +57,7 @@ export const FREE_TOOLS: FreeTool[] = [
   },
   {
     slug: "wedding-invitation-maker",
-    name: "AI wedding invitation maker",
+    name: "Wedding invitation maker",
     blurb: "Type your details, pick one of 13 styles, from royal to anime. Try for free.",
     title: "Free AI Indian Wedding Invitation Maker: 13 Styles, WhatsApp Ready",
     description:

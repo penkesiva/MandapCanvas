@@ -57,13 +57,16 @@ function Frame({ children, bg = "bg-silk" }: { children: React.ReactNode; bg?: s
   return <div className={`relative aspect-[16/9] w-full overflow-hidden ${bg}`}>{children}</div>;
 }
 
+/** A gold medallion arrow, the same mark as the before/after examples on /looks. */
 function Arrow() {
   return (
-    <span className="flex flex-col items-center gap-1 text-gold" aria-hidden="true">
-      <svg viewBox="0 0 48 24" className="w-10 sm:w-12">
-        <path d="M2 12 H40 M32 4 L42 12 L32 20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    <span
+      className="relative z-10 grid h-10 w-10 flex-none place-items-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#f6dc8f,#c9a24b_60%,#a37d2c)] text-maroon-deep shadow-[0_4px_12px_rgba(74,13,26,0.35)] ring-2 ring-white/80 sm:h-11 sm:w-11"
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M5 12h12M12 6l6 6-6 6" stroke="currentColor" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span className="text-[10px] font-semibold tracking-wide text-kumkum">AI</span>
     </span>
   );
 }
