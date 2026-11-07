@@ -5,7 +5,9 @@ import { PageShell } from "@/components/SiteChrome";
 import { currentUser, isAdmin } from "@/lib/auth";
 import { albumsForUser, getCredits } from "@/lib/albums";
 import { PLANS, PACKS } from "@/lib/config";
+import { Images } from "lucide-react";
 import { eventLabel } from "@/lib/catalog";
+import { getCollection } from "@/lib/lookCollections";
 import { BrandSettings } from "@/components/account/BrandSettings";
 import { InventoryManager } from "@/components/account/InventoryManager";
 
@@ -57,31 +59,66 @@ export default async function Account(props: { searchParams: Promise<{ welcome?:
           </div>
         </div>
 
-        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {albums.map((a) => {
-            const cover = a.shots.find((s) => s.status === "done" && s.url) ?? a.previews.find((p) => p.url);
-            const done = a.shots.filter((s) => s.status === "done").length;
+            const done = a.shots.filter((s) => s.status === "done" && s.url);
+            const pics = (done.length ? done : a.previews.filter((p) => p.url)).slice(0, 3).map((x) => x.url!);
+            const count = a.paid ? (a.status === "complete" ? done.length : a.shots.length) : a.previews.filter((p) => p.url).length;
+            const countLabel = a.paid ? `${count} ${count === 1 ? "image" : "images"}` : `${count} ${count === 1 ? "preview" : "previews"}`;
+            const packName = PACKS[a.packId].name.endsWith("pack") ? PACKS[a.packId].name : `${PACKS[a.packId].name} pack`;
+            const kindLine = a.config.artPack
+              ? "Art portraits"
+              : getCollection(a.config.look?.collection)
+                ? getCollection(a.config.look?.collection)!.name
+                : a.config.look
+                  ? "Wedding looks"
+              : a.config.venuePack
+                ? "Venue pack"
+                : a.config.events.map((e) => eventLabel(e, a.config.tradition)).join(", ");
             return (
-              <li key={a.id}>
-                <Link href={`/album/${a.id}`} className="block overflow-hidden rounded-[20px] border border-line bg-white hover:border-ink">
-                  {cover?.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cover.url} alt="" className="aspect-[4/3] w-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="aspect-[4/3] w-full bg-gradient-to-br from-silk to-line" />
-                  )}
-                  <div className="px-4 py-3">
-                    <p className="font-semibold">{a.title}</p>
-                    <p className="text-sm text-ink-soft">
-                      {a.paid
-                        ? a.status === "complete"
-                          ? `${done} images`
-                          : `${done} of ${a.shots.length} ready`
-                        : `Draft, ${PACKS[a.packId].name} pack not yet purchased`}
-                      {a.clientName ? `. For ${a.clientName}` : ""}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-soft">{a.config.events.map((e) => eventLabel(e, a.config.tradition)).join(", ")}</p>
-                  </div>
+              <li key={a.id} className="pt-3">
+                <Link href={`/album/${a.id}`} className="group relative block">
+                  {/* page edges behind the cover, so it reads as an album */}
+                  <span aria-hidden="true" className="absolute inset-x-6 -top-3 h-8 rounded-t-[18px] border border-[#dcc3b6] bg-[#ead6cb]" />
+                  <span aria-hidden="true" className="absolute inset-x-3 -top-1.5 h-8 rounded-t-[19px] border border-[#e3cfc4] bg-[#f4e6de]" />
+                  <span className="relative block overflow-hidden rounded-[20px] border border-line bg-white transition group-hover:border-ink group-hover:shadow-[0_18px_40px_-26px_rgba(42,11,20,0.7)]">
+                    <span className="relative grid aspect-[4/3] grid-cols-3 grid-rows-2 gap-0.5 bg-white">
+                      {pics.length ? (
+                        pics.map((url, i) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            key={url}
+                            src={url}
+                            alt=""
+                            loading="lazy"
+                            className={`h-full w-full object-cover ${tileClass(pics.length, i)}`}
+                          />
+                        ))
+                      ) : (
+                        <span className="col-span-3 row-span-2 bg-gradient-to-br from-silk to-line" />
+                      )}
+                      {count ? (
+                        <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+                          <Images size={13} aria-hidden="true" /> {countLabel}
+                        </span>
+                      ) : null}
+                      {!a.paid ? (
+                        <span className="absolute right-2.5 top-2.5 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-maroon">Draft</span>
+                      ) : null}
+                    </span>
+                    <span className="block px-4 py-3">
+                      <span className="block font-semibold">{a.title}</span>
+                      <span className="block text-sm text-ink-soft">
+                        {a.paid
+                          ? a.status === "complete"
+                            ? `${packName}, ${countLabel} included`
+                            : `${done.length} of ${a.shots.length} ready`
+                          : `${packName} not yet purchased`}
+                        {a.clientName ? `. For ${a.clientName}` : ""}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-ink-soft">{kindLine}</span>
+                    </span>
+                  </span>
                 </Link>
               </li>
             );
@@ -114,4 +151,11 @@ export default async function Account(props: { searchParams: Promise<{ welcome?:
       </div>
     </PageShell>
   );
+}
+
+/** Collage layout: one big picture on the left, up to two stacked on the right. */
+function tileClass(count: number, i: number): string {
+  if (count === 1) return "col-span-3 row-span-2";
+  if (i === 0) return "col-span-2 row-span-2";
+  return count === 2 ? "row-span-2" : "";
 }
