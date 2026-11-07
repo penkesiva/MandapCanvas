@@ -170,6 +170,8 @@ export interface Album {
   shots: Shot[];
   previews: Shot[];
   shareToken?: string;
+  /** Optional 6-digit code family must enter to open the share link. */
+  sharePin?: string;
   brand?: Brand;
   completedNotifiedAt?: number;
   /** Cost tracking (estimated model spend in cents, x100 for precision). */

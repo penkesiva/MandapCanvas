@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { albumByShareToken } from "@/lib/albums";
 import { kv } from "@/lib/kv";
 import { clientIp, jsonError, rateLimit } from "@/lib/http";
+import { shareUnlocked } from "@/lib/sharePin";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ token: str
   const { token } = await ctx.params;
   const album = await albumByShareToken(token);
   if (!album) return jsonError("Album not found.", 404);
+  if (!(await shareUnlocked(album, token))) return jsonError("Enter the album's code first.", 403);
   const body = (await request.json().catch(() => ({}))) as { shotId?: string; voter?: string };
   const shot = album.shots.find((s) => s.id === body.shotId && s.status === "done");
   if (!shot) return jsonError("Image not found.", 404);

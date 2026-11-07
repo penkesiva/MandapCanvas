@@ -6,11 +6,15 @@ import { kv } from "@/lib/kv";
 import { eventLabel, getPalette, CATEGORIES, getTradition } from "@/lib/catalog";
 import { AI_LABEL } from "@/lib/config";
 import { SharedGrid } from "@/components/album/SharedGrid";
+import { SharePinGate } from "@/components/album/SharePinGate";
+import { shareUnlocked } from "@/lib/sharePin";
 
 export async function generateMetadata(props: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await props.params;
   const album = await albumByShareToken(token);
   if (!album) return { title: "Album not found" };
+  // A code-protected album shows nothing about itself in link previews.
+  if (album.sharePin) return { title: "A private wedding album", description: "Open the link and enter the code you were sent.", robots: { index: false } };
   const cover = album.shots.find((s) => s.status === "done" && s.category === "decor")?.url;
   return {
     title: `${album.title} — help choose`,
@@ -25,6 +29,23 @@ export default async function SharedAlbum(props: { params: Promise<{ token: stri
   const { token } = await props.params;
   const album = await albumByShareToken(token);
   if (!album) notFound();
+  const brand0 = album.brand;
+  if (!(await shareUnlocked(album, token))) {
+    return (
+      <div className="flex min-h-full flex-col bg-milk">
+        <header className="border-b border-line bg-silk">
+          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:px-6">
+            <span className="font-display text-2xl" style={{ color: brand0?.accent ?? "#9E1B32" }}>
+              {brand0?.businessName ?? "MandapCanvas"}
+            </span>
+          </div>
+        </header>
+        <main className="flex flex-1 items-center px-4 py-16">
+          <SharePinGate token={token} accent={brand0?.accent ?? "#9E1B32"} />
+        </main>
+      </div>
+    );
+  }
   const votesRaw = await kv().hgetall(`votes:${album.id}`);
   const tradition = album.config.tradition;
   const shots = album.shots

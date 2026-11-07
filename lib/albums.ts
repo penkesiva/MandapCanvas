@@ -639,6 +639,7 @@ export function publicAlbum(album: Album) {
     shots: album.shots.map((s) => ({ ...s, error: undefined })),
     previews: album.previews,
     shareToken: album.shareToken,
+    sharePin: album.sharePin,
     brand: album.brand,
     createdAt: album.createdAt,
   };

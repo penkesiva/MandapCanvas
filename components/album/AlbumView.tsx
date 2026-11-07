@@ -4,7 +4,7 @@ import { readJson } from "@/lib/readJson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { track } from "@vercel/analytics";
-import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Lock, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
 import { AI_LABEL, PACKS, ALBUM_PACKS, LOOK_PACKS, formatUSD, type PackId } from "@/lib/config";
 import { collectionShot, getCollection } from "@/lib/lookCollections";
 import { VENUE_EVENTS, VENUE_STYLES } from "@/lib/venueDecor";
@@ -36,6 +36,8 @@ export function AlbumView({
   const [refineText, setRefineText] = useState("");
   const [zipping, setZipping] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [pin, setPin] = useState<string | null>(initial.sharePin ?? null);
+  const [pinBusy, setPinBusy] = useState(false);
   useEffect(() => {
     if (initial.shareToken) setShareUrl(`${window.location.origin}/s/${initial.shareToken}`);
   }, [initial.shareToken]);
@@ -140,15 +142,39 @@ export function AlbumView({
         url = data.url as string;
         setShareUrl(url);
       }
+      const codeLine = pin ? ` The code is ${pin}.` : "";
       if (navigator.share) {
-        await navigator.share({ title: album.title, text: "Help us choose! Heart your favorites:", url }).catch(() => {});
+        await navigator.share({ title: album.title, text: `Help us choose! Heart your favorites.${codeLine}`, url }).catch(() => {});
       } else {
-        await navigator.clipboard.writeText(url);
-        setNotice("Link copied. Send it to family so they can heart their favorites.");
+        await navigator.clipboard.writeText(pin ? `${url}\nCode: ${pin}` : url);
+        setNotice(pin ? "Link and code copied. Send both to family." : "Link copied. Send it to family so they can heart their favorites.");
       }
       track("album_shared");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't share.");
+    }
+  };
+
+  /** Turns the share link's 6-digit code on, off, or changes it. */
+  const setShareCode = async (mode: "on" | "off" | "new") => {
+    setError(null);
+    setPinBusy(true);
+    try {
+      const res = await fetch(`/api/albums/${album.id}/share`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ pin: mode }),
+      });
+      const data = await readJson(res);
+      if (!res.ok || !data.ok) throw new Error(data.error || "Couldn't update the code.");
+      setShareUrl(data.url as string);
+      setPin((data.pin as string | null) ?? null);
+      setNotice(mode === "off" ? "Code turned off. Anyone with the link can open the album." : `New code: ${data.pin}. Anyone who used the old code will need this one.`);
+      track("album_share_code", { mode });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't update the code.");
+    } finally {
+      setPinBusy(false);
     }
   };
 
@@ -445,13 +471,42 @@ export function AlbumView({
         </div>
       ) : null}
       {error ? <ErrorBox msg={error} /> : null}
-      {shareUrl ? (
-        <p className="mt-4 flex flex-wrap items-center gap-2 text-sm text-ink-soft">
-          <Link2 size={16} /> Family link:
-          <button type="button" className="font-medium text-kumkum underline underline-offset-2" onClick={() => navigator.clipboard.writeText(shareUrl).then(() => setNotice("Link copied."))}>
-            {shareUrl.replace(/^https?:\/\//, "")}
-          </button>
-        </p>
+      {album.paid ? (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-white px-4 py-3 text-sm">
+          {shareUrl ? (
+            <span className="flex min-w-0 items-center gap-2 text-ink-soft">
+              <Link2 size={16} className="flex-none" /> Family link:
+              <button
+                type="button"
+                className="truncate font-medium text-kumkum underline underline-offset-2"
+                onClick={() => navigator.clipboard.writeText(pin ? `${shareUrl}\nCode: ${pin}` : shareUrl).then(() => setNotice(pin ? "Link and code copied." : "Link copied."))}
+              >
+                {shareUrl.replace(/^https?:\/\//, "")}
+              </button>
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 text-ink-soft">
+              <Link2 size={16} /> Share with family to collect their favorites.
+            </span>
+          )}
+          {pin ? (
+            <span className="flex flex-wrap items-center gap-2">
+              <Lock size={15} className="text-kumkum" aria-hidden="true" />
+              <span className="text-ink-soft">Code</span>
+              <span className="rounded-lg bg-silk px-2 py-0.5 text-lg font-semibold tabular-nums tracking-[0.2em] text-maroon">{pin}</span>
+              <button type="button" className="font-medium text-kumkum underline underline-offset-2" onClick={() => setShareCode("new")} disabled={pinBusy}>
+                New code
+              </button>
+              <button type="button" className="text-ink-soft underline underline-offset-2" onClick={() => setShareCode("off")} disabled={pinBusy}>
+                Turn off
+              </button>
+            </span>
+          ) : (
+            <button type="button" className="flex items-center gap-1.5 font-medium text-kumkum underline underline-offset-2" onClick={() => setShareCode("on")} disabled={pinBusy}>
+              <Lock size={15} aria-hidden="true" /> Protect the link with a 6-digit code
+            </button>
+          )}
+        </div>
       ) : null}
 
       {/* Filters */}
