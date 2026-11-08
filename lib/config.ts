@@ -257,8 +257,8 @@ export const PROMO_BAR = {
   percent: 10,
   /** Last day of the offer, Pacific time (YYYY-MM-DD), or "" when it ends by use count instead. */
   ends: "",
-  /** Shown instead of an end date when `ends` is empty. */
-  limitLabel: "For our first 10 orders",
+  /** Shown instead of an end date when `ends` is empty ("" shows nothing). */
+  limitLabel: "",
   text: "Founding offer: {percent}% off any album or pack",
 };
 

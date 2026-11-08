@@ -43,7 +43,7 @@ export function PromoBar({ text, code, endsLabel, id }: { text: string; code: st
       >
         {code} {copied ? <Check size={13} /> : <Copy size={13} />}
       </button>
-      <span className="ml-2 text-white/75">{copied ? "Copied. Paste it at checkout." : endsLabel}</span>
+      {copied || endsLabel ? <span className="ml-2 text-white/75">{copied ? "Copied. Paste it at checkout." : endsLabel}</span> : null}
       <button
         type="button"
         onClick={() => {
