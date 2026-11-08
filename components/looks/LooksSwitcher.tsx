@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PACKS, formatUSD } from "@/lib/config";
 
-type Path = "/looks" | "/looks/maharani" | "/looks/navratri";
+type Path = "/looks" | "/looks/maharani" | "/looks/navratri" | "/tools/wedding-art-portrait";
 
 const CARDS: { href: Path; name: string; line: string; price: string; photos: string[] }[] = [
   {
@@ -25,13 +25,20 @@ const CARDS: { href: Path; name: string; line: string; price: string; photos: st
     price: `${PACKS.navratri9.images} portraits · ${formatUSD(PACKS.navratri9.priceCents)}`,
     photos: ["/samples/navratri/day-1.jpg", "/samples/navratri/day-4.jpg", "/samples/navratri/day-6.jpg"],
   },
+  {
+    href: "/tools/wedding-art-portrait",
+    name: "Art portraits",
+    line: "Anime, 80s, Tanjore and 7 more styles.",
+    price: `All ${PACKS.art10.images} · ${formatUSD(PACKS.art10.priceCents)}`,
+    photos: ["/samples/art/anime.jpg", "/samples/art/eighties.jpg", "/samples/art/tanjore.jpg"],
+  },
 ];
 
-/** The three Looks collections as picture cards, in the style of the share images. Swipes on phones. */
+/** The Looks collections and Art portraits as picture cards, in the style of the share images. Swipes on phones. */
 export function LooksSwitcher({ current }: { current: Path }) {
   return (
     <nav aria-label="Looks collections">
-      <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
+      <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
         {CARDS.map((c) => {
           const on = c.href === current;
           return (

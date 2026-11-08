@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PACKS, formatUSD } from "@/lib/config";
 import { LOOK_COLLECTIONS } from "@/lib/lookCollections";
+import { ART_STYLES } from "@/lib/artStyles";
 
 /** Links to the Maharani and Navratri collections, with each one's colors as a strip. */
 export function MoreLooks({ heading = "More ways to see yourself" }: { heading?: string }) {
@@ -8,12 +9,13 @@ export function MoreLooks({ heading = "More ways to see yourself" }: { heading?:
     { c: LOOK_COLLECTIONS.maharani, line: "Heritage silk sarees at palaces and temples.", from: PACKS.maharani12 },
     { c: LOOK_COLLECTIONS.navratri, line: "Nine days, nine saree colors, at a temple, lawn or garba night.", from: PACKS.navratri9 },
   ];
+  const art = ["anime", "eighties", "mughal", "tanjore", "popart"];
   return (
     <section className="mt-14" aria-labelledby="more-looks-h">
       <h2 id="more-looks-h" className="text-[1.8rem]">
         {heading}
       </h2>
-      <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+      <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map(({ c, line, from }) => (
           <li key={c.id} className="flex">
             <Link href={c.path} className="group flex w-full flex-col overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
@@ -36,6 +38,26 @@ export function MoreLooks({ heading = "More ways to see yourself" }: { heading?:
             </Link>
           </li>
         ))}
+        <li className="flex">
+          <Link href="/tools/wedding-art-portrait" className="group flex w-full flex-col overflow-hidden rounded-[20px] border border-gold/40 bg-white transition hover:border-gold">
+            <span className="grid grid-cols-5 gap-0.5 bg-white" aria-hidden="true">
+              {art.map((id) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={id} src={`/samples/art/${id}.jpg`} alt="" className="aspect-[3/4] w-full object-cover object-top" loading="lazy" />
+              ))}
+            </span>
+            <span className="flex flex-1 flex-col p-5">
+              <span className="font-display text-2xl text-maroon group-hover:text-kumkum">Art portraits</span>
+              <span className="mt-1 text-ink-soft">Your photo as dreamy anime, 80s retro, a Bollywood poster, Tanjore and more. One free.</span>
+              <span className="mt-auto flex items-center justify-between pt-4 text-sm">
+                <span className="text-ink-soft">
+                  All {ART_STYLES.length} styles, {formatUSD(PACKS.art10.priceCents)}
+                </span>
+                <span className="font-semibold text-kumkum underline underline-offset-4">See the styles</span>
+              </span>
+            </span>
+          </Link>
+        </li>
       </ul>
     </section>
   );
