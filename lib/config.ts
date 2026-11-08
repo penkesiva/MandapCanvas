@@ -247,6 +247,21 @@ export function offerLine(): string {
   return FOUNDING_OFFER.active ? ` You'll also get ${FOUNDING_OFFER.text}.` : "";
 }
 
+/**
+ * The launch-offer bar above the header. Turn it on with a promotion code made in Stripe
+ * (no product restriction, since checkout prices aren't Stripe products). It hides itself after `ends`.
+ */
+export const PROMO_BAR = {
+  active: true,
+  code: "FOUNDINGPRO",
+  percent: 10,
+  /** Last day of the offer, Pacific time (YYYY-MM-DD), or "" when it ends by use count instead. */
+  ends: "",
+  /** Shown instead of an end date when `ends` is empty. */
+  limitLabel: "For our first 10 orders",
+  text: "Founding offer: {percent}% off any album or pack",
+};
+
 /** Free preview limits (no account needed). */
 export const FREE_PREVIEW = {
   imagesPerAlbum: 2,

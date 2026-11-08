@@ -2,6 +2,8 @@ import Link from "next/link";
 import { currentUser, isAdmin } from "@/lib/auth";
 import { albumsForUser } from "@/lib/albums";
 import { AccountMenu } from "./AccountMenu";
+import { PromoBar } from "./PromoBar";
+import { PROMO_BAR } from "@/lib/config";
 import { FOUNDING_OFFER, SITE } from "@/lib/config";
 import { SignupNudge } from "./SignupNudge";
 import { FeedbackButton } from "./FeedbackButton";
@@ -116,10 +118,31 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <Promo />
       <SiteHeader />
       <div className="toran no-print pointer-events-none" aria-hidden="true" />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </>
+  );
+}
+
+/** The launch-offer bar while it's on and before its end date (Pacific). */
+function Promo() {
+  if (!PROMO_BAR.active) return null;
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+  if (PROMO_BAR.ends && today > PROMO_BAR.ends) return null;
+  const label = !PROMO_BAR.ends
+    ? PROMO_BAR.limitLabel
+    : today === PROMO_BAR.ends
+      ? "Ends tonight"
+      : `Ends ${new Date(`${PROMO_BAR.ends}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })}`;
+  return (
+    <PromoBar
+      id={`${PROMO_BAR.code}-${PROMO_BAR.ends || "open"}`}
+      code={PROMO_BAR.code}
+      text={PROMO_BAR.text.replace("{percent}", String(PROMO_BAR.percent))}
+      endsLabel={label}
+    />
   );
 }
