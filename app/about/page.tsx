@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  alternates: { canonical: "/about" }, title: "About" };
 
 export default function About() {
   return (

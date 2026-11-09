@@ -5,6 +5,7 @@ import { PricingCards } from "@/components/PricingCards";
 import { PACKS, PLANS, formatUSD } from "@/lib/config";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/pricing" },
   title: "Pricing",
   description: `Bridal Look Packs from ${formatUSD(PACKS.look12.priceCents)}. Mandap design albums from ${formatUSD(PACKS.starter.priceCents)}. Monthly plans for decorators from ${formatUSD(PLANS.pro.monthlyCents)}. Two free previews before you pay.`,
 };

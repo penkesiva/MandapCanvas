@@ -6,6 +6,7 @@ import { Divider, SectionTitle } from "@/components/Ornaments";
 import { AI_LABEL } from "@/lib/config";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/gallery" },
   title: "Gallery: Desi wedding decor and outfit ideas",
   description:
     "Mandap, Haldi, Mehndi, Sangeet, Anand Karaj, Nikah, Muhurtham and reception decor ideas, with bride and groom looks matched to each palette.",

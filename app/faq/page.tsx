@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { FAQ } from "@/lib/faq";
 
-export const metadata: Metadata = { title: "Questions", description: "How MandapCanvas works, what you get, privacy, pricing and refunds." };
+export const metadata: Metadata = {
+  alternates: { canonical: "/faq" }, title: "Questions", description: "How MandapCanvas works, what you get, privacy, pricing and refunds." };
 
 export default function FaqPage() {
   const jsonLd = {

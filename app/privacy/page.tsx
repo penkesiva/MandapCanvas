@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { SITE, FACE_RETENTION_DAYS } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Privacy" };
+export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" }, title: "Privacy" };
 
 export default function Privacy() {
   return (

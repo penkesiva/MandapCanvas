@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { SITE } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Terms of service" };
+export const metadata: Metadata = {
+  alternates: { canonical: "/terms" }, title: "Terms of service" };
 
 export default function Terms() {
   return (

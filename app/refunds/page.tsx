@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { SITE } from "@/lib/config";
 
-export const metadata: Metadata = { title: "Refunds" };
+export const metadata: Metadata = {
+  alternates: { canonical: "/refunds" }, title: "Refunds" };
 
 export default function Refunds() {
   return (

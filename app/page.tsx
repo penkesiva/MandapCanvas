@@ -7,6 +7,9 @@ import { NavratriStrip } from "@/components/looks/NavratriStrip";
 import { MaharaniCarousel } from "@/components/looks/MaharaniCarousel";
 import { ToolArt } from "@/components/tools/ToolArt";
 import { FAQ } from "@/lib/faq";
+import type { Metadata } from "next";
+import { JsonLd, faqLd } from "@/components/tools/ToolPage";
+import { SITE } from "@/lib/config";
 import { ALBUM_PACKS, LOOK_PACKS, PACKS, PLANS, formatUSD } from "@/lib/config";
 import { DECOR_PRESETS } from "@/lib/catalog";
 import { FREE_TOOLS, toolHref } from "@/lib/tools";
@@ -16,6 +19,27 @@ const MANDAP_EVENTS = [
   { src: "/samples/mehndi.jpg", name: "Mehndi" },
   { src: "/samples/sangeet.jpg", name: "Sangeet" },
   { src: "/samples/reception.jpg", name: "Reception" },
+];
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
+/** Tells search engines the site's name, logo and search entry: what Google shows next to the result. */
+const siteLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE.name,
+    url: SITE.url,
+    logo: `${SITE.url}/icon-512.png`,
+    email: SITE.supportEmail,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE.name,
+    alternateName: "Mandap Canvas",
+    url: `${SITE.url}/`,
+  },
 ];
 
 export default function Home() {
@@ -260,6 +284,8 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <JsonLd data={siteLd} />
+      <JsonLd data={faqLd(FAQ.slice(0, 4))} />
     </PageShell>
   );
 }

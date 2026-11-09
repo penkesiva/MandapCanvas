@@ -9,6 +9,7 @@ import type { EventId } from "@/lib/types";
 import { DECOR_PRESETS, EVENTS, PALETTES } from "@/lib/catalog";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/create" },
   title: "Create your album",
   description: "Sketch, upload or pick a style and see a free photo-real preview of your Desi wedding decor.",
 };

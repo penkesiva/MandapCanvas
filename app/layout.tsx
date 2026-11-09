@@ -10,7 +10,16 @@ export const metadata: Metadata = {
     template: "%s · MandapCanvas",
   },
   description:
-    "Turn a sketch, a photo or a style you love into a photo-real album of your Desi wedding: mandap, Haldi, Mehndi, Sangeet and reception decor, plus outfits matched to every palette.",
+    "See yourself as a Desi bride or groom at every event, as a Maharani or in nine Navratri sarees, and your mandap and decor before the wedding. Photo-real, from your own photos. Try for free.",
+  applicationName: "MandapCanvas",
+  // favicon.ico is added automatically from app/favicon.ico.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     siteName: "MandapCanvas",

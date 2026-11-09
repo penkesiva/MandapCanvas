@@ -7,6 +7,7 @@ import { currentUser } from "@/lib/auth";
 import { PLANS, SITE, formatUSD, type PlanId } from "@/lib/config";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/pro" },
   title: "For decorators and planners",
   description:
     "Turn a sketch into a photo-real mandap during the client meeting. Branded proposals and share links for South Asian wedding decorators, florists and planners.",
