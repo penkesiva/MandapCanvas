@@ -4,7 +4,8 @@ import { readJson } from "@/lib/readJson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { track } from "@vercel/analytics";
-import { ChevronLeft, ChevronRight, Download, Heart, Link2, Loader2, Lock, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ChevronLeft, ChevronRight, Clapperboard, Download, Heart, Link2, Loader2, Lock, Printer, RefreshCw, Share2, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
 import { AI_LABEL, PACKS, ALBUM_PACKS, LOOK_PACKS, formatUSD, type PackId } from "@/lib/config";
 import { collectionShot, getCollection } from "@/lib/lookCollections";
 import { VENUE_EVENTS, VENUE_STYLES } from "@/lib/venueDecor";
@@ -12,6 +13,21 @@ import { ART_STYLES } from "@/lib/artStyles";
 import { CATEGORIES, eventLabel, getPalette } from "@/lib/catalog";
 import type { PublicAlbum } from "@/lib/albums";
 import type { Shot } from "@/lib/types";
+import { reelTemplateFor } from "@/lib/reel/templates";
+import type { ReelItem } from "./ReelMaker";
+
+// The Reel Maker (canvas renderer and MP4 encoder) only loads when someone opens it.
+const ReelMaker = dynamic(() => import("./ReelMaker"), { ssr: false });
+
+/** Accent colors for Wedding Look Pack events in reels. */
+const EVENT_ACCENT: Record<string, string> = {
+  haldi: "#E9A23B",
+  mehndi: "#4A7A2E",
+  sangeet: "#6A2C8F",
+  garba: "#E8892B",
+  ceremony: "#9E1B32",
+  reception: "#1F3A6B",
+};
 
 type Filters = { event: string; category: string; palette: string; favorites: boolean };
 
@@ -35,6 +51,7 @@ export function AlbumView({
   const [open, setOpen] = useState<number | null>(null);
   const [refineText, setRefineText] = useState("");
   const [zipping, setZipping] = useState<string | null>(null);
+  const [reelOpen, setReelOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [pin, setPin] = useState<string | null>(initial.sharePin ?? null);
   const [pinBusy, setPinBusy] = useState(false);
@@ -276,6 +293,23 @@ export function AlbumView({
       ? `${eventLabel(s.event, tradition)}, ${s.category === "couple" ? "the two of you" : s.category}`
       : `${eventLabel(s.event, tradition)}, ${CATEGORIES.find((c) => c.id === s.category)?.name.toLowerCase()}, ${getPalette(s.paletteId).name}`;
 
+  const reelTemplate = album.paid ? reelTemplateFor(album.config) : null;
+  const reelItems: ReelItem[] = reelTemplate
+    ? album.shots
+        .filter((s) => s.status === "done" && !!s.url)
+        .map((s) => ({
+          id: s.id,
+          url: s.url!,
+          favorite: s.favorite,
+          label: art ? artStyle(s).name : collection ? collectionShot(collection, s.scene ?? 0).scene.name : eventLabel(s.event, tradition),
+          accent: art
+            ? artStyle(s).swatch[0]
+            : collection
+            ? collectionShot(collection, s.scene ?? 0).scene.hex
+            : EVENT_ACCENT[s.event] ?? "#9E1B32",
+        }))
+    : [];
+
   /* -------- unpaid Art pack */
   if (!album.paid && art) {
     const pack = PACKS[album.packId];
@@ -450,6 +484,18 @@ export function AlbumView({
           <button type="button" className="btn btn-ghost" onClick={() => downloadZip(false)} disabled={!!zipping || done === 0}>
             {zipping ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />} {zipping ?? "Download all"}
           </button>
+          {reelTemplate && reelItems.length >= 2 ? (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => {
+                setReelOpen(true);
+                track("reel_button_clicked");
+              }}
+            >
+              <Clapperboard size={18} /> Make a Reel
+            </button>
+          ) : null}
           <Link className="btn btn-ghost" href={`/album/${album.id}/print`} target="_blank">
             <Printer size={18} /> Lookbook PDF
           </Link>
@@ -631,6 +677,8 @@ export function AlbumView({
         </div>
       ) : null}
       <p className="mt-6 text-xs text-ink-soft">{AI_LABEL}{!signedIn ? " Sign in with the email you paid with to find this album on any device." : ""}</p>
+
+      {reelOpen && reelTemplate ? <ReelMaker title={album.title} template={reelTemplate} items={reelItems} onClose={() => setReelOpen(false)} /> : null}
 
       {/* Lightbox */}
       {open !== null && viewable[open] ? (
