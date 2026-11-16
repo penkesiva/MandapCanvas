@@ -1,17 +1,12 @@
 import Link from "next/link";
-import { currentUser, isAdmin } from "@/lib/auth";
-import { albumsForUser } from "@/lib/albums";
-import { AccountMenu } from "./AccountMenu";
+import { HeaderAccount, HeaderNudge, MobileSignIn } from "./HeaderAccount";
 import { PromoBar } from "./PromoBar";
 import { PROMO_BAR } from "@/lib/config";
 import { FOUNDING_OFFER, SITE } from "@/lib/config";
-import { SignupNudge } from "./SignupNudge";
 import { FeedbackButton } from "./FeedbackButton";
 
-export async function SiteHeader() {
-  const user = await currentUser();
-  // Unpaid drafts are their cart: a count on the account badge.
-  const drafts = user ? (await albumsForUser(user.id).catch(() => [])).filter((a) => !a.paid).length : 0;
+/** No cookies or database reads here: signed-in bits load in the browser, so every page can be static. */
+export function SiteHeader() {
   return (
     <>
     <header className="no-print sticky top-0 z-40 border-b border-gold/40 bg-milk/95 backdrop-blur">
@@ -27,18 +22,7 @@ export async function SiteHeader() {
           <Link href="/pricing" className="hover:text-ink">Pricing</Link>
           <Link href="/pro" className="hover:text-ink">For decorators</Link>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
-          {user ? null : (
-            <Link href="/signin" className="hidden text-[0.95rem] font-medium text-ink-soft hover:text-ink sm:inline">
-              Sign in
-            </Link>
-          )}
-          <Link href="/looks" className={`btn btn-primary btn-sm ${user ? "max-sm:hidden" : ""}`}>
-            <span className="sm:hidden">Try free</span>
-            <span className="hidden sm:inline">Try your look free</span>
-          </Link>
-          {user ? <AccountMenu label={user.name?.trim() || user.email} email={user.email} drafts={drafts} admin={isAdmin(user)} /> : null}
-        </div>
+        <HeaderAccount />
       </div>
       <nav className="flex gap-4 overflow-x-auto whitespace-nowrap px-4 pb-2.5 text-sm font-medium text-ink-soft [scrollbar-width:none] md:hidden" aria-label="Main mobile">
         <Link href="/looks">Looks</Link>
@@ -46,10 +30,10 @@ export async function SiteHeader() {
         <Link href="/tools">Free tools</Link>
         <Link href="/pricing">Pricing</Link>
         <Link href="/pro">Decorators</Link>
-        {user ? null : <Link href="/signin">Sign in</Link>}
+        <MobileSignIn />
       </nav>
     </header>
-    <SignupNudge signedIn={!!user} offer={FOUNDING_OFFER} />
+    <HeaderNudge offer={FOUNDING_OFFER} />
     <FeedbackButton />
     </>
   );
