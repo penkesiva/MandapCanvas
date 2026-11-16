@@ -91,12 +91,12 @@ export const INTRO_SECONDS = 1.2;
 /** The end card. */
 export const OUTRO_SECONDS = 1.8;
 /** Shorter than this and an image reads as a glitch; longer and the reel drags. */
-export const MIN_HOLD = 0.35;
+export const MIN_HOLD = 0.5;
 export const MAX_HOLD = 2.5;
 export const MAX_REEL_IMAGES = 20;
 export const MAX_REEL_SECONDS = 60;
 
-const SPEED_FACTOR: Record<ReelSpeed, number> = { fast: 0.6, normal: 1, slow: 1.6 };
+const SPEED_FACTOR: Record<ReelSpeed, number> = { fast: 0.8, normal: 1, slow: 1.5 };
 
 const round = (s: number) => Math.round(s * 2) / 2;
 

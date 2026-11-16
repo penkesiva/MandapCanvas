@@ -104,6 +104,8 @@ export default function ReelMaker({
   const [captions, setCaptions] = useState(true);
   const [cornerMark, setCornerMark] = useState(true);
   const [code, setCode] = useState("");
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [editLabels, setEditLabels] = useState(false);
   const [before, setBefore] = useState<ReelImage | null>(null);
   const [beforeError, setBeforeError] = useState<string | null>(null);
   const [loadedTick, setLoadedTick] = useState(0);
@@ -173,9 +175,13 @@ export default function ReelMaker({
 
   const ordered = useMemo(() => items.filter((i) => selected.includes(i.id) && !failed.includes(i.id)), [items, selected, failed]);
   const ready = useMemo(
-    () => ordered.map((i) => cache.current.get(i.id)).filter((x): x is ReelImage => !!x),
+    () =>
+      ordered.flatMap((i) => {
+        const img = cache.current.get(i.id);
+        return img ? [{ ...img, label: labels[i.id] ?? i.label }] : [];
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ordered, loadedTick],
+    [ordered, loadedTick, labels],
   );
   const allLoaded = ready.length === ordered.length;
 
@@ -227,7 +233,7 @@ export default function ReelMaker({
   };
 
   /* -------- a finished file is out of date as soon as anything changes */
-  const settingsKey = `${style}|${selected.join(",")}|${seconds}|${hook}|${captions}|${cornerMark}|${code}|${before ? 1 : 0}`;
+  const settingsKey = `${style}|${selected.join(",")}|${seconds}|${hook}|${captions}|${cornerMark}|${code}|${before ? 1 : 0}|${JSON.stringify(labels)}`;
   const lastKey = useRef(settingsKey);
   useEffect(() => {
     if (lastKey.current === settingsKey) return;
@@ -472,6 +478,32 @@ export default function ReelMaker({
                   );
                 })}
               </ul>
+              {captions ? (
+                <div className="mt-3">
+                  <button type="button" className="text-sm font-medium text-kumkum underline underline-offset-2" onClick={() => setEditLabels((v) => !v)} disabled={rendering}>
+                    {editLabels ? "Done editing captions" : "Edit captions"}
+                  </button>
+                  {editLabels ? (
+                    <ul className="mt-3 space-y-2">
+                      {ordered.map((it, n) => (
+                        <li key={it.id} className="flex items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={it.url} alt="" className="h-12 w-9 flex-none rounded-md object-cover" />
+                          <span className="w-5 flex-none text-sm font-semibold tabular-nums text-ink-soft">{n + 1}</span>
+                          <input
+                            className="field !min-h-10 !py-2"
+                            value={labels[it.id] ?? it.label}
+                            maxLength={32}
+                            aria-label={`Caption for image ${n + 1}`}
+                            onChange={(e) => setLabels((l) => ({ ...l, [it.id]: e.target.value }))}
+                            disabled={rendering}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
               {failed.length ? <p className="mt-2 text-sm text-kumkum">{failed.length === 1 ? "One image" : `${failed.length} images`} couldn&apos;t load and were left out.</p> : null}
             </section>
 
