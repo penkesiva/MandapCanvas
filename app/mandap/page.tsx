@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PACKS, PLANS, formatUSD } from "@/lib/config";
 import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
+import { LooksSwitcher } from "@/components/looks/LooksSwitcher";
 import { BeforeAfter } from "@/components/BeforeAfter";
 import { PricingCards } from "@/components/PricingCards";
 import { Corner, Divider, Mandala, SectionTitle } from "@/components/Ornaments";
@@ -35,11 +36,14 @@ export const metadata: Metadata = {
 export default function MandapPage() {
   return (
     <PageShell>
+      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+        <LooksSwitcher current="/mandap" />
+      </div>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="bg-jaali absolute inset-0 [mask-image:linear-gradient(180deg,#000_0%,transparent_85%)]" aria-hidden="true" />
         <Mandala className="absolute -right-48 -top-40 hidden h-[760px] w-[760px] md:block" opacity={0.28} />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-8 sm:px-6 sm:pb-20 md:grid-cols-[0.9fr_1.1fr] md:gap-12 md:pt-20">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-14 pt-8 sm:px-6 sm:pb-20 md:grid-cols-[0.9fr_1.1fr] md:gap-12 md:pt-12">
           <div>
             <h1 className="text-[2.4rem] leading-tight text-maroon sm:text-[3.5rem] md:text-[4rem]">See your mandap before you book.</h1>
             <Divider className="mt-6 !justify-start" />

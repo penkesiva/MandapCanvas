@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
+import { LooksSwitcher } from "@/components/looks/LooksSwitcher";
 import { ArtPortrait } from "@/components/tools/ArtPortrait";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
@@ -53,6 +54,9 @@ export default function ArtPortraitPage() {
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-6">
         <Breadcrumbs items={[["Home", "/"], ["Free tools", "/tools"], [tool.name, path]]} />
+        <div className="mt-5">
+          <LooksSwitcher current="/tools/wedding-art-portrait" />
+        </div>
         <header className="mt-6 max-w-3xl">
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">Turn your photo into art</h1>
           <p className="mt-4 text-lg text-ink-soft">

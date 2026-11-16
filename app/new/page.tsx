@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageShell } from "@/components/SiteChrome";
-import { PACKS, formatUSD, type PackId } from "@/lib/config";
+import { PRODUCTS, fromPrice, type Product } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "What would you like to make?",
@@ -9,76 +9,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/new" },
 };
 
-interface Choice {
-  href: string;
-  title: string;
-  text: string;
-  img: string;
-  pack: PackId;
-}
-
-const PEOPLE: Choice[] = [
-  {
-    href: "/looks",
-    title: "Wedding looks",
-    text: "See yourself as a bride, groom or couple at every event, Haldi to reception.",
-    img: "/samples/look-after.jpg",
-    pack: "look12",
-  },
-  {
-    href: "/looks/maharani",
-    title: "Maharani portraits",
-    text: "Heritage silk sarees at palaces and temples, from your own photo.",
-    img: "/samples/maharani/scene-1.jpg",
-    pack: "maharani12",
-  },
-  {
-    href: "/looks/navratri",
-    title: "Navratri portraits",
-    text: "Nine days, nine saree colors, at the temple, the lawn and garba night.",
-    img: "/samples/navratri/day-1.jpg",
-    pack: "navratri9",
-  },
-  {
-    href: "/tools/wedding-art-portrait",
-    title: "Art portraits",
-    text: "Your photo as anime, 80s retro, Mughal, Tanjore, a Bollywood poster and more.",
-    img: "/samples/art/anime.jpg",
-    pack: "art10",
-  },
-];
-
-const DECOR: Choice[] = [
-  {
-    href: "/create",
-    title: "Mandap and decor album",
-    text: "Sketch it, upload a photo or pick a style. See every event's decor photo-real.",
-    img: "/samples/hero-after.jpg",
-    pack: "starter",
-  },
-  {
-    href: "/tools/ai-venue-decor-visualizer",
-    title: "Your venue, decorated",
-    text: "Upload your hall or backyard and see it dressed for your wedding.",
-    img: "/samples/venue-after.jpg",
-    pack: "venue9",
-  },
-];
-
-function Card({ c }: { c: Choice }) {
+function Card({ c }: { c: Product }) {
   return (
     <li>
-      <Link href={c.href} className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-white transition hover:-translate-y-0.5 hover:border-gold hover:shadow-lg">
-        <div className="aspect-[16/9] overflow-hidden bg-silk sm:aspect-[4/3]">
+      <Link href={c.start ?? c.href} className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-white transition hover:-translate-y-0.5 hover:border-gold hover:shadow-lg">
+        <div className="aspect-[4/3] overflow-hidden bg-silk sm:aspect-[4/5]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={c.img} alt="" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
         </div>
-        <div className="flex flex-1 flex-col p-5">
-          <h3 className="text-[1.45rem]">{c.title}</h3>
-          <p className="mt-1.5 flex-1 text-ink-soft">{c.text}</p>
-          <p className="mt-4 flex items-center justify-between gap-3 text-sm">
+        <div className="flex flex-1 flex-col p-4">
+          <h3 className="text-[1.3rem] leading-tight">{c.name}</h3>
+          <p className="mt-1 flex-1 text-[0.95rem] leading-snug text-ink-soft">{c.line}</p>
+          <p className="mt-3 flex items-center justify-between gap-3 text-sm">
             <span className="font-semibold text-mehndi">Try it free</span>
-            <span className="text-ink-soft">from {formatUSD(PACKS[c.pack].priceCents)}</span>
+            <span className="text-ink-soft">from {fromPrice(c)}</span>
           </p>
         </div>
       </Link>
@@ -95,14 +39,14 @@ export default function NewPage() {
 
         <h2 className="mt-10 text-[1.6rem]">You, in every look</h2>
         <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {PEOPLE.map((c) => (
+          {PRODUCTS.filter((p) => p.group === "you").map((c) => (
             <Card key={c.href} c={c} />
           ))}
         </ul>
 
         <h2 className="mt-12 text-[1.6rem]">Your decor and venue</h2>
         <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {DECOR.map((c) => (
+          {PRODUCTS.filter((p) => p.group === "decor").map((c) => (
             <Card key={c.href} c={c} />
           ))}
         </ul>

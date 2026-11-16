@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
+import { LooksSwitcher } from "@/components/looks/LooksSwitcher";
 import { VenueDecor } from "@/components/tools/VenueDecor";
 import { VenueExamples } from "@/components/tools/VenueExamples";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
@@ -50,6 +51,9 @@ export default function VenueDecorPage() {
     <PageShell>
       <div className="mx-auto max-w-6xl px-4 pb-24 pt-8 sm:px-6">
         <Breadcrumbs items={[["Home", "/"], ["Free tools", "/tools"], [tool.name, path]]} />
+        <div className="mt-5">
+          <LooksSwitcher current="/tools/ai-venue-decor-visualizer" />
+        </div>
         <header className="mt-6 max-w-3xl">
           <h1 className="text-[2.4rem] text-maroon sm:text-[3.2rem]">See your venue, decorated</h1>
           <p className="mt-4 text-lg text-ink-soft">
