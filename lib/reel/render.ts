@@ -217,7 +217,7 @@ export class ReelRenderer {
       this.prep(b);
       this.drawSlide(a, plan, cur, lt, T);
       this.drawSlide(b, plan, next, t - next.start, T);
-      this.compose(ctx, plan.style, p, next.accent);
+      this.compose(ctx, plan.style, p, next.accent, k);
     } else {
       this.drawSlide(ctx, plan, cur, lt, T);
     }
@@ -232,52 +232,84 @@ export class ReelRenderer {
 
   /* -------- transitions */
 
-  private compose(ctx: CanvasRenderingContext2D, style: ReelStyleId, p: number, accent: string) {
+  /** Composes the two slide buffers. `k` is the transition's index, so each cut in a reel looks a little different. */
+  private compose(ctx: CanvasRenderingContext2D, style: ReelStyleId, p: number, accent: string, k: number) {
     const A = this.bufA;
     const B = this.bufB;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const cw = this.canvas.width;
     const ch = this.canvas.height;
     const s = this.scale;
+    const v = ((k % 4) + 4) % 4;
 
     if (style === "colorWipe") {
       const e = easeInOutCubic(p);
-      const band = W * 0.22;
-      const slant = 0.28; // x shift per unit of height
-      const start = -band - H * slant;
-      const pos = start + (W - start) * e; // trailing edge
+      if (v === 2) {
+        // Iris: the next image opens from the center inside a glowing ring of the next color.
+        const r = e * Math.hypot(cw, ch) * 0.56;
+        const z = 1 + 0.06 * e;
+        ctx.drawImage(A, (cw - cw * z) / 2, (ch - ch * z) / 2, cw * z, ch * z);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cw / 2, ch * 0.45, Math.max(0.1, r), 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(B, 0, 0);
+        ctx.restore();
+        ctx.save();
+        ctx.shadowColor = accent;
+        ctx.shadowBlur = 40 * s;
+        ctx.strokeStyle = withAlpha(accent, 0.95 * Math.sin(Math.PI * clamp01(p)));
+        ctx.lineWidth = 26 * s;
+        ctx.beginPath();
+        ctx.arc(cw / 2, ch * 0.45, Math.max(0.1, r), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        return;
+      }
+      // A slanted band of the next color sweeps across: left to right, right to left, or upward.
+      const vertical = v === 3;
+      const span = vertical ? H : W;
+      const across = vertical ? W : H;
+      const band = span * 0.2;
+      const slant = 0.22;
+      const start = -band - across * slant;
+      const pos = start + (span - start) * e;
+      const flip = v === 1;
+      // Map (along, across) to canvas pixels.
+      const pt = (a: number, c: number): [number, number] => {
+        const along = flip ? span - a : a;
+        return vertical ? [c * s, (H - along) * s] : [along * s, c * s];
+      };
+      const poly = (pts: [number, number][]) => {
+        ctx.beginPath();
+        pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+        ctx.closePath();
+      };
+      const edge = (c0: number): [number, number][] => [pt(c0 + slant * across, 0), pt(c0, across)];
       ctx.drawImage(A, 0, 0);
-      // Next image left of the trailing edge, a slanted line x = pos + slant * (H - y).
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(-10, 0);
-      ctx.lineTo((pos + slant * H) * s, 0);
-      ctx.lineTo(pos * s, ch);
-      ctx.lineTo(-10, ch);
-      ctx.closePath();
+      poly([pt(-span, 0), ...edge(pos), pt(-span, across)].map((q, i) => (i === 0 || i === 3 ? q : q)) as [number, number][]);
       ctx.clip();
       ctx.drawImage(B, 0, 0);
       ctx.restore();
-      // The color band, with a thin bright line on its leading edge.
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo((pos + slant * H) * s, 0);
-      ctx.lineTo((pos + band + slant * H) * s, 0);
-      ctx.lineTo((pos + band) * s, ch);
-      ctx.lineTo(pos * s, ch);
-      ctx.closePath();
-      const g = ctx.createLinearGradient(pos * s, 0, (pos + band + slant * H) * s, 0);
-      g.addColorStop(0, withAlpha(accent, 0.92));
-      g.addColorStop(1, accent);
-      ctx.fillStyle = g;
+      const [a0, a1] = edge(pos);
+      const [b0, b1] = edge(pos + band);
+      poly([a0, b0, b1, a1]);
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = accent;
+      ctx.shadowColor = withAlpha(accent, 0.9);
+      ctx.shadowBlur = 50 * s;
       ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo((pos + band + slant * H) * s, 0);
-      ctx.lineTo((pos + band + 10 + slant * H) * s, 0);
-      ctx.lineTo((pos + band + 10) * s, ch);
-      ctx.lineTo((pos + band) * s, ch);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(255,248,230,0.85)";
+      ctx.restore();
+      // A soft light on the leading edge.
+      ctx.save();
+      const [c0, c1] = edge(pos + band);
+      const [d0, d1] = edge(pos + band + 6);
+      poly([c0, d0, d1, c1]);
+      ctx.fillStyle = "rgba(255,250,235,0.9)";
+      ctx.shadowColor = "rgba(255,240,200,0.9)";
+      ctx.shadowBlur = 24 * s;
       ctx.fill();
       ctx.restore();
       return;
@@ -285,20 +317,37 @@ export class ReelRenderer {
 
     if (style === "royalReveal") {
       const e = easeInOutCubic(p);
+      const glow = Math.sin(Math.PI * clamp01(p));
       ctx.save();
       // The outgoing image keeps pushing in as it dissolves.
       const z = 1 + 0.05 * e;
       ctx.drawImage(A, (cw - cw * z) / 2, (ch - ch * z) / 2, cw * z, ch * z);
       ctx.globalAlpha = e;
-      ctx.drawImage(B, 0, 0);
+      if (v === 3) ctx.drawImage(B, 0, (1 - e) * ch * 0.04);
+      else ctx.drawImage(B, 0, 0);
       ctx.restore();
-      // A diagonal sweep of warm gold light.
-      const glow = Math.sin(Math.PI * clamp01(p));
-      const cx = (-0.4 + 1.8 * e) * cw;
-      const g = ctx.createLinearGradient(cx - cw * 0.5, ch * 0.2, cx + cw * 0.5, ch * 0.8);
-      g.addColorStop(0, "rgba(255,226,160,0)");
-      g.addColorStop(0.5, `rgba(255,232,180,${0.55 * glow})`);
-      g.addColorStop(1, "rgba(255,226,160,0)");
+      let g: CanvasGradient;
+      if (v === 2) {
+        // A bloom of warm light from the center.
+        g = ctx.createRadialGradient(cw / 2, ch * 0.42, 0, cw / 2, ch * 0.42, cw * (0.3 + 0.9 * e));
+        g.addColorStop(0, `rgba(255,236,190,${0.6 * glow})`);
+        g.addColorStop(1, "rgba(255,226,160,0)");
+      } else if (v === 3) {
+        // A curtain of light falling from the top.
+        const cy = (-0.3 + 1.6 * e) * ch;
+        g = ctx.createLinearGradient(0, cy - ch * 0.3, 0, cy + ch * 0.3);
+        g.addColorStop(0, "rgba(255,226,160,0)");
+        g.addColorStop(0.5, `rgba(255,232,180,${0.5 * glow})`);
+        g.addColorStop(1, "rgba(255,226,160,0)");
+      } else {
+        // A diagonal sweep of gold light, left to right or right to left.
+        const dir = v === 1 ? -1 : 1;
+        const cx = dir > 0 ? (-0.4 + 1.8 * e) * cw : (1.4 - 1.8 * e) * cw;
+        g = ctx.createLinearGradient(cx - cw * 0.5 * dir, ch * 0.2, cx + cw * 0.5 * dir, ch * 0.8);
+        g.addColorStop(0, "rgba(255,226,160,0)");
+        g.addColorStop(0.5, `rgba(255,232,180,${0.55 * glow})`);
+        g.addColorStop(1, "rgba(255,226,160,0)");
+      }
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = g;
@@ -315,22 +364,30 @@ export class ReelRenderer {
       ctx.fillStyle = withAlpha(MAROON, 0.94 * dip);
       ctx.fillRect(0, 0, cw, ch);
       this.prep(ctx);
-      this.drawMandala(ctx, W / 2, H * 0.44, 170, p * 0.9, dip);
+      this.drawMandala(ctx, W / 2, H * 0.44, 170, (v % 2 ? -1 : 1) * p * 0.9, dip);
       return;
     }
 
-    // whipPan: both images slide left with motion blur.
+    // whipPan: both images slide with motion blur, left, right or up.
     const e = easeInOutQuart(p);
-    const off = e * cw;
-    const blur = Math.sin(Math.PI * clamp01(p)) * cw * 0.06;
+    const blur = Math.sin(Math.PI * clamp01(p)) * 0.06;
     const samples = 6;
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, cw, ch);
+    const dir = v % 3; // 0 left, 1 right, 2 up
     for (let i = 0; i < samples; i++) {
       const d = (i / (samples - 1) - 0.5) * blur;
       ctx.globalAlpha = 1 / (i + 1);
-      ctx.drawImage(A, -off + d, 0);
-      ctx.drawImage(B, cw - off + d, 0);
+      if (dir === 2) {
+        const off = e * ch;
+        ctx.drawImage(A, 0, -off + d * ch);
+        ctx.drawImage(B, 0, ch - off + d * ch);
+      } else {
+        const sign = dir === 0 ? 1 : -1;
+        const off = e * cw * sign;
+        ctx.drawImage(A, -off + d * cw, 0);
+        ctx.drawImage(B, sign * cw - off + d * cw, 0);
+      }
     }
     ctx.globalAlpha = 1;
   }
@@ -350,7 +407,8 @@ export class ReelRenderer {
     }
     // With no before photo the hook sits on the first image, so its label waits for the hook to go.
     const delay = slide.n === 0 && !plan.before && plan.hook.trim() ? INTRO_SECONDS - 0.1 : 0;
-    if (plan.captions && img.label) this.drawLabel(ctx, plan.style, img, lt - delay, slide.dur - T - delay, slide.n);
+    // The caption stays up for the whole hold and leaves with the image in the transition, so there's time to read it.
+    if (plan.captions && img.label) this.drawLabel(ctx, plan.style, img, lt - delay, slide.dur + T - delay, slide.n);
   }
 
   private drawPhoto(ctx: CanvasRenderingContext2D, style: ReelStyleId, img: ReelImage, n: number, prog: number, lt: number) {
@@ -395,7 +453,7 @@ export class ReelRenderer {
     // Vignette.
     const v = ctx.createRadialGradient(W / 2, H * 0.45, H * 0.3, W / 2, H * 0.5, H * 0.75);
     v.addColorStop(0, "rgba(20,6,10,0)");
-    v.addColorStop(1, "rgba(20,6,10,0.55)");
+    v.addColorStop(1, "rgba(20,6,10,0.3)");
     ctx.fillStyle = v;
     ctx.fillRect(0, 0, W, H);
     // A gold double rule.
@@ -439,19 +497,20 @@ export class ReelRenderer {
   /** The image's label: a Navratri day, an event, an art style. Off-screen during transitions. */
   private drawLabel(ctx: CanvasRenderingContext2D, style: ReelStyleId, img: ReelImage, lt: number, visibleUntil: number, n: number) {
     if (lt < 0) return;
-    const enter = Math.min(0.35, Math.max(0.12, visibleUntil * 0.35));
+    const enter = Math.min(0.3, Math.max(0.12, visibleUntil * 0.25));
     const inA = easeOutCubic(lt / enter);
     const outA = clamp01((visibleUntil - lt) / 0.15);
     const a = Math.min(inA, outA);
     if (a <= 0) return;
-    const y = H * 0.7;
+    const y = H * 0.76;
 
-    // Readability: a soft dark gradient behind the text.
-    const g = ctx.createLinearGradient(0, H * 0.52, 0, H * 0.86);
+    // Readability: a soft dark gradient behind the text, over the bottom quarter only.
+    const g = ctx.createLinearGradient(0, H * 0.72, 0, H);
     g.addColorStop(0, "rgba(0,0,0,0)");
-    g.addColorStop(1, `rgba(0,0,0,${(style === "royalReveal" ? 0.78 : 0.6) * a})`);
+    g.addColorStop(0.3, `rgba(0,0,0,${0.5 * a})`);
+    g.addColorStop(1, `rgba(0,0,0,${0.65 * a})`);
     ctx.fillStyle = g;
-    ctx.fillRect(0, H * 0.52, W, H * 0.48);
+    ctx.fillRect(0, H * 0.72, W, H * 0.28);
 
     ctx.save();
     ctx.globalAlpha = a;
@@ -474,7 +533,7 @@ export class ReelRenderer {
       ctx.fillStyle = luminance(img.accent) > 0.45 ? "#2b1620" : "#fff";
       ctx.fillText(text, W / 2, y + 4 + lift, W - 160);
     } else if (style === "royalReveal") {
-      ctx.font = `400 52px Cinzel, Georgia, serif`;
+      ctx.font = `400 58px Cinzel, Georgia, serif`;
       const text = img.label.toUpperCase();
       this.shadow(ctx, 22, "rgba(0,0,0,0.95)", 2);
       ctx.fillStyle = GOLD;
@@ -685,11 +744,12 @@ export class ReelRenderer {
         : { family: `Unbounded, "Hind", sans-serif`, weight: 400, size: 96 };
 
     // Sits over the lower middle, where portraits show the outfit, not the face.
-    const g = ctx.createLinearGradient(0, H * 0.36, 0, H * 0.86);
+    const g = ctx.createLinearGradient(0, H * 0.48, 0, H * 0.9);
     g.addColorStop(0, "rgba(0,0,0,0)");
-    g.addColorStop(1, `rgba(0,0,0,${0.62 * a})`);
+    g.addColorStop(0.45, `rgba(0,0,0,${0.5 * a})`);
+    g.addColorStop(1, `rgba(0,0,0,${0.3 * a})`);
     ctx.fillStyle = g;
-    ctx.fillRect(0, H * 0.36, W, H * 0.64);
+    ctx.fillRect(0, H * 0.48, W, H * 0.42);
 
     ctx.save();
     ctx.globalAlpha = a;

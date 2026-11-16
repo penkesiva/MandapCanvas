@@ -39,8 +39,8 @@ export const REEL_TEMPLATES: Record<ReelTemplateId, ReelTemplate> = {
   navratri: {
     id: "navratri",
     name: "Navratri",
-    defaultStyle: "colorWipe",
-    defaultSeconds: 11,
+    defaultStyle: "royalReveal",
+    defaultSeconds: 17,
     defaultCount: 9,
     hook: "9 days, 9 colors, 1 selfie",
     caption: "9 days, 9 colors 🪔 Which day is your favorite? Made with mandapcanvas.com #navratri #navratri2026 #navratrilook #saree #garba",
@@ -49,7 +49,7 @@ export const REEL_TEMPLATES: Record<ReelTemplateId, ReelTemplate> = {
     id: "maharani",
     name: "Maharani",
     defaultStyle: "royalReveal",
-    defaultSeconds: 10,
+    defaultSeconds: 15,
     defaultCount: 5,
     hook: "POV: you're a Maharani",
     caption: "Palace, temple, throne room 👑 Which one is me? Made with mandapcanvas.com #maharani #saree #kanjeevaram #banarasi #desiaesthetic",
@@ -58,7 +58,7 @@ export const REEL_TEMPLATES: Record<ReelTemplateId, ReelTemplate> = {
     id: "lookpack",
     name: "Wedding Look Pack",
     defaultStyle: "eventCard",
-    defaultSeconds: 14,
+    defaultSeconds: 20,
     defaultCount: 8,
     hook: "My whole wedding, before I book a thing",
     caption: "Haldi to reception, all before the wedding ✨ Made with mandapcanvas.com #desiwedding #indianwedding #bridallook #sangeet #mehndi",
@@ -67,7 +67,7 @@ export const REEL_TEMPLATES: Record<ReelTemplateId, ReelTemplate> = {
     id: "art",
     name: "Art portraits",
     defaultStyle: "whipPan",
-    defaultSeconds: 8,
+    defaultSeconds: 12,
     defaultCount: 6,
     hook: "Which one are you?",
     caption: "One photo, every style 🎨 Which one are you? Made with mandapcanvas.com #aiart #anime #80sretro #bollywood #portrait",
@@ -87,12 +87,12 @@ export function reelTemplateFor(config: Pick<AlbumConfig, "look" | "artPack">): 
 
 export const REEL_FPS = 30;
 /** The hook text plays over the opening for this long. */
-export const INTRO_SECONDS = 1.2;
+export const INTRO_SECONDS = 1.8;
 /** The end card. */
-export const OUTRO_SECONDS = 1.8;
+export const OUTRO_SECONDS = 2.4;
 /** Shorter than this and an image reads as a glitch; longer and the reel drags. */
-export const MIN_HOLD = 0.5;
-export const MAX_HOLD = 2.5;
+export const MIN_HOLD = 0.7;
+export const MAX_HOLD = 3.5;
 export const MAX_REEL_IMAGES = 20;
 export const MAX_REEL_SECONDS = 60;
 
@@ -129,8 +129,8 @@ export function holdFor(seconds: number, count: number): number {
 
 /** Seconds a transition takes, given how long each image holds. */
 export function transitionFor(style: ReelStyleId, hold: number): number {
-  const cap = style === "whipPan" ? 0.32 : style === "royalReveal" ? 0.7 : style === "eventCard" ? 0.6 : 0.5;
-  return Math.min(cap, hold * 0.45);
+  const cap = style === "whipPan" ? 0.35 : style === "royalReveal" ? 0.8 : style === "eventCard" ? 0.7 : 0.6;
+  return Math.min(cap, hold * 0.4);
 }
 
 /**
