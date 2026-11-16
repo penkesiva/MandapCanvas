@@ -15,8 +15,6 @@ interface Choice {
   text: string;
   img: string;
   pack: PackId;
-  /** Free to try before paying. */
-  free: string;
 }
 
 const PEOPLE: Choice[] = [
@@ -26,7 +24,6 @@ const PEOPLE: Choice[] = [
     text: "See yourself as a bride, groom or couple at every event, Haldi to reception.",
     img: "/samples/look-after.jpg",
     pack: "look12",
-    free: "Try one look free",
   },
   {
     href: "/looks/maharani",
@@ -34,7 +31,6 @@ const PEOPLE: Choice[] = [
     text: "Heritage silk sarees at palaces and temples, from your own photo.",
     img: "/samples/maharani/scene-1.jpg",
     pack: "maharani12",
-    free: "See examples first",
   },
   {
     href: "/looks/navratri",
@@ -42,7 +38,6 @@ const PEOPLE: Choice[] = [
     text: "Nine days, nine saree colors, at the temple, the lawn and garba night.",
     img: "/samples/navratri/day-1.jpg",
     pack: "navratri9",
-    free: "See examples first",
   },
   {
     href: "/tools/wedding-art-portrait",
@@ -50,7 +45,6 @@ const PEOPLE: Choice[] = [
     text: "Your photo as anime, 80s retro, Mughal, Tanjore, a Bollywood poster and more.",
     img: "/samples/art/anime.jpg",
     pack: "art10",
-    free: "One style free",
   },
 ];
 
@@ -61,7 +55,6 @@ const DECOR: Choice[] = [
     text: "Sketch it, upload a photo or pick a style. See every event's decor photo-real.",
     img: "/samples/hero-after.jpg",
     pack: "starter",
-    free: "Two previews free",
   },
   {
     href: "/tools/ai-venue-decor-visualizer",
@@ -69,7 +62,6 @@ const DECOR: Choice[] = [
     text: "Upload your hall or backyard and see it dressed for your wedding.",
     img: "/samples/venue-after.jpg",
     pack: "venue9",
-    free: "Try it free",
   },
 ];
 
@@ -85,7 +77,7 @@ function Card({ c }: { c: Choice }) {
           <h3 className="text-[1.45rem]">{c.title}</h3>
           <p className="mt-1.5 flex-1 text-ink-soft">{c.text}</p>
           <p className="mt-4 flex items-center justify-between gap-3 text-sm">
-            <span className="font-semibold text-mehndi">{c.free}</span>
+            <span className="font-semibold text-mehndi">Try it free</span>
             <span className="text-ink-soft">from {formatUSD(PACKS[c.pack].priceCents)}</span>
           </p>
         </div>

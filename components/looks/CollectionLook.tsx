@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Download, Loader2, Sparkles } from "lucide-react";
 import { engage as track } from "@/lib/engage";
 import { PACKS, formatUSD, type PackId } from "@/lib/config";
 import { flagField } from "@/lib/flagField";
 import { LOOK_COLLECTIONS, type CollectionId } from "@/lib/lookCollections";
 import { PhotoRow } from "../tools/LookPack";
+import { FreeTrySignup } from "../tools/FreeTrySignup";
 
 function bundledSamples(id: CollectionId): Record<number, string> {
   return Object.fromEntries(
@@ -108,6 +109,10 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [admin, setAdmin] = useState(false);
+  const [scene, setScene] = useState(0);
+  const [trying, setTrying] = useState(false);
+  const [tryUrl, setTryUrl] = useState<string | null>(null);
+  const [quota, setQuota] = useState<{ signedIn: boolean; remaining: number } | null>(null);
   const pack = PACKS[packId];
 
   useEffect(() => {
@@ -115,7 +120,46 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
       .then((r) => r.json())
       .then((d) => setAdmin(!!d.admin))
       .catch(() => {});
+    fetch("/api/looks/collection/try")
+      .then((r) => r.json())
+      .then((d) => d.ok && setQuota({ signedIn: d.signedIn, remaining: d.remaining }))
+      .catch(() => {});
   }, [id]);
+
+  const outOfTries = quota !== null && quota.remaining <= 0;
+
+  /** One free, watermarked portrait to check the likeness before buying. */
+  async function tryFree() {
+    const fail = (msg: string, field: string) => {
+      setError(msg);
+      flagField(`[data-field="${field}"]`);
+    };
+    if (!photos.length) return fail("Add at least one photo of yourself.", "col-photos");
+    if (!consent) return fail("Tick the box to confirm these are your photos and you're 18 or older.", "col-consent");
+    setError(null);
+    setTrying(true);
+    track("collection_free_try", { collection: id, scene, photos: photos.length });
+    try {
+      const res = await fetch("/api/looks/collection/try", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ collection: id, photos, glasses, consent, scene }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === "signup_for_more" || data.code === "tries_used") setQuota((q) => ({ signedIn: q?.signedIn ?? false, remaining: 0 }));
+        throw new Error(data.error || "We couldn't create your portrait.");
+      }
+      setTryUrl(data.url);
+      setQuota({ signedIn: data.signedIn, remaining: data.remaining });
+      setTimeout(() => document.getElementById(`try-${id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+      flagField("#col-error");
+    } finally {
+      setTrying(false);
+    }
+  }
 
   async function buy(free = false) {
     const fail = (msg: string, field: string) => {
@@ -186,9 +230,73 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
               Keep my glasses
             </button>
           </div>
+
+          <div id={`try-${id}`} className="mt-6 scroll-mt-24 rounded-2xl border border-gold/50 bg-silk p-4">
+            <p className="font-semibold">3. Try one free</p>
+            <p className="mt-1 text-sm text-ink-soft">See one portrait of you first, with a small watermark. No payment.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <label htmlFor={`scene-${id}`} className="sr-only">
+                {id === "navratri" ? "Day" : "Setting"}
+              </label>
+              <select id={`scene-${id}`} className="field !w-auto max-w-full" value={scene} onChange={(e) => setScene(Number(e.target.value))} disabled={trying}>
+                {c.scenes.map((sc, i) => (
+                  <option key={sc.name} value={i}>
+                    {sc.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-gold btn-sm"
+                onClick={() => {
+                  if (!outOfTries) return tryFree();
+                  if (quota?.signedIn) document.getElementById("order-pack")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  else flagField(`#col-signup-${id}`);
+                }}
+                disabled={trying || busy}
+              >
+                {trying ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}{" "}
+                {trying ? "Painting your portrait…" : outOfTries ? (quota?.signedIn ? "Get the full set" : "Sign up free for one more") : "Try it free"}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-ink-soft">
+              {trying
+                ? "This takes about 20 seconds."
+                : quota === null
+                  ? "Free, no sign-up."
+                  : quota.remaining > 0
+                    ? `${quota.remaining} free ${quota.remaining === 1 ? "portrait" : "portraits"} left${quota.signedIn ? "" : ". No sign-up needed"}.`
+                    : quota.signedIn
+                      ? "You've used your free portraits."
+                      : "You've used your free portrait. Create a free account for one more."}
+            </p>
+            {tryUrl ? (
+              <div className="mt-4 flex flex-wrap items-end gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={tryUrl} alt={`Your ${c.name} portrait`} className="pop-in aspect-[3/4] w-48 rounded-xl object-cover shadow-md" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-xl text-maroon">That&apos;s you.</p>
+                  <p className="mt-1 text-sm text-ink-soft">Get every {id === "navratri" ? "day" : "setting"}, without the watermark.</p>
+                  <a href={`/api/img?u=${encodeURIComponent(tryUrl)}`} download className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-kumkum underline underline-offset-2">
+                    <Download size={15} /> Save this one
+                  </a>
+                </div>
+              </div>
+            ) : null}
+            {outOfTries && quota && !quota.signedIn ? (
+              <FreeTrySignup
+                id={`col-signup-${id}`}
+                next={`${c.path}#order`}
+                source={`collection_${id}`}
+                title="One more portrait, free"
+                text="Create a free account to try another setting."
+                cta="Get my free portrait"
+              />
+            ) : null}
+          </div>
         </div>
         <div className="min-w-0">
-          <p className="font-semibold">3. Choose your pack</p>
+          <p id="order-pack" className="font-semibold">4. Choose your pack</p>
           <div className="mt-3 grid gap-3">
             {c.packs.map((pid) => {
               const p = PACKS[pid];

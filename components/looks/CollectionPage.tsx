@@ -39,7 +39,7 @@ export function CollectionPage({
           <p className="mt-4 text-lg text-ink-soft">{intro}</p>
           <div className="cta-row mt-6 flex flex-wrap gap-3">
             <a href="#order" className="btn btn-primary">
-              Get my portraits from {formatUSD(from)}
+              Try it free
             </a>
             {id === "navratri" ? null : (
               <a href="#gallery" className="btn btn-ghost">
@@ -47,6 +47,7 @@ export function CollectionPage({
               </a>
             )}
           </div>
+          <p className="mt-3 text-sm text-ink-soft">One portrait free, no payment. Full packs from {formatUSD(from)}.</p>
         </header>
         {id === "maharani" ? <MaharaniCarousel className="mx-auto w-full max-w-sm" /> : null}
         </div>
