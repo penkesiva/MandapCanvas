@@ -19,11 +19,11 @@ export function LooksSwitcher({ current }: { current: ProductPath }) {
   }, [current]);
   return (
     <nav aria-label="Everything you can make">
-      <ul ref={list} className="-mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
+      <ul ref={list} className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2.5 overflow-x-auto px-4 pb-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
         {PRODUCTS.map((p) => {
           const on = p.href === current;
           return (
-            <li key={p.href} className="w-[40%] max-w-[200px] flex-none snap-start sm:w-[30%] md:w-auto md:max-w-none">
+            <li key={p.href} className="relative w-[40%] max-w-[200px] flex-none snap-start sm:w-[30%] md:w-auto md:max-w-none">
               <Link
                 href={p.href}
                 aria-current={on ? "page" : undefined}
@@ -42,6 +42,13 @@ export function LooksSwitcher({ current }: { current: ProductPath }) {
                   <span className="absolute left-2.5 top-2.5 rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold leading-tight text-maroon-deep">You&apos;re here</span>
                 ) : null}
               </Link>
+              {on ? (
+                // A gold pointer under the selected tile.
+                <span
+                  className="absolute -bottom-3 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[11px] border-t-[11px] border-x-transparent border-t-gold"
+                  aria-hidden="true"
+                />
+              ) : null}
             </li>
           );
         })}
