@@ -3,7 +3,7 @@ import { SITE } from "@/lib/config";
 import { FREE_TOOLS, toolHref } from "@/lib/tools";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const pages = ["", "/looks", "/looks/maharani", "/looks/navratri", "/mandap", "/create", "/gallery", "/pricing", "/pro", "/tools", "/faq", "/about", "/contact", "/terms", "/privacy", "/refunds"];
+  const pages = ["", "/looks", "/looks/maharani", "/looks/navratri", "/mandap", "/create", "/new", "/gallery", "/pricing", "/pro", "/tools", "/faq", "/about", "/contact", "/terms", "/privacy", "/refunds"];
   return [
     ...pages.map((p) => ({
       url: `${SITE.url}${p}`,

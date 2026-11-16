@@ -10,7 +10,7 @@ import { DECOR_PRESETS, EVENTS, PALETTES } from "@/lib/catalog";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/create" },
-  title: "Create your album",
+  title: "Design your mandap and decor",
   description: "Sketch, upload or pick a style and see a free photo-real preview of your Desi wedding decor.",
 };
 

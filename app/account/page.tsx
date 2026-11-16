@@ -66,8 +66,8 @@ export default async function Account(props: { searchParams: Promise<{ welcome?:
               ) : null}
             </p>
           </div>
-          <Link href={plan ? "/create?mode=proposal" : "/create"} className="btn btn-primary max-sm:w-full">
-            {plan ? "New client proposal" : "New album"}
+          <Link href={plan ? "/create?mode=proposal" : "/new"} className="btn btn-primary max-sm:w-full">
+            {plan ? "New client proposal" : "Create something new"}
           </Link>
         </div>
 
@@ -94,8 +94,8 @@ export default async function Account(props: { searchParams: Promise<{ welcome?:
             <Empty
               title="No albums yet"
               text={drafts.length ? `You have ${drafts.length} waiting for checkout.` : "Start with a free preview. It takes about two minutes."}
-              href={drafts.length ? "/account?tab=drafts" : plan ? "/create?mode=proposal" : "/create"}
-              cta={drafts.length ? "See them" : plan ? "Create a proposal" : "Make a free preview"}
+              href={drafts.length ? "/account?tab=drafts" : plan ? "/create?mode=proposal" : "/new"}
+              cta={drafts.length ? "See them" : plan ? "Create a proposal" : "Choose what to make"}
             />
           )
         ) : null}

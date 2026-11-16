@@ -513,7 +513,7 @@ export function CreateWizard({
   return (
     <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-24 px-4 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-8">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-[2rem] leading-tight sm:text-[2.8rem]">{mode === "proposal" ? "New client proposal" : "Create your wedding album"}</h1>
+        <h1 className="text-[2rem] leading-tight sm:text-[2.8rem]">{mode === "proposal" ? "New client proposal" : "Design your mandap and decor"}</h1>
         <ol className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto whitespace-nowrap px-4 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:gap-2 sm:px-0" aria-label="Steps">
           {STEPS.map((label, i) => (
             <li key={label}>
