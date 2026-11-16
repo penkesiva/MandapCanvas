@@ -252,7 +252,8 @@ export function offerLine(): string {
  * (no product restriction, since checkout prices aren't Stripe products). It hides itself after `ends`.
  */
 export const PROMO_BAR = {
-  active: true,
+  /** Off: prices are already low, and creator codes (e.g. ASH15OFF) are the discount now. */
+  active: false,
   code: "FOUNDINGPRO",
   percent: 10,
   /** Last day of the offer, Pacific time (YYYY-MM-DD), or "" when it ends by use count instead. */
