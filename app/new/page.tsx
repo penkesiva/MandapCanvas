@@ -13,9 +13,12 @@ function Card({ c }: { c: Product }) {
   return (
     <li>
       <Link href={c.start ?? c.href} className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-line bg-white transition hover:-translate-y-0.5 hover:border-gold hover:shadow-lg">
-        <div className="aspect-[4/3] overflow-hidden bg-silk sm:aspect-[4/5]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-silk sm:aspect-[4/5]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={c.img} alt="" className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+          {c.reel ? (
+            <span className="absolute left-3 top-3 rounded-full bg-maroon/90 px-2.5 py-1 text-xs font-semibold text-gold-light backdrop-blur">+ Instagram Reel</span>
+          ) : null}
         </div>
         <div className="flex flex-1 flex-col p-4">
           <h3 className="text-[1.3rem] leading-tight">{c.name}</h3>

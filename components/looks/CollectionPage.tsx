@@ -4,6 +4,7 @@ import { PACKS, formatUSD } from "@/lib/config";
 import { LOOK_COLLECTIONS, type CollectionId } from "@/lib/lookCollections";
 import { CollectionGallery, CollectionOrder } from "./CollectionLook";
 import { LooksSwitcher } from "./LooksSwitcher";
+import { ReelShowcase } from "./ReelShowcase";
 import { NavratriStrip } from "./NavratriStrip";
 import { MaharaniCarousel } from "./MaharaniCarousel";
 
@@ -47,7 +48,7 @@ export function CollectionPage({
               </a>
             )}
           </div>
-          <p className="mt-3 text-sm text-ink-soft">One portrait free, no payment. Full packs from {formatUSD(from)}.</p>
+          <p className="mt-3 text-sm text-ink-soft">One portrait free, no payment. Full packs from {formatUSD(from)}, with an Instagram Reel.</p>
         </header>
         {id === "maharani" ? <MaharaniCarousel className="mx-auto w-full max-w-sm" /> : null}
         </div>
@@ -78,6 +79,10 @@ export function CollectionPage({
             </div>
           ))}
         </section>
+
+        <div className="mt-16">
+          <ReelShowcase reel={id} pack={c.packs[0]} unit={id === "navratri" ? "portraits, one for each day" : "portraits at palaces and temples"} />
+        </div>
 
         <div className="mt-16">
           <CollectionOrder id={id} />

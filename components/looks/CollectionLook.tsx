@@ -347,6 +347,7 @@ export function CollectionOrder({ id }: { id: CollectionId }) {
           ) : null}
           <ul className="mt-4 space-y-1 text-sm text-ink-soft">
             <li>✓ No watermark, private album to share</li>
+            <li>✓ Instagram Reel included, made in one click</li>
             <li>✓ Ready in about 10 minutes</li>
             <li>✓ Not happy with one? Redo it free</li>
           </ul>

@@ -226,6 +226,7 @@ export function LookPack({
           <ul className="mt-4 space-y-1 text-sm text-ink-soft">
             <li>✓ {Math.max(1, Math.floor(pack.images / Math.max(1, events.length)))}+ portraits for each of your {events.length} events</li>
             <li>✓ No watermark, private album to share</li>
+            <li>✓ Instagram Reel included, made in one click</li>
             <li>✓ Ready in about 10 minutes</li>
           </ul>
         </div>

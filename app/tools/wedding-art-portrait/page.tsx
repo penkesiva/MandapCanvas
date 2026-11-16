@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageShell } from "@/components/SiteChrome";
 import { LooksSwitcher } from "@/components/looks/LooksSwitcher";
+import { ReelShowcase } from "@/components/looks/ReelShowcase";
 import { ArtPortrait } from "@/components/tools/ArtPortrait";
 import { Breadcrumbs, JsonLd, MoreTools, ToolFaq, appLd, breadcrumbLd, faqLd } from "@/components/tools/ToolPage";
 import { getTool } from "@/lib/tools";
@@ -82,6 +83,10 @@ export default function ArtPortraitPage() {
             </div>
           ))}
         </section>
+
+        <div className="mt-16">
+          <ReelShowcase reel="art" pack="art10" unit="art portraits, one in each style" orderHref="#art-pack" cta="Get every style" />
+        </div>
 
         <section className="mt-16" aria-labelledby="ideas-h">
           <h2 id="ideas-h" className="text-[2rem]">Ways to use your portrait</h2>

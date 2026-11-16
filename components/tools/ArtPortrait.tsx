@@ -488,7 +488,7 @@ export function ArtPortrait() {
               {ordering ? <Loader2 size={18} className="animate-spin" /> : null}
               {photo ? `Get all ${ART_STYLES.length} styles, ${formatUSD(PACKS.art10.priceCents)}` : "Add your photo first"}
             </button>
-            <p className="mt-2 text-center text-xs text-ink-soft">Uses your outfit and glasses choices. {PACKS.art10.freeRegens} free redos.</p>
+            <p className="mt-2 text-center text-xs text-ink-soft">Uses your outfit and glasses choices. {PACKS.art10.freeRegens} free redos. Instagram Reel included.</p>
             {quota?.admin && photo ? (
               <button type="button" className="btn btn-ghost btn-sm mt-2" onClick={() => orderPack(true)} disabled={ordering}>
                 Admin: make this pack free
