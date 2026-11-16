@@ -35,7 +35,7 @@ export const FREE_TOOLS: FreeTool[] = [
       "Indian wedding look AI",
     ],
     image: "/samples/couple.jpg",
-    href: "/looks",
+    href: "/looks/wedding",
   },
   {
     slug: "ai-venue-decor-visualizer",

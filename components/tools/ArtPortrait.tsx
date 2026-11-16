@@ -508,7 +508,7 @@ export function ArtPortrait() {
             <p className="mt-1 text-sm text-ink-soft">
               Photo-real portraits of you at the Haldi, Mehndi, Sangeet, wedding and reception, from the same photo. From {formatUSD(PACKS.look12.priceCents)}.
             </p>
-            <Link href="/looks" className="btn btn-primary btn-sm mt-3" onClick={() => track("tool_art_cta")}>
+            <Link href="/looks/wedding" className="btn btn-primary btn-sm mt-3" onClick={() => track("tool_art_cta")}>
               See wedding looks
             </Link>
           </div>

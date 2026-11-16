@@ -149,7 +149,7 @@ export function PaletteMandap({
             <Link href={`/create?palette=${palette}`} className="btn btn-gold btn-sm" onClick={() => track("tool_palette_mandap_continue")}>
               Design my mandap in these colors <ArrowRight size={15} />
             </Link>
-            <Link href="/looks" className="btn btn-ghost btn-sm" onClick={() => track("tool_palette_mandap_looks")}>
+            <Link href="/looks/wedding" className="btn btn-ghost btn-sm" onClick={() => track("tool_palette_mandap_looks")}>
               See myself in this outfit
             </Link>
           </div>

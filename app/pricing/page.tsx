@@ -28,7 +28,7 @@ export default function Pricing() {
           <h2 className="text-[2rem] text-maroon">Bridal looks</h2>
           <p className="mt-1 max-w-2xl text-ink-soft">
             Portraits of you at every event, from your own photos. One free look first.{" "}
-            <Link href="/looks" className="font-medium text-kumkum underline">How it works</Link>
+            <Link href="/looks/wedding" className="font-medium text-kumkum underline">How it works</Link>
           </p>
           <div className="mt-10">
             <PricingCards product="looks" />

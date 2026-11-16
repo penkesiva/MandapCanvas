@@ -6,7 +6,7 @@
 import { PACKS, formatUSD, type PackId } from "./config";
 
 export type ProductPath =
-  | "/looks"
+  | "/looks/wedding"
   | "/looks/maharani"
   | "/looks/navratri"
   | "/tools/wedding-art-portrait"
@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
   { href: "/looks/maharani", name: "Maharani portraits", short: "Maharani", line: "Heritage sarees at palaces and temples.", img: "/samples/maharani/scene-1.jpg", pack: "maharani12", group: "you", reel: true },
   { href: "/looks/navratri", name: "Navratri portraits", short: "Navratri", line: "Nine days, nine saree colors.", img: "/samples/navratri/day-1.jpg", pack: "navratri9", group: "you", reel: true },
   { href: "/tools/wedding-art-portrait", name: "Art portraits", short: "Art portraits", line: "Anime, 80s, Tanjore and more.", img: "/samples/art/anime.jpg", pack: "art10", group: "you", reel: true },
-  { href: "/looks", name: "Wedding looks", short: "Wedding", line: "Bride, groom or couple at every event.", img: "/samples/look-after.jpg", pack: "look12", group: "you", reel: true },
+  { href: "/looks/wedding", name: "Wedding looks", short: "Wedding", line: "Bride, groom or couple at every event.", img: "/samples/look-after.jpg", pack: "look12", group: "you", reel: true },
   { href: "/mandap", start: "/create", name: "Mandap and decor album", short: "Mandap designs", line: "Your mandap, photo-real, every event.", img: "/samples/hero-after.jpg", pack: "starter", group: "decor" },
   { href: "/tools/ai-venue-decor-visualizer", name: "Your venue, decorated", short: "Venue decor", line: "Your hall or backyard, dressed up.", img: "/samples/venue-after.jpg", pack: "venue9", group: "decor" },
 ];

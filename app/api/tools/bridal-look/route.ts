@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       recordStat({ looks: 1, images: 1, costMilliCents: result.costMilliCents }),
       recordCreation(
         { userId: q.user?.id, anon: q.anon },
-        { kind: "look", url: saved.url, title: look.who === "couple" ? "Couple look" : look.who === "groom" ? "Groom look" : "Bridal look", href: "/looks" },
+        { kind: "look", url: saved.url, title: look.who === "couple" ? "Couple look" : look.who === "groom" ? "Groom look" : "Bridal look", href: "/looks/wedding" },
       ),
     ]);
     return NextResponse.json({ ok: true, url: saved.url, remaining: q.admin ? 99 : Math.max(0, q.remaining - 1), signedIn: !!q.user });

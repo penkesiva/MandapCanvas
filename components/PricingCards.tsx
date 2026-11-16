@@ -43,7 +43,7 @@ export function PricingCards({ product = "mandap" }: { product?: "mandap" | "loo
                 {p.freeRegens} free {product === "looks" ? "redos" : "new versions"}
               </li>
             </ul>
-            <Link href={product === "looks" ? "/looks" : `/create?pack=${id}`} className={`btn mt-auto ${p.highlight ? "btn-primary" : "btn-ghost"}`}>
+            <Link href={product === "looks" ? "/looks/wedding" : `/create?pack=${id}`} className={`btn mt-auto ${p.highlight ? "btn-primary" : "btn-ghost"}`}>
               {product === "looks" ? "Try your look free first" : "Start with a free preview"}
             </Link>
           </div>

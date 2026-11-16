@@ -59,12 +59,12 @@ export default function Home() {
 
           <div className="mt-8 grid gap-5 md:mt-10 md:grid-cols-2 md:gap-6">
             <Door
-              href="/looks"
+              href="/looks/wedding"
               title="See yourself"
               text="Upload a selfie. See yourself as a bride, groom or couple at every event."
               meta={`Try for free · Look Packs from ${formatUSD(PACKS.look12.priceCents)}`}
               cta="Try your look free"
-              more={{ href: "/looks", label: "How it works" }}
+              more={{ href: "/looks/wedding", label: "How it works" }}
             >
               <div className="p-4">
                 <LookExamples compact />
@@ -198,7 +198,7 @@ export default function Home() {
               title="Bridal looks"
               note="Portraits of you at every event"
               rows={LOOK_PACKS.map((id) => [`${PACKS[id].images} portraits`, PACKS[id].priceCents, PACKS[id].listCents])}
-              href="/looks"
+              href="/looks/wedding"
               cta="Try your look free"
             />
             <PriceColumn

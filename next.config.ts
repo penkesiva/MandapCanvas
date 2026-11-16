@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [{ source: "/tools/ai-bridal-look", destination: "/looks", permanent: true }];
+    return [{ source: "/tools/ai-bridal-look", destination: "/looks/wedding", permanent: true }];
   },
   // sharp loads libvips from a native .so that file tracing misses on Vercel; ship it with every function.
   outputFileTracingIncludes: {

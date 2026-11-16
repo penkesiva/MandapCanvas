@@ -400,7 +400,7 @@ export function BridalLook() {
         ) : null}
         {outOfTries && quota && !quota.signedIn ? <FreeTrySignup
             id="look-signup"
-            next="/looks"
+            next="/looks/wedding"
             source="looks"
             title="One more look, free"
             text={`Create a free account to try another tradition or color.${offerLine()}`}
